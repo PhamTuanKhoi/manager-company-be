@@ -12,6 +12,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRoleEnum } from './interfaces/role-user.enum';
 import { User, UserDocument } from './schema/user.schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -38,6 +39,11 @@ export class UserService {
       if (emailsake)
         throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
 
+      registerUserDto.password = await bcrypt.hash(
+        registerUserDto.password,
+        10,
+      );
+
       const created = await this.model.create({
         ...registerUserDto,
         role: UserRoleEnum.ADMIN,
@@ -52,7 +58,7 @@ export class UserService {
   }
 
   findByUsername(username: string) {
-    return this.model.findOne({ username });
+    return this.model.findOne({ username }).lean();
   }
 
   findByEmail(email: string) {

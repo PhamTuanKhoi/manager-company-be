@@ -6,11 +6,16 @@ import {
   Inject,
   UseGuards,
   Request,
+  Get,
+  Param,
 } from '@nestjs/common';
 import { RegisterUserDto } from 'src/user/dto/register-user.dto';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
+import { Auth } from './decorator/auth.decorator';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { LocalAuthGuard } from './guard/local-auth.guard';
+import { JwtPayload } from './interfaces/jwtPayload.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -29,5 +34,11 @@ export class AuthController {
   @Post('login')
   async login(@Request() req) {
     return this.authService.login(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('me')
+  async me(@Auth() auth: JwtPayload) {
+    return await this.authService.getUserFromJwtPayload(auth);
   }
 }

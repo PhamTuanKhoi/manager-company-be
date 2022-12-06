@@ -65,6 +65,10 @@ export class UserService {
     return this.model.findOne({ email });
   }
 
+  findOne(id: string) {
+    return this.model.findById(id).lean();
+  }
+
   findAll() {
     return `This action returns all user`;
   }

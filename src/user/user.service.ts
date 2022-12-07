@@ -22,6 +22,10 @@ export class UserService {
 
   constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
 
+  async findAllEloyees() {
+    return this.model.find({ role: UserRoleEnum.EMPLOYEE });
+  }
+
   create(createUserDto: CreateUserDto) {
     return this.model.create(createUserDto);
   }

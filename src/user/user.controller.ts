@@ -26,9 +26,9 @@ export class UserController {
     return this.userService.newEmployees(createEmployeeDto);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Get('employees')
+  findAllEloyees() {
+    return this.userService.findAllEloyees();
   }
 
   // @Get(':id')

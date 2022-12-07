@@ -7,12 +7,14 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateUserDto } from './dto/create-user.dto';
-import { RegisterUserDto } from './dto/register-user.dto';
+import { CreateUserDto } from './dto/create-dto/create-user.dto';
+import { RegisterUserDto } from './dto/create-dto/register-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRoleEnum } from './interfaces/role-user.enum';
 import { User, UserDocument } from './schema/user.schema';
 import * as bcrypt from 'bcrypt';
+import { CreateEmployeeDto } from './dto/create-dto/create-employee.dto';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class UserService {
@@ -22,6 +24,55 @@ export class UserService {
 
   create(createUserDto: CreateUserDto) {
     return this.model.create(createUserDto);
+  }
+
+  async newEmployees(createEmployeeDto: CreateEmployeeDto) {
+    const emailsake = await this.findByEmail(createEmployeeDto.email);
+
+    if (emailsake)
+      throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+
+    let password: string = Math.floor(
+      (1 + Math.random()) * 10000001,
+    ).toString();
+
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'fce.analytics73@gmail.com',
+        pass: 'jcvuknpxdipbrzgy',
+      },
+    });
+
+    var mailOptions = {
+      from: '"FCE" <huynhanhpham734@gmail.com>',
+      to: createEmployeeDto.email,
+      subject: 'CONG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
+      text: 'That was easy!',
+      html:
+        '<p><i>Hi!  ' +
+        createEmployeeDto.name +
+        `</i></p><b>Mat khau cua ban la : ${password}</b>`,
+    };
+
+    const sendEmail = await transporter.sendMail(mailOptions);
+
+    if (!sendEmail) {
+      console.log(`error send mail`);
+    }
+    console.log('Email sent: ' + sendEmail?.response);
+
+    password = await bcrypt.hash(password, 10);
+
+    const created = await this.model.create({
+      ...createEmployeeDto,
+      password,
+      role: UserRoleEnum.EMPLOYEE,
+    });
+
+    this.logger.log(`created new employees by id ${created?._id}`);
+
+    return created;
   }
 
   async register(registerUserDto: RegisterUserDto) {

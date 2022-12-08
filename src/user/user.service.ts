@@ -32,52 +32,57 @@ export class UserService {
   }
 
   async newEmployees(createEmployeeDto: CreateEmployeeDto) {
-    const emailsake = await this.findByEmail(createEmployeeDto.email);
+    try {
+      const emailsake = await this.findByEmail(createEmployeeDto.email);
 
-    if (emailsake)
-      throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+      if (emailsake)
+        throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
 
-    let password: string = Math.floor(
-      (1 + Math.random()) * 10000001,
-    ).toString();
+      let password: string = Math.floor(
+        (1 + Math.random()) * 10000001,
+      ).toString();
 
-    var transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'fce.analytics73@gmail.com',
-        pass: 'jcvuknpxdipbrzgy',
-      },
-    });
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'fce.analytics73@gmail.com',
+          pass: 'jcvuknpxdipbrzgy',
+        },
+      });
 
-    var mailOptions = {
-      from: '"FCE" <huynhanhpham734@gmail.com>',
-      to: createEmployeeDto.email,
-      subject: 'CONG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
-      text: 'That was easy!',
-      html:
-        '<p><i>Hi!  ' +
-        createEmployeeDto.name +
-        `</i></p><b>Mat khau cua ban la : ${password}</b>`,
-    };
+      var mailOptions = {
+        from: '"FCE" <huynhanhpham734@gmail.com>',
+        to: createEmployeeDto.email,
+        subject: 'CONG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
+        text: 'That was easy!',
+        html:
+          '<p><i>Hi!  ' +
+          createEmployeeDto.name +
+          `</i></p><b>Mat khau cua ban la : ${password}</b>`,
+      };
 
-    const sendEmail = await transporter.sendMail(mailOptions);
+      const sendEmail = await transporter.sendMail(mailOptions);
 
-    if (!sendEmail) {
-      console.log(`error send mail`);
+      if (!sendEmail) {
+        console.log(`error send mail`);
+      }
+      console.log('Email sent: ' + sendEmail?.response);
+
+      password = await bcrypt.hash(password, 10);
+
+      const created = await this.model.create({
+        ...createEmployeeDto,
+        password,
+        role: UserRoleEnum.EMPLOYEE,
+      });
+
+      this.logger.log(`created new employees by id ${created?._id}`);
+
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
     }
-    console.log('Email sent: ' + sendEmail?.response);
-
-    password = await bcrypt.hash(password, 10);
-
-    const created = await this.model.create({
-      ...createEmployeeDto,
-      password,
-      role: UserRoleEnum.EMPLOYEE,
-    });
-
-    this.logger.log(`created new employees by id ${created?._id}`);
-
-    return created;
   }
 
   async register(registerUserDto: RegisterUserDto) {
@@ -133,10 +138,15 @@ export class UserService {
     console.log(updateEmployeesDto);
 
     try {
-      const emailsake = await this.findByEmail(updateEmployeesDto.email);
+      if (updateEmployeesDto.email !== updateEmployeesDto.oldEmail) {
+        const emailsake = await this.findByEmail(updateEmployeesDto.email);
 
-      if (emailsake)
-        throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+        if (emailsake)
+          throw new HttpException(
+            'email already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+      }
 
       const updated = await this.model.findByIdAndUpdate(
         id,
@@ -148,7 +158,8 @@ export class UserService {
 
       return updated;
     } catch (error) {
-      console.log(error);
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
     }
   }
 

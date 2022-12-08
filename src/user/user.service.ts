@@ -9,12 +9,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-dto/create-user.dto';
 import { RegisterUserDto } from './dto/create-dto/register-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/update-dto/update-user.dto';
 import { UserRoleEnum } from './interfaces/role-user.enum';
 import { User, UserDocument } from './schema/user.schema';
 import * as bcrypt from 'bcrypt';
 import { CreateEmployeeDto } from './dto/create-dto/create-employee.dto';
 import * as nodemailer from 'nodemailer';
+import { UpdateEmployeesDto } from './dto/update-dto/update-employees.dto';
 
 @Injectable()
 export class UserService {
@@ -128,8 +129,27 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateEmployees(id: string, updateEmployeesDto: UpdateEmployeesDto) {
+    console.log(updateEmployeesDto);
+
+    try {
+      const emailsake = await this.findByEmail(updateEmployeesDto.email);
+
+      if (emailsake)
+        throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+
+      const updated = await this.model.findByIdAndUpdate(
+        id,
+        updateEmployeesDto,
+        { new: true },
+      );
+
+      this.logger.log(`updated employees success by id #${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   remove(id: number) {

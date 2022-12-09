@@ -24,4 +24,8 @@ export class CreateClientDto {
   @IsOptional()
   @IsString()
   image: string;
+
+  @IsOptional()
+  @IsString()
+  creator: string;
 }

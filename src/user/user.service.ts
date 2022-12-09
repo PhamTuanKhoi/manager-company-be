@@ -18,6 +18,7 @@ import { CreateEmployeeDto } from './dto/create-dto/create-employee.dto';
 import { UpdateEmployeesDto } from './dto/update-dto/update-employees.dto';
 import { CreateClientDto } from './dto/create-dto/create-client.dto';
 import { SendEmail } from 'src/gobal/email/sendMail';
+import { UpdateClientDto } from './dto/update-dto/update-client.dto';
 
 @Injectable()
 export class UserService {
@@ -34,11 +35,11 @@ export class UserService {
   }
 
   findByUsername(username: string) {
-    return this.model.findOne({ username }).lean();
+    return this.model.findOne({ username }).select('+password').lean();
   }
 
   findByEmail(email: string) {
-    return this.model.findOne({ email });
+    return this.model.findOne({ email }).lean();
   }
 
   findOne(id: string) {
@@ -85,6 +86,8 @@ export class UserService {
 
   async newClient(createClientDto: CreateClientDto) {
     try {
+      await this.isModelExist(createClientDto.creator);
+
       const emailsake = await this.findByEmail(createClientDto.email);
 
       if (emailsake)
@@ -150,8 +153,6 @@ export class UserService {
   }
 
   async updateEmployees(id: string, updateEmployeesDto: UpdateEmployeesDto) {
-    console.log(updateEmployeesDto);
-
     try {
       if (updateEmployeesDto.email !== updateEmployeesDto.oldEmail) {
         const emailsake = await this.findByEmail(updateEmployeesDto.email);
@@ -176,6 +177,40 @@ export class UserService {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
     }
+  }
+
+  async updateClient(id: string, updateClientDto: UpdateClientDto) {
+    try {
+      if (updateClientDto.email !== updateClientDto.oldEmail) {
+        const emailsake = await this.findByEmail(updateClientDto.email);
+
+        if (emailsake)
+          throw new HttpException(
+            'email already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+      }
+
+      await this.isModelExist(id);
+
+      const updated = await this.model.findByIdAndUpdate(id, updateClientDto, {
+        new: true,
+      });
+
+      this.logger.log(`updated client success by id #${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async isModelExist(id, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const errorMessage = msg || `id-> ${User.name} not found`;
+    const isExist = await this.findOne(id);
+    if (!isExist) throw new Error(errorMessage);
   }
 
   remove(id: string) {

@@ -29,6 +29,22 @@ export class UserService {
     return this.model.find({ role: UserRoleEnum.EMPLOYEE });
   }
 
+  findAllClient() {
+    return this.model.find({ role: UserRoleEnum.CLIENT });
+  }
+
+  findByUsername(username: string) {
+    return this.model.findOne({ username }).lean();
+  }
+
+  findByEmail(email: string) {
+    return this.model.findOne({ email });
+  }
+
+  findOne(id: string) {
+    return this.model.findById(id).lean();
+  }
+
   create(createUserDto: CreateUserDto) {
     return this.model.create(createUserDto);
   }
@@ -50,32 +66,6 @@ export class UserService {
         `Mat khau cua ban la : ${password}`,
       );
 
-      // var transporter = nodemailer.createTransport({
-      //   service: 'gmail',
-      //   auth: {
-      //     user: 'fce.analytics73@gmail.com',
-      //     pass: 'jcvuknpxdipbrzgy',
-      //   },
-      // });
-
-      // var mailOptions = {
-      //   from: '"FCE" <huynhanhpham734@gmail.com>',
-      //   to: createEmployeeDto.email,
-      //   subject: 'CONG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
-      //   text: 'That was easy!',
-      //   html:
-      //     '<p><i>Hi!  ' +
-      //     createEmployeeDto.name +
-      //     `</i></p><b>Mat khau cua ban la : ${password}</b>`,
-      // };
-
-      // const sendEmail = await transporter.sendMail(mailOptions);
-
-      // if (!sendEmail) {
-      //   console.log(`error send mail`);
-      // }
-      // console.log('Email sent: ' + sendEmail?.response);
-
       password = await bcrypt.hash(password, 10);
 
       const created = await this.model.create({
@@ -96,22 +86,28 @@ export class UserService {
   async newClient(createClientDto: CreateClientDto) {
     try {
       const emailsake = await this.findByEmail(createClientDto.email);
+
       if (emailsake)
         throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+
       let password: string = Math.floor(
         (1 + Math.random()) * 10000001,
       ).toString();
+
       await SendEmail(
         createClientDto.email,
         createClientDto.name,
         `Mat khau cua ban la : ${password}`,
       );
+
       password = await bcrypt.hash(password, 10);
+
       const created = await this.model.create({
         ...createClientDto,
         password,
         role: UserRoleEnum.CLIENT,
       });
+
       this.logger.log(`created new client by id ${created?._id}`);
       return created;
     } catch (error) {
@@ -151,22 +147,6 @@ export class UserService {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
     }
-  }
-
-  findByUsername(username: string) {
-    return this.model.findOne({ username }).lean();
-  }
-
-  findByEmail(email: string) {
-    return this.model.findOne({ email });
-  }
-
-  findOne(id: string) {
-    return this.model.findById(id).lean();
-  }
-
-  findAll() {
-    return `This action returns all user`;
   }
 
   async updateEmployees(id: string, updateEmployeesDto: UpdateEmployeesDto) {

@@ -1,3 +1,4 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 export async function SendEmail(
@@ -24,7 +25,7 @@ export async function SendEmail(
   const sendEmail = await transporter.sendMail(mailOptions);
 
   if (!sendEmail) {
-    console.log(`error send mail`);
+    throw new HttpException(`Send email no success !`, HttpStatus.BAD_REQUEST);
   }
   console.log('Email sent: ' + sendEmail?.response);
 }

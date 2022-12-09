@@ -18,6 +18,16 @@ import { CreateClientDto } from './dto/create-dto/create-client.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get('employees')
+  findAllEloyees() {
+    return this.userService.findAllEloyees();
+  }
+
+  @Get('client')
+  findAllClient() {
+    return this.userService.findAllClient();
+  }
+
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -32,16 +42,6 @@ export class UserController {
   newClient(@Body() createClientDto: CreateClientDto) {
     return this.userService.newClient(createClientDto);
   }
-
-  @Get('employees')
-  findAllEloyees() {
-    return this.userService.findAllEloyees();
-  }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.userService.findOne(+id);
-  // }
 
   @Patch('employees/:id')
   updateEmployees(

@@ -9,7 +9,6 @@ import { ProjectModule } from './project/project.module';
 import { EmployProjectModule } from './employ-project/employ-project.module';
 import { WorkerProjectModule } from './worker-project/worker-project.module';
 import { ClientProjectModule } from './client-project/client-project.module';
-import { ClientModule } from './client/client.module';
 
 @Module({
   imports: [
@@ -21,7 +20,6 @@ import { ClientModule } from './client/client.module';
     EmployProjectModule,
     WorkerProjectModule,
     ClientProjectModule,
-    ClientModule,
   ],
   controllers: [AppController],
   providers: [AppService],

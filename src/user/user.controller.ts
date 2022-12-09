@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-dto/update-user.dto';
 import { CreateEmployeeDto } from './dto/create-dto/create-employee.dto';
 import { UpdateEmployeesDto } from './dto/update-dto/update-employees.dto';
+import { CreateClientDto } from './dto/create-dto/create-client.dto';
 
 @Controller('user')
 export class UserController {
@@ -25,6 +26,11 @@ export class UserController {
   @Post('employees')
   newEmplyees(@Body() createEmployeeDto: CreateEmployeeDto) {
     return this.userService.newEmployees(createEmployeeDto);
+  }
+
+  @Post('client')
+  newClient(@Body() createClientDto: CreateClientDto) {
+    return this.userService.newClient(createClientDto);
   }
 
   @Get('employees')

@@ -41,6 +41,17 @@ export class User {
 
   @Prop()
   avartar: string;
+
+  // client
+
+  @Prop()
+  company: string;
+
+  @Prop()
+  field: string;
+
+  @Prop()
+  image: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

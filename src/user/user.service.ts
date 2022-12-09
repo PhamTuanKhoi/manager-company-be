@@ -14,8 +14,10 @@ import { UserRoleEnum } from './interfaces/role-user.enum';
 import { User, UserDocument } from './schema/user.schema';
 import * as bcrypt from 'bcrypt';
 import { CreateEmployeeDto } from './dto/create-dto/create-employee.dto';
-import * as nodemailer from 'nodemailer';
+
 import { UpdateEmployeesDto } from './dto/update-dto/update-employees.dto';
+import { CreateClientDto } from './dto/create-dto/create-client.dto';
+import { SendEmail } from 'src/gobal/email/sendMail';
 
 @Injectable()
 export class UserService {
@@ -42,31 +44,37 @@ export class UserService {
         (1 + Math.random()) * 10000001,
       ).toString();
 
-      var transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: 'fce.analytics73@gmail.com',
-          pass: 'jcvuknpxdipbrzgy',
-        },
-      });
+      await SendEmail(
+        createEmployeeDto.email,
+        createEmployeeDto.name,
+        `Mat khau cua ban la : ${password}`,
+      );
 
-      var mailOptions = {
-        from: '"FCE" <huynhanhpham734@gmail.com>',
-        to: createEmployeeDto.email,
-        subject: 'CONG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
-        text: 'That was easy!',
-        html:
-          '<p><i>Hi!  ' +
-          createEmployeeDto.name +
-          `</i></p><b>Mat khau cua ban la : ${password}</b>`,
-      };
+      // var transporter = nodemailer.createTransport({
+      //   service: 'gmail',
+      //   auth: {
+      //     user: 'fce.analytics73@gmail.com',
+      //     pass: 'jcvuknpxdipbrzgy',
+      //   },
+      // });
 
-      const sendEmail = await transporter.sendMail(mailOptions);
+      // var mailOptions = {
+      //   from: '"FCE" <huynhanhpham734@gmail.com>',
+      //   to: createEmployeeDto.email,
+      //   subject: 'CONG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
+      //   text: 'That was easy!',
+      //   html:
+      //     '<p><i>Hi!  ' +
+      //     createEmployeeDto.name +
+      //     `</i></p><b>Mat khau cua ban la : ${password}</b>`,
+      // };
 
-      if (!sendEmail) {
-        console.log(`error send mail`);
-      }
-      console.log('Email sent: ' + sendEmail?.response);
+      // const sendEmail = await transporter.sendMail(mailOptions);
+
+      // if (!sendEmail) {
+      //   console.log(`error send mail`);
+      // }
+      // console.log('Email sent: ' + sendEmail?.response);
 
       password = await bcrypt.hash(password, 10);
 
@@ -78,6 +86,33 @@ export class UserService {
 
       this.logger.log(`created new employees by id ${created?._id}`);
 
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async newClient(createClientDto: CreateClientDto) {
+    try {
+      const emailsake = await this.findByEmail(createClientDto.email);
+      if (emailsake)
+        throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+      let password: string = Math.floor(
+        (1 + Math.random()) * 10000001,
+      ).toString();
+      await SendEmail(
+        createClientDto.email,
+        createClientDto.name,
+        `Mat khau cua ban la : ${password}`,
+      );
+      password = await bcrypt.hash(password, 10);
+      const created = await this.model.create({
+        ...createClientDto,
+        password,
+        role: UserRoleEnum.CLIENT,
+      });
+      this.logger.log(`created new client by id ${created?._id}`);
       return created;
     } catch (error) {
       this.logger.error(error?.message, error.stack);

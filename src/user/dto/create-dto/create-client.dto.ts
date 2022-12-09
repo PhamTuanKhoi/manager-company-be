@@ -7,15 +7,11 @@ export class CreateClientDto {
 
   @IsNotEmpty()
   @IsString()
-  representative: string;
-
-  @IsNotEmpty()
-  @IsString()
   email: string;
 
   @IsNotEmpty()
   @IsString()
-  phone: number;
+  mobile: number;
 
   @IsNotEmpty()
   @IsString()

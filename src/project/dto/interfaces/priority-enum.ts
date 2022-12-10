@@ -1,5 +1,5 @@
 export enum ProjectPriorityEnum {
-  SHORT = 'Admin',
-  MEDIUM = 'Client',
-  HIGH = 'Employee',
+  LOW = 0,
+  MEDIUM = 1,
+  HIGH = 2,
 }

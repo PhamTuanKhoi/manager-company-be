@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { EmployeeDepartmentEnum } from 'src/gobal/department-employess.enum';
+import { EmployeeDepartmentEnum } from 'src/user/interfaces/department-employess.enum';
 import { ProjectPriorityEnum } from './interfaces/priority-enum';
 import { ProjectStatusEnum } from './interfaces/status-enum';
 
@@ -33,7 +33,14 @@ export class CreateProjectDto {
   @IsString()
   media: string;
 
+  @IsNotEmpty()
+  @IsString()
+  creator: string;
+
   // employ
   @IsNotEmpty()
   team: [];
+
+  @IsNotEmpty()
+  client: [];
 }

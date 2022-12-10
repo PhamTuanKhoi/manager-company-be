@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { EmployeeDepartmentEnum } from 'src/gobal/department-employess.enum';
+import { EmployeeDepartmentEnum } from 'src/user/interfaces/department-employess.enum';
 
 export class CreateEmployeeDto {
   @IsString()

@@ -38,8 +38,8 @@ export class AuthService {
     };
   }
 
-  async getUserFromJwtPayload({ id }: JwtPayload) {
-    const user = await this.userService.findOne(id);
+  async getUserFromJwtPayload({ _id }: JwtPayload) {
+    const user = await this.userService.findOne(_id);
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     return user;
   }

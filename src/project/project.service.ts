@@ -24,6 +24,23 @@ export class ProjectService {
     private userService: UserService,
   ) {}
 
+  findAll() {
+    return this.model.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'team',
+          foreignField: '_id',
+          as: 'team',
+        },
+      },
+    ]);
+  }
+
+  findOne(id: number) {
+    return `This action returns a #${id} project`;
+  }
+
   async create(createProjectDto: CreateProjectDto) {
     try {
       let clientApi = createProjectDto.client.map((i) => {
@@ -57,14 +74,6 @@ export class ProjectService {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
     }
-  }
-
-  findAll() {
-    return `This action returns all project`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} project`;
   }
 
   update(id: number, updateProjectDto: UpdateProjectDto) {

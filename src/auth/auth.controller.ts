@@ -39,10 +39,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('me')
   async me(@Auth() auth: JwtPayload) {
-    console.log('next');
-
-    console.log(auth);
-
     return await this.authService.getUserFromJwtPayload(auth);
   }
 }

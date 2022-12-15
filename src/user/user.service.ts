@@ -39,7 +39,7 @@ export class UserService {
   }
 
   findByEmail(email: string) {
-    return this.model.findOne({ email }).lean();
+    return this.model.findOne({ email }).select('+password').lean();
   }
 
   findOne(id: string) {
@@ -121,13 +121,13 @@ export class UserService {
 
   async register(registerUserDto: RegisterUserDto) {
     try {
-      const namesake = await this.findByUsername(registerUserDto.username);
+      // const namesake = await this.findByUsername(registerUserDto.username);
 
-      if (namesake)
-        throw new HttpException(
-          'username already exists',
-          HttpStatus.BAD_REQUEST,
-        );
+      // if (namesake)
+      //   throw new HttpException(
+      //     'username already exists',
+      //     HttpStatus.BAD_REQUEST,
+      //   );
 
       const emailsake = await this.findByEmail(registerUserDto.email);
 

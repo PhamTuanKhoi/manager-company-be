@@ -121,14 +121,6 @@ export class UserService {
 
   async register(registerUserDto: RegisterUserDto) {
     try {
-      // const namesake = await this.findByUsername(registerUserDto.username);
-
-      // if (namesake)
-      //   throw new HttpException(
-      //     'username already exists',
-      //     HttpStatus.BAD_REQUEST,
-      //   );
-
       const emailsake = await this.findByEmail(registerUserDto.email);
 
       if (emailsake)

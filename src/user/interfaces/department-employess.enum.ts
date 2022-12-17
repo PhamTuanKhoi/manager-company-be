@@ -1,6 +1,6 @@
 export enum EmployeeDepartmentEnum {
-  MARKETING = 'Marketing',
-  RECRUIT = 'Recruit',
-  BUSSINESS = 'Bussiness',
-  ACCOUNTANT = 'Accountant',
+  MARKETING = 'marketing',
+  RECRUIT = 'recruit',
+  BUSSINESS = 'bussiness',
+  ACCOUNTANT = 'accountant',
 }

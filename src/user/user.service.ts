@@ -31,7 +31,9 @@ export class UserService {
   }
 
   findAllClient() {
-    return this.model.find({ role: UserRoleEnum.CLIENT });
+    return this.model
+      .find({ role: UserRoleEnum.CLIENT })
+      .sort({ createdAt: -1 });
   }
 
   findByUsername(username: string) {

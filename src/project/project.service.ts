@@ -34,6 +34,14 @@ export class ProjectService {
           as: 'team',
         },
       },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'leader',
+          foreignField: '_id',
+          as: 'leader',
+        },
+      },
     ]);
   }
 

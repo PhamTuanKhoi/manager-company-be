@@ -35,7 +35,7 @@ export class Project {
   status: ProjectStatusEnum;
 
   @Prop()
-  content: [];
+  content: string;
 
   @Prop()
   media: string;

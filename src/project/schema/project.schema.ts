@@ -4,9 +4,9 @@ import { ClientProject } from 'src/client-project/entities/client-project.entity
 import { EmployeeDepartmentEnum } from 'src/user/interfaces/department-employess.enum';
 import { ProjectPriorityEnum } from '../dto/interfaces/priority-enum';
 import * as mongoose from 'mongoose';
-import { EmployProject } from 'src/employ-project/entities/employ-project.entity';
 import { WorkerProject } from 'src/worker-project/entities/worker-project.entity';
 import { ProjectStatusEnum } from '../dto/interfaces/status-enum';
+import { User } from 'src/user/schema/user.schema';
 
 export type ProjectDocument = HydratedDocument<Project>;
 @Schema({
@@ -45,15 +45,15 @@ export class Project {
 
   //client
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: ClientProject.name }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
   })
-  client: ClientProject[];
+  client: User[];
 
   // employ
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: EmployProject.name }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
   })
-  team: EmployProject[];
+  team: User[];
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

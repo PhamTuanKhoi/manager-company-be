@@ -30,6 +30,11 @@ export class UserController {
     return this.userService.findAllClient();
   }
 
+  @Get('worker')
+  findAllWorker() {
+    return this.userService.findAllWorker();
+  }
+
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);

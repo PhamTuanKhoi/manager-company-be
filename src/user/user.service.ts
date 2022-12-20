@@ -37,6 +37,12 @@ export class UserService {
       .sort({ createdAt: -1 });
   }
 
+  findAllWorker() {
+    return this.model
+      .find({ role: UserRoleEnum.WORKER })
+      .sort({ createdAt: -1 });
+  }
+
   findByUsername(username: string) {
     return this.model.findOne({ username }).select('+password').lean();
   }

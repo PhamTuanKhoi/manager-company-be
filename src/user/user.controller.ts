@@ -14,6 +14,7 @@ import { CreateEmployeeDto } from './dto/create-dto/create-employee.dto';
 import { UpdateEmployeesDto } from './dto/update-dto/update-employees.dto';
 import { CreateClientDto } from './dto/create-dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-dto/update-client.dto';
+import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
 
 @Controller('user')
 export class UserController {
@@ -42,6 +43,11 @@ export class UserController {
   @Post('client')
   newClient(@Body() createClientDto: CreateClientDto) {
     return this.userService.newClient(createClientDto);
+  }
+
+  @Post('worker')
+  newWorker(@Body() createWorkerDto: CreateWorkerDto) {
+    return this.userService.newWorker(createWorkerDto);
   }
 
   @Patch('employees/:id')

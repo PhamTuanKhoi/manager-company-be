@@ -57,6 +57,9 @@ export class User {
   //worker
   @Prop()
   gender: UserGenderEnum;
+
+  @Prop()
+  token: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

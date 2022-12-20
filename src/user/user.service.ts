@@ -19,6 +19,7 @@ import { UpdateEmployeesDto } from './dto/update-dto/update-employees.dto';
 import { CreateClientDto } from './dto/create-dto/create-client.dto';
 import { SendEmail } from 'src/gobal/email/sendMail';
 import { UpdateClientDto } from './dto/update-dto/update-client.dto';
+import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
 
 @Injectable()
 export class UserService {
@@ -114,6 +115,29 @@ export class UserService {
       });
 
       this.logger.log(`created new client by id ${created?._id}`);
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async newWorker(createWorkerDto: CreateWorkerDto) {
+    try {
+      await this.isModelExist(createWorkerDto.creator);
+
+      const emailsake = await this.findByEmail(createWorkerDto.email);
+
+      if (emailsake)
+        throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+
+      const created = await this.model.create({
+        ...createWorkerDto,
+        role: UserRoleEnum.WORKER,
+      });
+
+      this.logger.log(`created new worker by id#${created?._id}`);
+
       return created;
     } catch (error) {
       this.logger.error(error?.message, error.stack);

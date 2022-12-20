@@ -1,18 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PersonalInfor } from 'src/gobal/personal-infor';
 
-export class CreateClientDto {
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  email: string;
-
-  @IsNotEmpty()
-  @IsString()
-  mobile: number;
-
+export class CreateClientDto extends PersonalInfor {
   @IsNotEmpty()
   @IsString()
   company: string;
@@ -20,10 +9,6 @@ export class CreateClientDto {
   @IsNotEmpty()
   @IsString()
   field: string;
-
-  @IsOptional()
-  @IsString()
-  image: string;
 
   @IsOptional()
   @IsString()

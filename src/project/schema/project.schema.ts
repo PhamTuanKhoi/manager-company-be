@@ -40,8 +40,9 @@ export class Project {
   @Prop()
   media: string;
 
-  @Prop()
-  creator: string;
+  // creator
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  creator: User;
 
   //client
   @Prop({
@@ -54,6 +55,10 @@ export class Project {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
   })
   team: User[];
+
+  // leader
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  leader: User;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

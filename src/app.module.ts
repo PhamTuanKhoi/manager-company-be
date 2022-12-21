@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProjectModule } from './project/project.module';
 import { WorkerProjectModule } from './worker-project/worker-project.module';
 import { ClientProjectModule } from './client-project/client-project.module';
+import { PayslipModule } from './payslip/payslip.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ClientProjectModule } from './client-project/client-project.module';
     ProjectModule,
     WorkerProjectModule,
     ClientProjectModule,
+    PayslipModule,
   ],
   controllers: [AppController],
   providers: [AppService],

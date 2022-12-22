@@ -7,6 +7,7 @@ import * as mongoose from 'mongoose';
 import { WorkerProject } from 'src/worker-project/entities/worker-project.entity';
 import { ProjectStatusEnum } from '../dto/interfaces/status-enum';
 import { User } from 'src/user/schema/user.schema';
+import { Payslip } from 'src/payslip/schema/payslip.schema';
 
 export type ProjectDocument = HydratedDocument<Project>;
 @Schema({
@@ -59,6 +60,10 @@ export class Project {
   // leader
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   leader: User;
+
+  // payslip
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Payslip.name })
+  payslip: Payslip;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

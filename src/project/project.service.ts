@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { PayslipService } from 'src/payslip/payslip.service';
 import { UserService } from 'src/user/user.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -22,6 +23,8 @@ export class ProjectService {
     @InjectModel(Project.name) private model: Model<ProjectDocument>,
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
+    @Inject(forwardRef(() => PayslipService))
+    private payslipService: PayslipService,
   ) {}
 
   findAll() {
@@ -92,8 +95,26 @@ export class ProjectService {
     }
   }
 
-  update(id: number, updateProjectDto: UpdateProjectDto) {
-    return `This action updates a #${id} project`;
+  async update(id: string, updateProjectDto: UpdateProjectDto) {
+    try {
+      // exit model payslip
+      if (updateProjectDto.payslip) {
+        await this.payslipService.isModelExist(updateProjectDto.payslip);
+      }
+
+      const updatedPayslip = await this.model.findByIdAndUpdate(
+        id,
+        updateProjectDto,
+        { new: true },
+      );
+
+      this.logger.log(`updated a payslip by id #${updatedPayslip?._id}`);
+
+      return updatedPayslip;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
   remove(id: number) {

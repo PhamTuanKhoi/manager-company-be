@@ -37,6 +37,17 @@ export class PayslipService {
     }
   }
 
+  async isModelExist(id, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const errorMessage = msg || `id-> ${PayslipService.name} not found`;
+    const isExist = await this.findOne(id);
+    if (!isExist) throw new Error(errorMessage);
+  }
+
+  findOne(id: string) {
+    return this.model.findById(id);
+  }
+
   findAll() {
     return this.model.find();
   }

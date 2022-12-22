@@ -4,7 +4,6 @@ import { ClientProject } from 'src/client-project/entities/client-project.entity
 import { EmployeeDepartmentEnum } from 'src/user/interfaces/department-employess.enum';
 import { ProjectPriorityEnum } from '../dto/interfaces/priority-enum';
 import * as mongoose from 'mongoose';
-import { WorkerProject } from 'src/worker-project/entities/worker-project.entity';
 import { ProjectStatusEnum } from '../dto/interfaces/status-enum';
 import { User } from 'src/user/schema/user.schema';
 import { Payslip } from 'src/payslip/schema/payslip.schema';

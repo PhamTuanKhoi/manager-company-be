@@ -46,6 +46,9 @@ export class ProjectService {
         },
       },
       {
+        $unwind: '$creator',
+      },
+      {
         $lookup: {
           from: 'users',
           localField: 'leader',
@@ -53,11 +56,33 @@ export class ProjectService {
           as: 'leader',
         },
       },
+      {
+        $unwind: '$leader',
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'client',
+          foreignField: '_id',
+          as: 'client',
+        },
+      },
     ]);
   }
 
   findByIdUser(id: string) {
     return `This action returns a #${id} project`;
+  }
+
+  findOne(id: string) {
+    return this.model.findById(id);
+  }
+
+  async isModelExist(id, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const errorMessage = msg || `id-> ${Project.name} not found`;
+    const isExist = await this.findOne(id);
+    if (!isExist) throw new Error(errorMessage);
   }
 
   async create(createProjectDto: CreateProjectDto) {

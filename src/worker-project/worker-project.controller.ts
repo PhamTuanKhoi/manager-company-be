@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { WorkerProjectService } from './worker-project.service';
 import { CreateWorkerProjectDto } from './dto/create-worker-project.dto';
 import { UpdateWorkerProjectDto } from './dto/update-worker-project.dto';
@@ -19,11 +27,19 @@ export class WorkerProjectController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.workerProjectService.findOne(+id);
+    return this.workerProjectService.findOne(id);
+  }
+
+  @Get('project/:id')
+  findByProject(@Param('id') id: string) {
+    return this.workerProjectService.findByProject(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWorkerProjectDto: UpdateWorkerProjectDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateWorkerProjectDto: UpdateWorkerProjectDto,
+  ) {
     return this.workerProjectService.update(+id, updateWorkerProjectDto);
   }
 

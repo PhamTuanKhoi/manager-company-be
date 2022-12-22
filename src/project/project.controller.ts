@@ -21,8 +21,8 @@ export class ProjectController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectService.findOne(+id);
+  findByIdUser(@Param('id') id: string) {
+    return this.projectService.findByIdUser(id);
   }
 
   @Post()

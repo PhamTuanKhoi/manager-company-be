@@ -25,9 +25,9 @@ export class PayslipController {
     return this.payslipService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.payslipService.findOne(+id);
+  @Get('user/:id')
+  findByIdUser(@Param('id') id: string) {
+    return this.payslipService.findByIdUser(id);
   }
 
   @Patch(':id')

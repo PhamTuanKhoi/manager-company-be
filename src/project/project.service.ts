@@ -53,7 +53,7 @@ export class ProjectService {
     ]);
   }
 
-  findOne(id: number) {
+  findByIdUser(id: string) {
     return `This action returns a #${id} project`;
   }
 

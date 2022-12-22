@@ -38,11 +38,11 @@ export class PayslipService {
   }
 
   findAll() {
-    return `This action returns all payslip`;
+    return this.model.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} payslip`;
+  findByIdUser(id: string) {
+    return this.model.find({ creator: id });
   }
 
   update(id: number, updatePayslipDto: UpdatePayslipDto) {

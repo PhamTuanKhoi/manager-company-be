@@ -64,7 +64,34 @@ export class WorkerProjectService {
   }
 
   async findByProject(id: string) {
-    const data = await this.model.find({ project: id });
+    const data = await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: id }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'worker',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      // {
+      //   $match: {
+      //     $expr: {
+      //       $eq: ['$project', { $toObjectId: '63a2d4a62fb2d5dba08ba027' }],
+      //     },
+      //   },
+      // },
+    ]);
+
     return data;
   }
 

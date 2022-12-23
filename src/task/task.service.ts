@@ -39,12 +39,21 @@ export class TaskService {
     }
   }
 
-  findAll() {
-    return `This action returns all task`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} task`;
+  findByProject(id) {
+    try {
+      return this.model.aggregate([
+        {
+          $match: {
+            $expr: {
+              $eq: ['$project', { $toObjectId: id }],
+            },
+          },
+        },
+      ]);
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
   update(id: number, updateTaskDto: UpdateTaskDto) {

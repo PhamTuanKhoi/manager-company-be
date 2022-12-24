@@ -11,6 +11,7 @@ import { ProjectService } from 'src/project/project.service';
 import { UserService } from 'src/user/user.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { TaskStatusEnum } from './interface/task-status.enum';
 import { Task, TaskDocument } from './schema/task.schema';
 
 @Injectable()
@@ -28,7 +29,10 @@ export class TaskService {
     try {
       await this.projectService.isModelExist(createTaskDto.project);
 
-      const createdTask = await this.model.create(createTaskDto);
+      const createdTask = await this.model.create({
+        ...createTaskDto,
+        status: TaskStatusEnum.START,
+      });
 
       this.logger.log(`created a new task by id #${createdTask?._id}`);
 

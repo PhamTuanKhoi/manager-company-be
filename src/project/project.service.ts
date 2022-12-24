@@ -157,9 +157,6 @@ export class ProjectService {
             as: 'payslip',
           },
         },
-        {
-          $unwind: '$payslip',
-        },
       ]);
     } catch (error) {
       this.logger.error(error?.message, error.stack);

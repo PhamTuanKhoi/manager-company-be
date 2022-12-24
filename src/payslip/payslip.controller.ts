@@ -20,9 +20,9 @@ export class PayslipController {
     return this.payslipService.create(createPayslipDto);
   }
 
-  @Get()
-  findAll() {
-    return this.payslipService.findAll();
+  @Get('project/:id')
+  findByProj(@Param('id') id: string) {
+    return this.payslipService.findByProj(id);
   }
 
   @Get('user/:id')

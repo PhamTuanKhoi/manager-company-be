@@ -83,13 +83,6 @@ export class WorkerProjectService {
       {
         $unwind: '$user',
       },
-      // {
-      //   $match: {
-      //     $expr: {
-      //       $eq: ['$project', { $toObjectId: '63a2d4a62fb2d5dba08ba027' }],
-      //     },
-      //   },
-      // },
     ]);
 
     return data;

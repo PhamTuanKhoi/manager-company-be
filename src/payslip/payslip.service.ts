@@ -48,7 +48,7 @@ export class PayslipService {
     return this.model.findById(id);
   }
 
-  findAll() {
+  findByProj(id: string) {
     return this.model.find();
   }
 

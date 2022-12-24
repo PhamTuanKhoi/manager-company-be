@@ -20,9 +20,14 @@ export class ProjectController {
     return this.projectService.findAll();
   }
 
+  @Get('client/:id')
+  findByIdClient(@Param('id') id: string) {
+    return this.projectService.findByIdClient(id);
+  }
+
   @Get(':id')
-  findByIdUser(@Param('id') id: string) {
-    return this.projectService.findByIdUser(id);
+  findById(@Param('id') id: string) {
+    return this.projectService.findById(id);
   }
 
   @Post()

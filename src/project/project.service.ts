@@ -67,11 +67,104 @@ export class ProjectService {
           as: 'client',
         },
       },
+      {
+        $lookup: {
+          from: 'payslips',
+          localField: 'payslip',
+          foreignField: '_id',
+          as: 'payslip',
+        },
+      },
     ]);
   }
 
-  findByIdUser(id: string) {
-    return `This action returns a #${id} project`;
+  findByIdClient(id: string) {
+    return this.model.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'client',
+          foreignField: '_id',
+          as: 'client',
+        },
+      },
+      {
+        $unwind: '$client',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$client._id', { $toObjectId: id }],
+          },
+        },
+      },
+    ]);
+  }
+
+  findById(id: string) {
+    try {
+      return this.model.aggregate([
+        {
+          $match: {
+            $expr: {
+              $eq: ['$_id', { $toObjectId: id }],
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'team',
+            foreignField: '_id',
+            as: 'team',
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'creator',
+            foreignField: '_id',
+            as: 'creator',
+          },
+        },
+        {
+          $unwind: '$creator',
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'leader',
+            foreignField: '_id',
+            as: 'leader',
+          },
+        },
+        {
+          $unwind: '$leader',
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'client',
+            foreignField: '_id',
+            as: 'client',
+          },
+        },
+        {
+          $lookup: {
+            from: 'payslips',
+            localField: 'payslip',
+            foreignField: '_id',
+            as: 'payslip',
+          },
+        },
+        {
+          $unwind: '$payslip',
+        },
+      ]);
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
   findOne(id: string) {
@@ -94,9 +187,9 @@ export class ProjectService {
       let teamApi = createProjectDto.team.map((i) => {
         return this.userService.findOne(i);
       });
-      //find client
+      //check client
       const client = await Promise.all(clientApi);
-      //find team
+      //check team
       const team = await Promise.all(teamApi);
 
       await this.userService.isModelExist(createProjectDto.creator);

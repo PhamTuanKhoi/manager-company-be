@@ -10,6 +10,7 @@ import { WorkerProjectModule } from './worker-project/worker-project.module';
 import { ClientProjectModule } from './client-project/client-project.module';
 import { PayslipModule } from './payslip/payslip.module';
 import { TaskModule } from './task/task.module';
+import { AssignTaskModule } from './assign-task/assign-task.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TaskModule } from './task/task.module';
     ClientProjectModule,
     PayslipModule,
     TaskModule,
+    AssignTaskModule,
   ],
   controllers: [AppController],
   providers: [AppService],

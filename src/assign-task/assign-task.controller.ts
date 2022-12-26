@@ -15,6 +15,16 @@ import { UpdateAssignTaskDto } from './dto/update-assign-task.dto';
 export class AssignTaskController {
   constructor(private readonly assignTaskService: AssignTaskService) {}
 
+  @Get()
+  list() {
+    return this.assignTaskService.list();
+  }
+
+  @Get('task/:id')
+  findByTask(@Param('id') id: string) {
+    return this.assignTaskService.findByTask(id);
+  }
+
   @Post()
   create(@Body() createAssignTaskDto: CreateAssignTaskDto) {
     return this.assignTaskService.create(createAssignTaskDto);

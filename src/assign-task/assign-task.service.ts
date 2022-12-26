@@ -28,6 +28,22 @@ export class AssignTaskService {
     private taskService: TaskService,
   ) {}
 
+  async list() {
+    return await this.model.find();
+  }
+
+  async findByTask(id: string) {
+    return this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$worker', { $toObjectId: id }],
+          },
+        },
+      },
+    ]);
+  }
+
   async create(createAssignTaskDto: CreateAssignTaskDto) {
     try {
       //check user

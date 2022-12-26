@@ -74,6 +74,27 @@ export class WorkerProjectService {
       },
       {
         $lookup: {
+          from: 'projects',
+          localField: 'project',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'tasks',
+                localField: '_id',
+                foreignField: 'project',
+                as: 'tasks',
+              },
+            },
+          ],
+          as: 'projectEX',
+        },
+      },
+      {
+        $unwind: '$projectEX',
+      },
+      {
+        $lookup: {
           from: 'users',
           localField: 'worker',
           foreignField: '_id',

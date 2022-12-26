@@ -60,8 +60,36 @@ export class TaskService {
     }
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    return `This action updates a #${id} task`;
+  findOne(id: string) {
+    return this.model.findById(id);
+  }
+
+  async isExitModel(id: string, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const errorMessage = msg || `id-> ${TaskService.name} not found`;
+    const isExist = await this.findOne(id);
+    if (!isExist) throw new Error(errorMessage);
+  }
+
+  async updateFieldUser(id: string, updateTaskDto: UpdateTaskDto) {
+    console.log(id, updateTaskDto);
+
+    // try {
+    //   await this.isExitModel(id);
+
+    //   const updated = await this.model.findByIdAndUpdate(
+    //     id,
+    //     { ...updateTaskDto, user: updateTaskDto.user },
+    //     { new: true },
+    //   );
+
+    //   this.logger.log(`updated a task by id #${updated?._id}`);
+
+    //   return updated;
+    // } catch (error) {
+    //   this.logger.error(error?.message, error.stack);
+    //   throw new BadRequestException(error?.message);
+    // }
   }
 
   remove(id: number) {

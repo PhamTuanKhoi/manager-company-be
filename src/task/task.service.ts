@@ -74,6 +74,8 @@ export class TaskService {
   async updateFieldUser(id: string, updateTaskDto: UpdateTaskDto) {
     console.log(id, updateTaskDto);
 
+    return true;
+
     // try {
     //   await this.isExitModel(id);
 

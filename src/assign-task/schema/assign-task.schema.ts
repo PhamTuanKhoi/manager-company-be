@@ -13,6 +13,9 @@ export class AssignTask {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   worker: User;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  creator: User;
+
   @Prop({ default: Date.now() })
   dateAssign: number;
 }

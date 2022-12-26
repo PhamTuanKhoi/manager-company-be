@@ -8,4 +8,8 @@ export class CreateAssignTaskDto {
   @IsNotEmpty()
   @IsString()
   worker: string;
+
+  @IsNotEmpty()
+  @IsString()
+  creator: string;
 }

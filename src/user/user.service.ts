@@ -176,6 +176,34 @@ export class UserService {
     }
   }
 
+  async registerUser(registerUserDto: CreateWorkerDto) {
+    try {
+      const emailsake = await this.findByEmail(registerUserDto.email);
+
+      if (emailsake)
+        throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+
+      if (registerUserDto.password !== registerUserDto.confirmPasword)
+        throw new HttpException('Mật khẩu không đúng', HttpStatus.BAD_REQUEST);
+
+      registerUserDto.password = await bcrypt.hash(
+        registerUserDto.password,
+        10,
+      );
+
+      const created = await this.model.create({
+        ...registerUserDto,
+        role: UserRoleEnum.WORKER,
+      });
+
+      this.logger.log(`Register user success`, created?._id);
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
   async updateEmployees(id: string, updateEmployeesDto: UpdateEmployeesDto) {
     try {
       if (updateEmployeesDto.email !== updateEmployeesDto.oldEmail) {

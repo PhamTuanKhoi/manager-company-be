@@ -11,7 +11,7 @@ export class PersonalInfor {
 
   @IsNotEmpty()
   @IsString()
-  mobile: number;
+  mobile: string;
 
   @IsOptional()
   @IsString()

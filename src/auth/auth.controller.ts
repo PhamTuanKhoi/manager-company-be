@@ -9,6 +9,7 @@ import {
   Get,
   Param,
 } from '@nestjs/common';
+import { CreateWorkerDto } from 'src/user/dto/create-dto/create-worker.dto';
 import { RegisterUserDto } from 'src/user/dto/create-dto/register-user.dto';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
@@ -28,6 +29,11 @@ export class AuthController {
   @Post('register')
   register(@Body() registerUserDto: RegisterUserDto) {
     return this.userService.register(registerUserDto);
+  }
+
+  @Post('register-user')
+  registerUser(@Body() registerUserDto: CreateWorkerDto) {
+    return this.userService.registerUser(registerUserDto);
   }
 
   @UseGuards(LocalAuthGuard)

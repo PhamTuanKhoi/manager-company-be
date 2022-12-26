@@ -32,7 +32,7 @@ export class User {
   department: EmployeeDepartmentEnum;
 
   @Prop()
-  mobile: number;
+  mobile: string;
 
   @Prop()
   date: number;

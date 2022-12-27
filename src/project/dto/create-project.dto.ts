@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { EmployeeDepartmentEnum } from 'src/user/interfaces/department-employess.enum';
-import { ProjectPriorityEnum } from './interfaces/priority-enum';
-import { ProjectStatusEnum } from './interfaces/status-enum';
+import { ProjectPriorityEnum } from '../interfaces/priority-enum';
+import { ProjectStatusEnum } from '../interfaces/status-enum';
 
 export class CreateProjectDto {
   @IsString()

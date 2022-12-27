@@ -1,8 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { CreateProjectDto } from './create-project.dto';
-import { ProjectPriorityEnum } from './interfaces/priority-enum';
-import { ProjectStatusEnum } from './interfaces/status-enum';
+import { ProjectPriorityEnum } from '../interfaces/priority-enum';
+import { ProjectStatusEnum } from '../interfaces/status-enum';
 
 export class UpdateProjectDto extends PartialType(CreateProjectDto) {
   @IsString()

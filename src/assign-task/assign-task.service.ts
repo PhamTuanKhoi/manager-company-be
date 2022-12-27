@@ -37,7 +37,7 @@ export class AssignTaskService {
       {
         $match: {
           $expr: {
-            $eq: ['$worker', { $toObjectId: id }],
+            $eq: ['$task', { $toObjectId: id }],
           },
         },
       },

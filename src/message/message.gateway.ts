@@ -1,14 +1,25 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { Server } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: { origin: '*' } })
 export class MessageGateway {
+  @WebSocketServer()
+  server: Server;
+
   constructor(private readonly messageService: MessageService) {}
 
   @SubscribeMessage('createMessage')
   create(@MessageBody() createMessageDto: CreateMessageDto) {
+    this.server.emit(`chat-persional`, createMessageDto.message);
+
     return this.messageService.create(createMessageDto);
   }
 

@@ -11,7 +11,6 @@ import { UserService } from 'src/user/user.service';
 import { CreatePayslipDto } from './dto/create-payslip.dto';
 import { UpdatePayslipDto } from './dto/update-payslip.dto';
 import { Payslip, PayslipDocument } from './schema/payslip.schema';
-
 @Injectable()
 export class PayslipService {
   private readonly logger = new Logger(PayslipService.name);
@@ -48,7 +47,48 @@ export class PayslipService {
     return this.model.findById(id);
   }
 
-  findByProj(id: string) {
+  async findByEmployees(id: string) {
+    console.log(id);
+
+    try {
+      const data = await this.model.aggregate([
+        {
+          $lookup: {
+            from: 'projects',
+            localField: '_id',
+            foreignField: 'payslip',
+            pipeline: [
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'team',
+                  foreignField: '_id',
+                  as: 'employees',
+                },
+              },
+              {
+                $unwind: '$employees',
+              },
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$employees._id', { $toObjectId: id }],
+                  },
+                },
+              },
+            ],
+            as: 'projects',
+          },
+        },
+      ]);
+      return data?.filter((item) => item?.projects?.length > 0);
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  findByProject(id: string) {
     return this.model.find();
   }
 

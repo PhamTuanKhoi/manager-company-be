@@ -40,6 +40,9 @@ export class Project {
   @Prop()
   media: string;
 
+  @Prop()
+  address: string;
+
   // creator
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   creator: User;

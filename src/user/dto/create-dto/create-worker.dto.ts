@@ -17,4 +17,8 @@ export class CreateWorkerDto extends PersonalInfor {
   @IsOptional()
   @IsString()
   field: string;
+
+  @IsOptional()
+  @IsString()
+  fieldContent: string;
 }

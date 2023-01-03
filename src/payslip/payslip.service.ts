@@ -21,6 +21,10 @@ export class PayslipService {
     private userService: UserService,
   ) {}
 
+  list() {
+    return this.model.find();
+  }
+
   async create(createPayslipDto: CreatePayslipDto) {
     try {
       await this.userService.isModelExist(createPayslipDto.creator);
@@ -48,8 +52,6 @@ export class PayslipService {
   }
 
   async findByEmployees(id: string) {
-    console.log(id);
-
     try {
       const data = await this.model.aggregate([
         {

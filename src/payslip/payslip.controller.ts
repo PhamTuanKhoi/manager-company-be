@@ -15,9 +15,9 @@ import { UpdatePayslipDto } from './dto/update-payslip.dto';
 export class PayslipController {
   constructor(private readonly payslipService: PayslipService) {}
 
-  @Post()
-  create(@Body() createPayslipDto: CreatePayslipDto) {
-    return this.payslipService.create(createPayslipDto);
+  @Get()
+  list() {
+    return this.payslipService.list();
   }
 
   @Get('employees/:id')
@@ -33,6 +33,11 @@ export class PayslipController {
   @Get('user/:id')
   findByIdUser(@Param('id') id: string) {
     return this.payslipService.findByIdUser(id);
+  }
+
+  @Post()
+  create(@Body() createPayslipDto: CreatePayslipDto) {
+    return this.payslipService.create(createPayslipDto);
   }
 
   @Patch(':id')

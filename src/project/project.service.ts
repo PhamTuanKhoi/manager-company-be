@@ -101,6 +101,10 @@ export class ProjectService {
     ]);
   }
 
+  findByIdAdmin() {
+    return this.model.find();
+  }
+
   findById(id: string) {
     try {
       return this.model.aggregate([

@@ -11,6 +11,7 @@ import { ClientProjectModule } from './client-project/client-project.module';
 import { PayslipModule } from './payslip/payslip.module';
 import { TaskModule } from './task/task.module';
 import { AssignTaskModule } from './assign-task/assign-task.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AssignTaskModule } from './assign-task/assign-task.module';
     PayslipModule,
     TaskModule,
     AssignTaskModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -13,4 +13,8 @@ export class CreateClientDto extends PersonalInfor {
   @IsOptional()
   @IsString()
   creator: string;
+
+  @IsOptional()
+  @IsString()
+  tax: string;
 }

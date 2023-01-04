@@ -54,6 +54,9 @@ export class User {
   @Prop()
   image: string;
 
+  @Prop()
+  tax: string;
+
   //worker
   @Prop()
   gender: UserGenderEnum;

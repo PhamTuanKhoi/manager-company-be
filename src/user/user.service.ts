@@ -70,7 +70,7 @@ export class UserService {
         (1 + Math.random()) * 10000001,
       ).toString();
 
-      await SendEmail(
+      SendEmail(
         createEmployeeDto.email,
         createEmployeeDto.name,
         `Mat khau cua ban la : ${password}`,
@@ -106,7 +106,7 @@ export class UserService {
         (1 + Math.random()) * 10000001,
       ).toString();
 
-      await SendEmail(
+      SendEmail(
         createClientDto.email,
         createClientDto.name,
         `Mat khau cua ban la : ${password}`,

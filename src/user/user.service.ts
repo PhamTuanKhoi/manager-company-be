@@ -265,9 +265,15 @@ export class UserService {
     if (!isExist) throw new Error(errorMessage);
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     try {
-      return this.model.findByIdAndDelete(id);
+      await this.isModelExist(id);
+
+      const removed = await this.model.findByIdAndDelete(id);
+
+      this.logger.log(`Remove a user by id #${removed?._id}`);
+
+      return removed;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

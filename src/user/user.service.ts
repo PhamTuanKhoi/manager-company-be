@@ -137,6 +137,19 @@ export class UserService {
       if (emailsake)
         throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
 
+      console.log(createWorkerDto.password, createWorkerDto.confirmPasword);
+
+      if (createWorkerDto.password !== createWorkerDto.confirmPasword)
+        throw new HttpException(
+          'password already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+
+      createWorkerDto.password = await bcrypt.hash(
+        createWorkerDto.password,
+        10,
+      );
+
       const created = await this.model.create({
         ...createWorkerDto,
         role: UserRoleEnum.WORKER,

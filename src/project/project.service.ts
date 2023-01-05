@@ -286,7 +286,18 @@ export class ProjectService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} project`;
+  async remove(id: string) {
+    try {
+      await this.isModelExist(id);
+
+      const removed = await this.model.findByIdAndDelete(id);
+
+      this.logger.log(`Delete project by id #${removed?._id}`);
+
+      return removed;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 }

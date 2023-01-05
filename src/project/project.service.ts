@@ -85,16 +85,16 @@ export class ProjectService {
           from: 'users',
           localField: 'client',
           foreignField: '_id',
-          as: 'client',
+          as: 'clientEX',
         },
       },
       {
-        $unwind: '$client',
+        $unwind: '$clientEX',
       },
       {
         $match: {
           $expr: {
-            $eq: ['$client._id', { $toObjectId: id }],
+            $eq: ['$clientEX._id', { $toObjectId: id }],
           },
         },
       },

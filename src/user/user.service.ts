@@ -20,6 +20,7 @@ import { CreateClientDto } from './dto/create-dto/create-client.dto';
 import { SendEmail } from 'src/gobal/email/sendMail';
 import { UpdateClientDto } from './dto/update-dto/update-client.dto';
 import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
+import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 
 @Injectable()
 export class UserService {
@@ -136,8 +137,6 @@ export class UserService {
 
       if (emailsake)
         throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
-
-      console.log(createWorkerDto.password, createWorkerDto.confirmPasword);
 
       if (createWorkerDto.password !== createWorkerDto.confirmPasword)
         throw new HttpException(
@@ -263,6 +262,33 @@ export class UserService {
       });
 
       this.logger.log(`updated client success by id #${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async updateWorker(id: string, updateWorkerDto: UpdateWorkerDto) {
+    try {
+      if (updateWorkerDto.email !== updateWorkerDto.oldEmail) {
+        const emailsake = await this.findByEmail(updateWorkerDto.email);
+
+        if (emailsake)
+          throw new HttpException(
+            'email already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+      }
+
+      await this.isModelExist(id);
+
+      const updated = await this.model.findByIdAndUpdate(id, updateWorkerDto, {
+        new: true,
+      });
+
+      this.logger.log(`updated worker success by id #${updated?._id}`);
 
       return updated;
     } catch (error) {

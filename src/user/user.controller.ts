@@ -15,6 +15,7 @@ import { UpdateEmployeesDto } from './dto/update-dto/update-employees.dto';
 import { CreateClientDto } from './dto/create-dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-dto/update-client.dto';
 import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
+import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 
 @Controller('user')
 export class UserController {
@@ -74,6 +75,11 @@ export class UserController {
     @Body() updateClientDto: UpdateClientDto,
   ) {
     return this.userService.updateClient(id, updateClientDto);
+  }
+
+  @Patch('worker/:id')
+  updateWorker(@Param('id') id: string, @Body() updateWorker: UpdateWorkerDto) {
+    return this.userService.updateWorker(id, updateWorker);
   }
 
   @Delete(':id')

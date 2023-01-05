@@ -120,7 +120,7 @@ export class ProjectService {
             from: 'users',
             localField: 'team',
             foreignField: '_id',
-            as: 'team',
+            as: 'teamEX',
           },
         },
         {
@@ -139,18 +139,18 @@ export class ProjectService {
             from: 'users',
             localField: 'leader',
             foreignField: '_id',
-            as: 'leader',
+            as: 'leaderEX',
           },
         },
         {
-          $unwind: '$leader',
+          $unwind: '$leaderEX',
         },
         {
           $lookup: {
             from: 'users',
             localField: 'client',
             foreignField: '_id',
-            as: 'client',
+            as: 'clientEX',
           },
         },
         {

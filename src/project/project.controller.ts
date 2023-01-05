@@ -40,6 +40,14 @@ export class ProjectController {
     return this.projectService.create(createProjectDto);
   }
 
+  @Patch('payslip/:id')
+  updatePayslip(
+    @Param('id') id: string,
+    @Body() updateProjectDto: UpdateProjectDto,
+  ) {
+    return this.projectService.updatePayslip(id, updateProjectDto);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
     return this.projectService.update(id, updateProjectDto);

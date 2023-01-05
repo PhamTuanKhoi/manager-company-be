@@ -37,6 +37,10 @@ export class CreateProjectDto {
   @IsString()
   creator: string;
 
+  @IsOptional()
+  @IsString()
+  leader: string;
+
   // employ
   @IsNotEmpty()
   team: [];

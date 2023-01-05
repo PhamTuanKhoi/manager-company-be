@@ -38,6 +38,10 @@ export class UpdateProjectDto extends PartialType(CreateProjectDto) {
   @IsString()
   creator: string;
 
+  @IsOptional()
+  @IsString()
+  leader: string;
+
   // employ
   @IsOptional()
   team: [];

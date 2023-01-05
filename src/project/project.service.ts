@@ -192,8 +192,11 @@ export class ProjectService {
       const client = await Promise.all(clientApi);
       //check team
       const team = await Promise.all(teamApi);
-
+      //check creator
       await this.userService.isModelExist(createProjectDto.creator);
+      //check leader
+      if (createProjectDto.leader)
+        await this.userService.isModelExist(createProjectDto.leader);
 
       if (createProjectDto.client.length !== client.length) {
         throw new HttpException(`client not found`, HttpStatus.BAD_REQUEST);
@@ -214,7 +217,7 @@ export class ProjectService {
     }
   }
 
-  async update(id: string, updateProjectDto: UpdateProjectDto) {
+  async updatePayslip(id: string, updateProjectDto: UpdateProjectDto) {
     try {
       // exit model payslip
       if (updateProjectDto.payslip) {
@@ -230,6 +233,53 @@ export class ProjectService {
       this.logger.log(`updated a payslip by id #${updatedPayslip?._id}`);
 
       return updatedPayslip;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async update(id: string, updateProjectDto: UpdateProjectDto) {
+    try {
+      //check project
+      await this.isModelExist(id);
+
+      let clientApi = updateProjectDto.client.map((i) => {
+        return this.userService.findOne(i);
+      });
+
+      let teamApi = updateProjectDto.team.map((i) => {
+        return this.userService.findOne(i);
+      });
+
+      //check client
+      const client = await Promise.all(clientApi);
+
+      //check team
+      const team = await Promise.all(teamApi);
+
+      //check creator
+      await this.userService.isModelExist(updateProjectDto.creator);
+
+      //check leader
+      if (updateProjectDto.leader)
+        await this.userService.isModelExist(updateProjectDto.leader);
+
+      if (updateProjectDto.client.length !== client.length) {
+        throw new HttpException(`client not found`, HttpStatus.BAD_REQUEST);
+      }
+
+      if (updateProjectDto.team.length !== team.length) {
+        throw new HttpException(`team not found`, HttpStatus.BAD_REQUEST);
+      }
+
+      const updated = await this.model.findByIdAndUpdate(id, updateProjectDto, {
+        new: true,
+      });
+
+      this.logger.log(`updated a project by id #${updated?._id}`);
+
+      return updated;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

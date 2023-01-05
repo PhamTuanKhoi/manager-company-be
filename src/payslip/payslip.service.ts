@@ -90,6 +90,35 @@ export class PayslipService {
     }
   }
 
+  async findByClient(id: string) {
+    try {
+      const data = await this.model.aggregate([
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'creator',
+            foreignField: '_id',
+            as: 'clientEX',
+          },
+        },
+        {
+          $unwind: '$clientEX',
+        },
+        {
+          $match: {
+            $expr: {
+              $eq: ['$clientEX._id', { $toObjectId: id }],
+            },
+          },
+        },
+      ]);
+      return data;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
   findByProject(id: string) {
     return this.model.find();
   }

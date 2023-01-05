@@ -25,6 +25,11 @@ export class PayslipController {
     return this.payslipService.findByEmployees(id);
   }
 
+  @Get('client/:id')
+  findByClient(@Param('id') id: string) {
+    return this.payslipService.findByClient(id);
+  }
+
   @Get('project/:id')
   findByProject(@Param('id') id: string) {
     return this.payslipService.findByProject(id);

@@ -246,7 +246,7 @@ export class UserService {
     return data.filter((item) => item.workerprojectEX.length === 0);
   }
 
-  async findAllWorkerByClient(id) {
+  async findAllWorkerByClient(id: string) {
     const data = await this.model.aggregate([
       {
         $match: {
@@ -300,6 +300,104 @@ export class UserService {
     ]);
 
     return data.filter((item) => item.workerprojectEX.length > 0);
+  }
+
+  async findAllWorkerByEmployees(id: string) {
+    const employees = await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $lookup: {
+          from: 'workerprojects',
+          localField: '_id',
+          foreignField: 'worker',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'projectEX.team',
+                foreignField: '_id',
+                as: 'employeesEX',
+              },
+            },
+            {
+              $unwind: '$employeesEX',
+            },
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$employeesEX._id', { $toObjectId: id }],
+                },
+              },
+            },
+          ],
+          as: 'workerprojectEX',
+        },
+      },
+      {
+        $unwind: '$workerprojectEX',
+      },
+    ]);
+
+    const leader = await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $lookup: {
+          from: 'workerprojects',
+          localField: '_id',
+          foreignField: 'worker',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$projectEX.leader', { $toObjectId: id }],
+                },
+              },
+            },
+          ],
+          as: 'workerprojectEX',
+        },
+      },
+      {
+        $unwind: '$workerprojectEX',
+      },
+    ]);
+
+    if (employees && leader) {
+      return employees.concat(leader);
+    }
+
+    return employees || leader;
   }
 
   findOne(id: string) {

@@ -101,7 +101,65 @@ export class ProjectService {
     ]);
   }
 
-  async findByIdWorker(id) {
+  async findByIdEmployees(id: string) {
+    const employees = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'team',
+          foreignField: '_id',
+          as: 'employeesEX',
+        },
+      },
+      {
+        $unwind: '$employeesEX',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$employeesEX._id', { $toObjectId: id }],
+          },
+        },
+      },
+    ]);
+
+    const leader = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'leader',
+          foreignField: '_id',
+          as: 'leaderEX',
+        },
+      },
+      {
+        $unwind: '$leaderEX',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$leaderEX._id', { $toObjectId: id }],
+          },
+        },
+      },
+    ]);
+
+    if (employees && !leader) {
+      return employees;
+    }
+
+    if (!employees && leader) {
+      return leader;
+    }
+
+    if (employees && leader) {
+      return leader.concat(employees);
+    }
+
+    return [];
+  }
+
+  async findByIdWorker(id: string) {
     const data = await this.model.aggregate([
       {
         $lookup: {

@@ -36,6 +36,11 @@ export class UserController {
     return this.userService.findAllEloyeesByWorker(id);
   }
 
+  @Get('client-role-employees/:id')
+  findAllClientByEmployees(@Param('id') id: string) {
+    return this.userService.findAllClientByEmployees(id);
+  }
+
   @Get('client')
   findAllClient() {
     return this.userService.findAllClient();

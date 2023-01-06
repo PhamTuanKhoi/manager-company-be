@@ -53,7 +53,7 @@ export class PayslipService {
 
   async findByEmployees(id: string) {
     try {
-      const data = await this.model.aggregate([
+      const employees = await this.model.aggregate([
         {
           $lookup: {
             from: 'projects',
@@ -65,16 +65,16 @@ export class PayslipService {
                   from: 'users',
                   localField: 'team',
                   foreignField: '_id',
-                  as: 'employees',
+                  as: 'employeesEX',
                 },
               },
               {
-                $unwind: '$employees',
+                $unwind: '$employeesEX',
               },
               {
                 $match: {
                   $expr: {
-                    $eq: ['$employees._id', { $toObjectId: id }],
+                    $eq: ['$employeesEX._id', { $toObjectId: id }],
                   },
                 },
               },
@@ -82,8 +82,50 @@ export class PayslipService {
             as: 'projects',
           },
         },
+        {
+          $unwind: '$projects',
+        },
       ]);
-      return data?.filter((item) => item?.projects?.length > 0);
+
+      const leader = await this.model.aggregate([
+        {
+          $lookup: {
+            from: 'projects',
+            localField: '_id',
+            foreignField: 'payslip',
+            pipeline: [
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'leader',
+                  foreignField: '_id',
+                  as: 'leaderEX',
+                },
+              },
+              {
+                $unwind: '$leaderEX',
+              },
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$leaderEX._id', { $toObjectId: id }],
+                  },
+                },
+              },
+            ],
+            as: 'projects',
+          },
+        },
+        {
+          $unwind: '$projects',
+        },
+      ]);
+
+      if (employees && leader) {
+        return employees.concat(leader);
+      }
+
+      return employees || leader;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

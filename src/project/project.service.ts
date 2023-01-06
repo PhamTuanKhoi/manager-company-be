@@ -101,6 +101,31 @@ export class ProjectService {
     ]);
   }
 
+  async findByIdWorker(id) {
+    const data = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'workerprojects',
+          localField: '_id',
+          foreignField: 'project',
+          as: 'workerprojectEX',
+        },
+      },
+      {
+        $unwind: '$workerprojectEX',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$workerprojectEX.worker', { $toObjectId: id }],
+          },
+        },
+      },
+    ]);
+
+    return data;
+  }
+
   findByIdAdmin() {
     return this.model.find();
   }

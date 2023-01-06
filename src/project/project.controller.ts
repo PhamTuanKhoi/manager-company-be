@@ -25,6 +25,11 @@ export class ProjectController {
     return this.projectService.findByIdClient(id);
   }
 
+  @Get('worker/:id')
+  findByIdWorker(@Param('id') id: string) {
+    return this.projectService.findByIdWorker(id);
+  }
+
   @Get('admin')
   findByIdAdim() {
     return this.projectService.findByIdAdmin();

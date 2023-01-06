@@ -41,6 +41,11 @@ export class UserController {
     return this.userService.findAllWorker();
   }
 
+  @Get('worker-no-assign')
+  workerNoAssign() {
+    return this.userService.workerNoAssign();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);

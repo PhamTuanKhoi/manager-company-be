@@ -92,6 +92,31 @@ export class UserService {
     return this.model.findOne({ email }).select('+password').lean();
   }
 
+  async workerNoAssign() {
+    const data = await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: 'workerprojects',
+          localField: '_id',
+          foreignField: 'worker',
+          as: 'workerprojectEX',
+        },
+      },
+    ]);
+
+    return data.filter((item) => item.workerprojectEX.length === 0);
+  }
+
   findOne(id: string) {
     return this.model.findById(id).lean();
   }

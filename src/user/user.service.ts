@@ -117,6 +117,62 @@ export class UserService {
     return data.filter((item) => item.workerprojectEX.length === 0);
   }
 
+  async findAllWorkerByClient(id) {
+    const data = await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: 'workerprojects',
+          localField: '_id',
+          foreignField: 'worker',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'projectEX.client',
+                foreignField: '_id',
+                as: 'clientEX',
+              },
+            },
+            {
+              $unwind: '$clientEX',
+            },
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$clientEX._id', { $toObjectId: id }],
+                },
+              },
+            },
+          ],
+          as: 'workerprojectEX',
+        },
+      },
+    ]);
+
+    return data.filter((item) => item.workerprojectEX.length > 0);
+  }
+
   findOne(id: string) {
     return this.model.findById(id).lean();
   }

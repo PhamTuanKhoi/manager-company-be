@@ -119,6 +119,44 @@ export class PayslipService {
     }
   }
 
+  async findByWorker(id) {
+    const data = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'projects',
+          localField: '_id',
+          foreignField: 'payslip',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'workerprojects',
+                localField: '_id',
+                foreignField: 'project',
+                as: 'workerprojectEX',
+              },
+            },
+            {
+              $unwind: '$workerprojectEX',
+            },
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$workerprojectEX.worker', { $toObjectId: id }],
+                },
+              },
+            },
+          ],
+          as: 'projectEX',
+        },
+      },
+      {
+        $unwind: '$projectEX',
+      },
+    ]);
+
+    return data;
+  }
+
   findByProject(id: string) {
     return this.model.find();
   }

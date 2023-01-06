@@ -208,9 +208,37 @@ export class UserService {
   }
 
   findAllWorker() {
-    return this.model
-      .find({ role: UserRoleEnum.WORKER })
-      .sort({ createdAt: -1 });
+    return this.model.aggregate([
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: 'workerprojects',
+          localField: '_id',
+          foreignField: 'worker',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+          ],
+          as: 'workerprojectEX',
+        },
+      },
+      {
+        $unwind: '$workerprojectEX',
+      },
+    ]);
   }
 
   findByUsername(username: string) {
@@ -297,9 +325,12 @@ export class UserService {
           as: 'workerprojectEX',
         },
       },
+      {
+        $unwind: '$workerprojectEX',
+      },
     ]);
 
-    return data.filter((item) => item.workerprojectEX.length > 0);
+    return data;
   }
 
   async findAllWorkerByEmployees(id: string) {

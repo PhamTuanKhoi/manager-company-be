@@ -20,6 +20,11 @@ export class PayslipController {
     return this.payslipService.list();
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.payslipService.findOne(id);
+  }
+
   @Get('employees/:id')
   findByEmployees(@Param('id') id: string) {
     return this.payslipService.findByEmployees(id);
@@ -52,7 +57,7 @@ export class PayslipController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePayslipDto: UpdatePayslipDto) {
-    return this.payslipService.update(+id, updatePayslipDto);
+    return this.payslipService.update(id, updatePayslipDto);
   }
 
   @Delete(':id')

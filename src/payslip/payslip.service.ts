@@ -48,7 +48,7 @@ export class PayslipService {
   }
 
   findOne(id: string) {
-    return this.model.findById(id);
+    return this.model.findById(id).lean();
   }
 
   async findByEmployees(id: string) {
@@ -207,8 +207,21 @@ export class PayslipService {
     return this.model.find({ creator: id });
   }
 
-  update(id: number, updatePayslipDto: UpdatePayslipDto) {
-    return `This action updates a #${id} payslip`;
+  async update(id: string, updatePayslipDto: UpdatePayslipDto) {
+    try {
+      await this.isModelExist(id);
+
+      const updated = await this.model.findByIdAndUpdate(id, updatePayslipDto, {
+        new: true,
+      });
+
+      this.logger.log(`updated a payslip success by id #${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
   remove(id: number) {

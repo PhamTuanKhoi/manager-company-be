@@ -20,6 +20,10 @@ export class MessageGateway {
   create(@MessageBody() createMessageDto: CreateMessageDto) {
     this.server.emit(`chat-persional`, createMessageDto.message);
 
+    this.server.on('connection', (socket) => {
+      console.log(socket);
+    });
+
     return this.messageService.create(createMessageDto);
   }
 

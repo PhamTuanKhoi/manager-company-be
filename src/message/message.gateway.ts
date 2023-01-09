@@ -3,28 +3,46 @@ import {
   SubscribeMessage,
   MessageBody,
   WebSocketServer,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
+require('events').EventEmitter.defaultMaxListeners = 15;
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class MessageGateway {
   @WebSocketServer()
   server: Server;
+  // indentify
 
   constructor(private readonly messageService: MessageService) {}
 
+  @SubscribeMessage('inforUser')
+  infor(
+    @MessageBody() payload: { userid: string; socketid: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const infor = {
+      userid: payload.userid,
+      socketid: client.id,
+    };
+
+    return this.messageService.createInfor(infor);
+  }
+
   @SubscribeMessage('createMessage')
-  create(@MessageBody() createMessageDto: CreateMessageDto) {
-    this.server.emit(`chat-persional`, createMessageDto.message);
+  async create(
+    @MessageBody() createMessageDto: CreateMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const data = await this.messageService.create(createMessageDto);
 
-    this.server.on('connection', (socket) => {
-      console.log(socket);
-    });
+    this.server.to(data?.to).emit(`message`, createMessageDto);
+    this.server.to(client?.id).emit(`message`, createMessageDto);
 
-    return this.messageService.create(createMessageDto);
+    return;
   }
 
   @SubscribeMessage('findAllMessage')

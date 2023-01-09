@@ -3,11 +3,11 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CreateMessageDto {
   @IsString()
   @IsNotEmpty()
-  userEmit: string;
+  from: string;
 
   @IsString()
   @IsNotEmpty()
-  userOn: string;
+  to: string;
 
   @IsOptional()
   message: string;

@@ -12,6 +12,7 @@ import { PayslipModule } from './payslip/payslip.module';
 import { TaskModule } from './task/task.module';
 import { AssignTaskModule } from './assign-task/assign-task.module';
 import { MessageModule } from './message/message.module';
+import { MessageApiModule } from './message-api/message-api.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MessageModule } from './message/message.module';
     TaskModule,
     AssignTaskModule,
     MessageModule,
+    MessageApiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

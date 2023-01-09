@@ -1,13 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { Infor } from './entities/infor.entity';
+import { Message, MessageDocument } from './schema/message.schema';
 
 @Injectable()
 export class MessageService {
   infor: Infor[] = [];
 
   private readonly logger = new Logger('gateway');
+
+  constructor(
+    @InjectModel(Message.name) private model: Model<MessageDocument>,
+  ) {}
 
   async createInfor(payload: Infor) {
     const exit = this.infor.find((item) => item.userid === payload.userid);
@@ -30,8 +37,15 @@ export class MessageService {
     this.logger.log('push infor');
   }
 
-  create(createMessageDto: CreateMessageDto) {
+  async create(createMessageDto: CreateMessageDto) {
     const to = this.infor.find((item) => item.userid === createMessageDto.to);
+
+    const created = await this.model.create({
+      ...createMessageDto,
+      users: [createMessageDto.from, createMessageDto.to],
+    });
+
+    this.logger.log(`created a message by id #${created?._id}`);
 
     return { to: to?.socketid };
   }

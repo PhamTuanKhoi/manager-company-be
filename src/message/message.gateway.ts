@@ -45,11 +45,6 @@ export class MessageGateway {
     return;
   }
 
-  @SubscribeMessage('findAllMessage')
-  findAll() {
-    return this.messageService.findAll();
-  }
-
   @SubscribeMessage('findOneMessage')
   findOne(@MessageBody() id: number) {
     return this.messageService.findOne(id);

@@ -50,10 +50,6 @@ export class MessageService {
     return { to: to?.socketid };
   }
 
-  findAll() {
-    return `This action returns all message`;
-  }
-
   findOne(id: number) {
     return `This action returns a #${id} message`;
   }

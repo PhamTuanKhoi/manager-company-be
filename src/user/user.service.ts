@@ -210,6 +210,11 @@ export class UserService {
   findAllWorker() {
     return this.model.aggregate([
       {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
         $sort: {
           createdAt: -1,
         },
@@ -234,9 +239,6 @@ export class UserService {
           ],
           as: 'workerprojectEX',
         },
-      },
-      {
-        $unwind: '$workerprojectEX',
       },
     ]);
   }

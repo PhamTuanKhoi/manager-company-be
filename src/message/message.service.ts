@@ -1,10 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { MessageApiService } from 'src/message-api/message-api.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { Infor } from './entities/infor.entity';
-import { Message, MessageDocument } from './schema/message.schema';
 
 @Injectable()
 export class MessageService {
@@ -13,7 +19,8 @@ export class MessageService {
   private readonly logger = new Logger('gateway');
 
   constructor(
-    @InjectModel(Message.name) private model: Model<MessageDocument>,
+    @Inject(forwardRef(() => MessageApiService))
+    private messageApiService: MessageApiService,
   ) {}
 
   async createInfor(payload: Infor) {
@@ -38,16 +45,16 @@ export class MessageService {
   }
 
   async create(createMessageDto: CreateMessageDto) {
-    const to = this.infor.find((item) => item.userid === createMessageDto.to);
+    try {
+      const to = this.infor.find((item) => item.userid === createMessageDto.to);
 
-    const created = await this.model.create({
-      ...createMessageDto,
-      users: [createMessageDto.from, createMessageDto.to],
-    });
+      this.messageApiService.create(createMessageDto);
 
-    this.logger.log(`created a message by id #${created?._id}`);
-
-    return { to: to?.socketid };
+      return { to: to?.socketid };
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
   findOne(id: number) {

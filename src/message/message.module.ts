@@ -1,13 +1,10 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { MessageGateway } from './message.gateway';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Message, MessageSchema } from './schema/message.schema';
+import { MessageApiModule } from 'src/message-api/message-api.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
-  ],
+  imports: [forwardRef(() => MessageApiModule)],
   providers: [MessageGateway, MessageService],
   exports: [MessageService],
 })

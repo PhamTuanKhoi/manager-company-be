@@ -2,12 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { User } from 'src/user/schema/user.schema';
 
-export type MessageDocument = HydratedDocument<Message>;
+export type MessageApiDocument = HydratedDocument<MessageApi>;
 
 @Schema({
   timestamps: true,
 })
-export class Message {
+export class MessageApi {
   @Prop()
   message: string;
 
@@ -21,4 +21,4 @@ export class Message {
   seen: boolean;
 }
 
-export const MessageSchema = SchemaFactory.createForClass(Message);
+export const MessageApiSchema = SchemaFactory.createForClass(MessageApi);

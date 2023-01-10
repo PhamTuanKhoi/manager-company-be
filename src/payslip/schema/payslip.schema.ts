@@ -9,66 +9,66 @@ export class Payslip {
   @Prop()
   name: string;
   //Welfare
-  @Prop()
+  @Prop({ default: 0 })
   leave: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   reward: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   rice: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   bonus: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   overtime: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   sunday: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   holiday: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   service: number;
 
   //Allowance
-  @Prop()
+  @Prop({ default: 0 })
   go: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   home: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   toxic: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   diligence: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   effectively: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   eat: number;
 
   //Insurance
-  @Prop()
+  @Prop({ default: 0 })
   medican: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   society: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   unemployment: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   union: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   accident: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   health: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })

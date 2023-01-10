@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { MessageApiService } from './message-api.service';
 import { CreateMessageApiDto } from './dto/create-message-api.dto';
 import { UpdateMessageApiDto } from './dto/update-message-api.dto';
+import { QueryMessageApiDto } from './dto/query-message-api.dto';
 
 @Controller('message-api')
 export class MessageApiController {
@@ -13,8 +23,8 @@ export class MessageApiController {
   }
 
   @Get()
-  findAll() {
-    return this.messageApiService.findAll();
+  findAll(@Query() queryMessageApiDto: QueryMessageApiDto) {
+    return this.messageApiService.findAll(queryMessageApiDto);
   }
 
   @Get(':id')
@@ -23,7 +33,10 @@ export class MessageApiController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMessageApiDto: UpdateMessageApiDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateMessageApiDto: UpdateMessageApiDto,
+  ) {
     return this.messageApiService.update(+id, updateMessageApiDto);
   }
 

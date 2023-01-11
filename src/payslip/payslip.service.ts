@@ -224,7 +224,16 @@ export class PayslipService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} payslip`;
+  async remove(id: string) {
+    try {
+      const deleted = await this.model.findByIdAndDelete(id);
+
+      this.logger.log(`delete payslip by id #${deleted?._id}`);
+
+      return deleted;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 }

@@ -62,6 +62,6 @@ export class PayslipController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.payslipService.remove(+id);
+    return this.payslipService.remove(id);
   }
 }

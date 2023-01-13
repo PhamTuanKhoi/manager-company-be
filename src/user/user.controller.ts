@@ -6,16 +6,17 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-dto/update-user.dto';
 import { CreateEmployeeDto } from './dto/create-dto/create-employee.dto';
 import { UpdateEmployeesDto } from './dto/update-dto/update-employees.dto';
 import { CreateClientDto } from './dto/create-dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-dto/update-client.dto';
 import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
 import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
+import { QueryWorkerProject } from './interfaces/worker-assign-query';
 
 @Controller('user')
 export class UserController {
@@ -54,6 +55,11 @@ export class UserController {
   @Get('worker-no-assign')
   workerNoAssign() {
     return this.userService.workerNoAssign();
+  }
+
+  @Get('worker-project-by-client')
+  workerProjectByClient(@Query() QueryWorkerProject: QueryWorkerProject) {
+    return this.userService.workerProjectByClient(QueryWorkerProject);
   }
 
   @Get('worker-role-client/:id')

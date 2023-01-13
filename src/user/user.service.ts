@@ -21,6 +21,7 @@ import { SendEmail } from 'src/gobal/email/sendMail';
 import { UpdateClientDto } from './dto/update-dto/update-client.dto';
 import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
 import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
+import { QueryWorkerProject } from './interfaces/worker-assign-query';
 
 @Injectable()
 export class UserService {
@@ -274,6 +275,69 @@ export class UserService {
     ]);
 
     return data.filter((item) => item.workerprojectEX.length === 0);
+  }
+
+  async workerProjectByClient(queryWorkerProject: QueryWorkerProject) {
+    const data = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'workerprojects',
+          localField: '_id',
+          foreignField: 'worker',
+          pipeline: [
+            {
+              $sort: {
+                join: -1,
+              },
+            },
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'projectEX.client',
+                foreignField: '_id',
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$_id', { $toObjectId: queryWorkerProject.id }],
+                      },
+                    },
+                  },
+                ],
+                as: 'clientEX',
+              },
+            },
+            {
+              $unwind: '$clientEX',
+            },
+          ],
+          as: 'workerprojectEX',
+        },
+      },
+      {
+        $unwind: '$workerprojectEX',
+      },
+      {
+        $project: {
+          name: '$name',
+          project: '$workerprojectEX.projectEX.name',
+          joindate: '$workerprojectEX.join',
+        },
+      },
+    ]);
+
+    return data;
   }
 
   async findAllWorkerByClient(id: string) {

@@ -22,6 +22,7 @@ import { UpdateClientDto } from './dto/update-dto/update-client.dto';
 import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
 import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 import { QueryWorkerProject } from './interfaces/worker-assign-query';
+import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 
 @Injectable()
 export class UserService {
@@ -31,6 +32,23 @@ export class UserService {
 
   async findAllEloyees() {
     return this.model.find({ role: UserRoleEnum.EMPLOYEE });
+  }
+
+  async notificationMessage(
+    queryNotificationMessage: QueryNotificationMessage,
+  ) {
+    const data = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'messageapis',
+          localField: '_id',
+          foreignField: 'users',
+          as: 'userEX',
+        },
+      },
+    ]);
+
+    return { count: data.length, data };
   }
 
   async findAllEloyeesByClient(id: string) {

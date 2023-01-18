@@ -17,10 +17,18 @@ import { UpdateClientDto } from './dto/update-dto/update-client.dto';
 import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
 import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 import { QueryWorkerProject } from './interfaces/worker-assign-query';
+import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get('notification-message')
+  notificationMessage(
+    @Query() queryNotificationMessage: QueryNotificationMessage,
+  ) {
+    return this.userService.notificationMessage(queryNotificationMessage);
+  }
 
   @Get('employees')
   findAllEloyees() {

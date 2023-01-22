@@ -23,12 +23,16 @@ import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
 import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
-  constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private model: Model<UserDocument>,
+    private configService: ConfigService,
+  ) {}
 
   async findAllEloyees() {
     return this.model.find({ role: UserRoleEnum.EMPLOYEE });
@@ -39,6 +43,13 @@ export class UserService {
   ) {
     const data = await this.model.aggregate([
       {
+        $match: {
+          $expr: {
+            $ne: ['$_id', { $toObjectId: '63b403543dcac4e290b59be9' }],
+          },
+        },
+      },
+      {
         $lookup: {
           from: 'messageapis',
           localField: '_id',
@@ -46,9 +57,46 @@ export class UserService {
           as: 'userEX',
         },
       },
+      {
+        $unwind: '$userEX',
+      },
+      {
+        $unwind: '$userEX.users',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$userEX.users', { $toObjectId: '63b403543dcac4e290b59be9' }],
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $ne: ['$userEX.from', { $toObjectId: '63b403543dcac4e290b59be9' }],
+          },
+        },
+      },
+      {
+        $sort: {
+          'userEX.createdAt': -1,
+        },
+      },
     ]);
 
-    return { count: data.length, data };
+    const set = [];
+
+    data?.map((item) => {
+      if (set.length === 0) {
+        set.push(item);
+      }
+
+      if (!set.some((val) => item._id.toString() === val._id.toString())) {
+        set.push(item);
+      }
+    });
+
+    return set;
   }
 
   async findAllEloyeesByClient(id: string) {
@@ -227,6 +275,8 @@ export class UserService {
   }
 
   findAllWorker() {
+    // const pass = this.configService.get<string>('PASSWORD');
+
     return this.model.aggregate([
       {
         $match: {

@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
+  SetMetadata,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-dto/create-user.dto';
@@ -18,6 +20,12 @@ import { CreateWorkerDto } from './dto/create-dto/create-worker.dto';
 import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { UserRoleEnum } from './interfaces/role-user.enum';
+
+export const ROLES_KEY = 'role';
+export const Roles = (...roles: UserRoleEnum[]) =>
+  SetMetadata(ROLES_KEY, roles);
 
 @Controller('user')
 export class UserController {
@@ -55,7 +63,9 @@ export class UserController {
     return this.userService.findAllClient();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('worker')
+  // @Roles(UserRoleEnum.WORKER)
   findAllWorker() {
     return this.userService.findAllWorker();
   }

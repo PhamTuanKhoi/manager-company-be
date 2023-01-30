@@ -110,6 +110,17 @@ export class UserService {
       {
         $unwind: '$message',
       },
+      {
+        $project: {
+          messageid: '$message._id',
+          from: '$_id',
+          to: '$message.users',
+          message: '$message.message',
+          createdAt: '$message.createdAt',
+          name: '$name',
+          avartar: '$avartar',
+        },
+      },
     ]);
 
     return data;

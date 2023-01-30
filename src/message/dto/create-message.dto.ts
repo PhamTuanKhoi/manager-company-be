@@ -11,4 +11,13 @@ export class CreateMessageDto {
 
   @IsOptional()
   message: string;
+
+  @IsOptional()
+  name: string;
+
+  @IsOptional()
+  createdAt: number;
+
+  @IsOptional()
+  avartar: string;
 }

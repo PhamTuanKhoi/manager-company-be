@@ -45,7 +45,7 @@ export class UserService {
       {
         $match: {
           $expr: {
-            $ne: ['$_id', { $toObjectId: '63b403543dcac4e290b59be9' }],
+            $ne: ['$_id', { $toObjectId: queryNotificationMessage.id }],
           },
         },
       },
@@ -66,14 +66,17 @@ export class UserService {
       {
         $match: {
           $expr: {
-            $eq: ['$userEX.users', { $toObjectId: '63b403543dcac4e290b59be9' }],
+            $eq: [
+              '$userEX.users',
+              { $toObjectId: queryNotificationMessage.id },
+            ],
           },
         },
       },
       {
         $match: {
           $expr: {
-            $ne: ['$userEX.from', { $toObjectId: '63b403543dcac4e290b59be9' }],
+            $ne: ['$userEX.from', { $toObjectId: queryNotificationMessage.id }],
           },
         },
       },
@@ -82,21 +85,34 @@ export class UserService {
           'userEX.createdAt': -1,
         },
       },
+      {
+        $group: {
+          _id: {
+            _id: '$_id',
+            name: '$name',
+            avartar: '$avartar',
+          },
+          message: {
+            $push: '$userEX',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: '$_id._id',
+          name: '$_id.name',
+          avartar: '$_id.avartar',
+          message: {
+            $first: '$message',
+          },
+        },
+      },
+      {
+        $unwind: '$message',
+      },
     ]);
 
-    const set = [];
-
-    data?.map((item) => {
-      if (set.length === 0) {
-        set.push(item);
-      }
-
-      if (!set.some((val) => item._id.toString() === val._id.toString())) {
-        set.push(item);
-      }
-    });
-
-    return set;
+    return data;
   }
 
   async findAllEloyeesByClient(id: string) {

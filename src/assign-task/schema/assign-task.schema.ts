@@ -16,6 +16,18 @@ export class AssignTask {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   creator: User;
 
+  @Prop({ type: Object, default: { status: false } })
+  perform: {
+    status: boolean;
+    date: number;
+  };
+
+  @Prop({ type: Object, default: { status: false } })
+  finish: {
+    status: boolean;
+    date: number;
+  };
+
   @Prop({ default: Date.now() })
   dateAssign: number;
 }

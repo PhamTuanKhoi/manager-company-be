@@ -44,6 +44,68 @@ export class AssignTaskService {
     ]);
   }
 
+  async findByProject(id: string) {
+    const data = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'worker',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: 'task',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$_id', { $toObjectId: id }],
+                      },
+                    },
+                  },
+                ],
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+          ],
+          as: 'task',
+        },
+      },
+      {
+        $unwind: '$task',
+      },
+      {
+        $project: {
+          _id: '$_id',
+          userId: '$user._id',
+          name: '$user.name',
+          avartar: '$user.avartar',
+          field: '$user.field',
+          taskId: '$task._id',
+          taskName: '$task.name',
+        },
+      },
+    ]);
+
+    return { c: data.length, data };
+  }
+
   async create(createAssignTaskDto: CreateAssignTaskDto) {
     try {
       //check user

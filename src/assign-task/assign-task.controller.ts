@@ -25,6 +25,11 @@ export class AssignTaskController {
     return this.assignTaskService.findByTask(id);
   }
 
+  @Get('project/:id')
+  findByProject(@Param('id') id: string) {
+    return this.assignTaskService.findByProject(id);
+  }
+
   @Post()
   create(@Body() createAssignTaskDto: CreateAssignTaskDto) {
     return this.assignTaskService.create(createAssignTaskDto);

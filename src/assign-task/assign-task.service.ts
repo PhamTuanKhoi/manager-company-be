@@ -103,7 +103,7 @@ export class AssignTaskService {
       },
     ]);
 
-    return { c: data.length, data };
+    return data;
   }
 
   async create(createAssignTaskDto: CreateAssignTaskDto) {

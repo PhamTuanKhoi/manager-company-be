@@ -108,7 +108,7 @@ export class WorkerProjectService {
   async checkAssignTask(queryWorkerProjectDto: QueryWorkerProjectDto) {
     const { project, task } = queryWorkerProjectDto;
 
-    return await this.model.aggregate([
+    const data = await this.model.aggregate([
       {
         $match: {
           $expr: {
@@ -131,13 +131,7 @@ export class WorkerProjectService {
         },
       },
       { $unwind: { path: '$assign', preserveNullAndEmptyArrays: true } },
-      {
-        $match: {
-          $expr: {
-            $ne: ['$assign.task', { $toObjectId: task }],
-          },
-        },
-      },
+
       {
         $lookup: {
           from: 'users',
@@ -154,8 +148,23 @@ export class WorkerProjectService {
           _id: '$user._id',
           name: '$user.name',
           avartar: '$user.avartar',
+          assign: '$assign',
         },
       },
     ]);
+
+    const ids = data.map((item) =>
+      item?.assign?.task?.toString() === task ? item._id : '',
+    );
+
+    let arrayUser = [];
+
+    data.map((item) => {
+      if (!ids.some((id) => item._id.toString() === id.toString())) {
+        arrayUser.push(item);
+      }
+    });
+
+    return arrayUser;
   }
 }

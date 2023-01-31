@@ -80,6 +80,11 @@ export class UserController {
     return this.userService.workerProjectByClient(QueryWorkerProject);
   }
 
+  // @Get('worker-project-by-employees')
+  // workerProjectByEmployees(@Query() QueryWorkerProject: QueryWorkerProject) {
+  //   return this.userService.workerProjectByEmployees(QueryWorkerProject);
+  // }
+
   @Get('worker-role-client/:id')
   findAllWorkerByClient(@Param('id') id: string) {
     return this.userService.findAllWorkerByClient(id);

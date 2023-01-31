@@ -10,7 +10,7 @@ import { Model } from 'mongoose';
 import { ProjectService } from 'src/project/project.service';
 import { UserService } from 'src/user/user.service';
 import { CreateWorkerProjectDto } from './dto/create-worker-project.dto';
-import { UpdateWorkerProjectDto } from './dto/update-worker-project.dto';
+import { QueryWorkerProjectDto } from './dto/query-worker-project.dto';
 import {
   WorkerProject,
   WorkerProjectDocument,
@@ -53,10 +53,6 @@ export class WorkerProjectService {
     const errorMessage = msg || `id-> ${WorkerProject.name} not found`;
     const isExist = await this.findOne(id);
     if (!isExist) throw new Error(errorMessage);
-  }
-
-  findAll() {
-    return `This action returns all workerProject`;
   }
 
   findOne(id: string) {
@@ -109,11 +105,57 @@ export class WorkerProjectService {
     return data;
   }
 
-  update(id: number, updateWorkerProjectDto: UpdateWorkerProjectDto) {
-    return `This action updates a #${id} workerProject`;
-  }
+  async checkAssignTask(queryWorkerProjectDto: QueryWorkerProjectDto) {
+    const { project, task } = queryWorkerProjectDto;
 
-  remove(id: number) {
-    return `This action removes a #${id} workerProject`;
+    return await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: project }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'assigntasks',
+          let: { worked: '$worker' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$worker', '$$worked'] },
+              },
+            },
+          ],
+          as: 'assign',
+        },
+      },
+      { $unwind: { path: '$assign', preserveNullAndEmptyArrays: true } },
+      {
+        $match: {
+          $expr: {
+            $ne: ['$assign.task', { $toObjectId: task }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'worker',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: '$user._id',
+          name: '$user.name',
+          avartar: '$user.avartar',
+        },
+      },
+    ]);
   }
 }

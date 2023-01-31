@@ -6,23 +6,19 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { WorkerProjectService } from './worker-project.service';
 import { CreateWorkerProjectDto } from './dto/create-worker-project.dto';
-import { UpdateWorkerProjectDto } from './dto/update-worker-project.dto';
+import { QueryWorkerProjectDto } from './dto/query-worker-project.dto';
 
 @Controller('worker-project')
 export class WorkerProjectController {
   constructor(private readonly workerProjectService: WorkerProjectService) {}
 
-  @Post()
-  create(@Body() createWorkerProjectDto: CreateWorkerProjectDto) {
-    return this.workerProjectService.create(createWorkerProjectDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.workerProjectService.findAll();
+  @Get('assign-task')
+  checkAssignTask(@Query() queryWorkerProjectDto: QueryWorkerProjectDto) {
+    return this.workerProjectService.checkAssignTask(queryWorkerProjectDto);
   }
 
   @Get(':id')
@@ -35,16 +31,8 @@ export class WorkerProjectController {
     return this.workerProjectService.findByProject(id);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateWorkerProjectDto: UpdateWorkerProjectDto,
-  ) {
-    return this.workerProjectService.update(+id, updateWorkerProjectDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.workerProjectService.remove(+id);
+  @Post()
+  create(@Body() createWorkerProjectDto: CreateWorkerProjectDto) {
+    return this.workerProjectService.create(createWorkerProjectDto);
   }
 }

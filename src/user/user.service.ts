@@ -435,6 +435,92 @@ export class UserService {
     return data;
   }
 
+  // async workerProjectByEmployees(queryWorkerProject: QueryWorkerProject) {
+  //   const data = await this.model.aggregate([
+  //     {
+  //       $lookup: {
+  //         from: 'workerprojects',
+  //         localField: '_id',
+  //         foreignField: 'worker',
+  //         pipeline: [
+  //           {
+  //             $sort: {
+  //               join: -1,
+  //             },
+  //           },
+  //           {
+  //             $lookup: {
+  //               from: 'projects',
+  //               localField: 'project',
+  //               foreignField: '_id',
+  //               as: 'projectEX',
+  //             },
+  //           },
+  //           {
+  //             $unwind: '$projectEX',
+  //           },
+  //           {
+  //             $lookup: {
+  //               from: 'users',
+  //               let: { leader: '$projectEX.leader', team: 'projectEX.team' },
+  //               pipeline: [
+  //                 // {
+  //                 //   $match: {
+  //                 //     $or: [
+  //                 //       {
+  //                 //         $expr: {
+  //                 //           $eq: ['$_id', '$$leader'],
+  //                 //         },
+  //                 //       },
+  //                 //       {
+  //                 //         $expr: {
+  //                 //           $eq: ['$_id', '$$team'],
+  //                 //         },
+  //                 //       },
+  //                 //     ],
+  //                 //   },
+  //                 // },
+  //                 // {
+  //                 //   $match: {
+  //                 //     _id: { $in: '$$team' },
+  //                 //   },
+  //                 // },
+  //               ],
+  //               as: 'clientEX',
+  //             },
+  //           },
+  //           {
+  //             $unwind: '$clientEX',
+  //           },
+  //           {
+  //             $match: {
+  //               $expr: {
+  //                 $eq: [
+  //                   '$clientEX._id',
+  //                   { $toObjectId: queryWorkerProject.id },
+  //                 ],
+  //               },
+  //             },
+  //           },
+  //         ],
+  //         as: 'workerprojectEX',
+  //       },
+  //     },
+  //     {
+  //       $unwind: '$workerprojectEX',
+  //     },
+  //     // {
+  //     //   $project: {
+  //     //     name: '$name',
+  //     //     project: '$workerprojectEX.projectEX.name',
+  //     //     joindate: '$workerprojectEX.join',
+  //     //   },
+  //     // },
+  //   ]);
+
+  //   return data;
+  // }
+
   async findAllWorkerByClient(id: string) {
     const data = await this.model.aggregate([
       {

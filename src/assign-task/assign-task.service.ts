@@ -36,6 +36,69 @@ export class AssignTaskService {
     return await this.model.findById(id).lean();
   }
 
+  async performTrueByIdProject(id: string) {
+    return await this.model.aggregate([
+      {
+        $match: {
+          'perform.status': true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: 'task',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$projectEX._id', { $toObjectId: id }],
+                },
+              },
+            },
+          ],
+          as: 'taskEX',
+        },
+      },
+      {
+        $unwind: '$taskEX',
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'worker',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: '$_id',
+          perform: '$perform',
+          taskId: '$task',
+          taskName: '$taskEX.name',
+          userId: '$worker',
+          name: '$user.name',
+          field: '$user.field',
+        },
+      },
+    ]);
+  }
+
   async findByTask(id: string) {
     return this.model.aggregate([
       {

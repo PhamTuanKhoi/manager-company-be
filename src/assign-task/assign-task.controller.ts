@@ -20,6 +20,11 @@ export class AssignTaskController {
     return this.assignTaskService.list();
   }
 
+  @Get('perform/:id/project')
+  performTrueByIdProject(@Param('id') id: string) {
+    return this.assignTaskService.performTrueByIdProject(id);
+  }
+
   @Get('task/:id')
   findByTask(@Param('id') id: string) {
     return this.assignTaskService.findByTask(id);

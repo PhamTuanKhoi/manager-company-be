@@ -214,8 +214,6 @@ export class AssignTaskService {
           _id: 0,
           taskId: '$_id.taskId',
           taskName: '$_id.taskName',
-          // warning: perform group total
-          perform: '$_id.perform',
           total: '$total',
           true: {
             $cond: {
@@ -247,6 +245,126 @@ export class AssignTaskService {
           taskName: '$_id.taskName',
           true: '$true',
           total: '$total',
+          precent: {
+            // rounding position 2
+            $round: [
+              {
+                // mul 100
+                $multiply: [
+                  {
+                    // true / total
+                    $divide: ['$true', '$total'],
+                  },
+                  100,
+                ],
+              },
+              2,
+            ],
+          },
+        },
+      },
+    ]);
+  }
+
+  async taskFinishTrueByIdProject(id: string) {
+    return await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: 'task',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$_id', { $toObjectId: id }],
+                      },
+                    },
+                  },
+                ],
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+          ],
+          as: 'taskEX',
+        },
+      },
+      {
+        $unwind: '$taskEX',
+      },
+      {
+        $group: {
+          _id: {
+            taskId: '$task',
+            taskName: '$taskEX.name',
+            finish: '$finish.status',
+          },
+          total: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          taskId: '$_id.taskId',
+          taskName: '$_id.taskName',
+          true: {
+            $cond: {
+              if: { $eq: [true, '$_id.finish'] },
+              then: '$total',
+              else: 0,
+            },
+          },
+          total: '$total',
+        },
+      },
+      {
+        $group: {
+          _id: {
+            taskId: '$taskId',
+            taskName: '$taskName',
+          },
+          true: {
+            $sum: '$true',
+          },
+          total: {
+            $sum: '$total',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          taskId: '$_id.taskId',
+          taskName: '$_id.taskName',
+          true: '$true',
+          total: '$total',
+          precent: {
+            // rounding position 2
+            $round: [
+              {
+                // mul 100
+                $multiply: [
+                  {
+                    // true / total
+                    $divide: ['$true', '$total'],
+                  },
+                  100,
+                ],
+              },
+              2,
+            ],
+          },
         },
       },
     ]);

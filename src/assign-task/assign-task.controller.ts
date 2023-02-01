@@ -35,6 +35,22 @@ export class AssignTaskController {
     return this.assignTaskService.create(createAssignTaskDto);
   }
 
+  @Patch('perform/:id')
+  updatePerform(
+    @Param('id') id: string,
+    @Body() updatePerform: { verify: boolean },
+  ) {
+    return this.assignTaskService.updatePerform(id, updatePerform);
+  }
+
+  @Patch('finish/:id')
+  updateFinish(
+    @Param('id') id: string,
+    @Body() updateFinish: { verify: boolean },
+  ) {
+    return this.assignTaskService.updateFinish(id, updateFinish);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.assignTaskService.remove(+id);

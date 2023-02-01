@@ -32,6 +32,10 @@ export class AssignTaskService {
     return await this.model.find();
   }
 
+  async findOne(id: string) {
+    return await this.model.findById(id).lean();
+  }
+
   async findByTask(id: string) {
     return this.model.aggregate([
       {
@@ -99,6 +103,8 @@ export class AssignTaskService {
           field: '$user.field',
           taskId: '$task._id',
           taskName: '$task.name',
+          perform: '$perform',
+          finish: '$finish',
         },
       },
     ]);
@@ -136,7 +142,59 @@ export class AssignTaskService {
     }
   }
 
+  async updatePerform(id: string, updatePerform: { verify: boolean }) {
+    try {
+      await this.isModelExist(id);
+
+      const verify = await this.model.findByIdAndUpdate(
+        id,
+        {
+          'perform.status': updatePerform.verify,
+          'perform.date': Date.now(),
+        },
+        {
+          new: true,
+        },
+      );
+
+      this.logger.log(`verify perform success by id#${verify?._id}`);
+
+      return verify;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async updateFinish(id: string, updateFinish: { verify: boolean }) {
+    try {
+      await this.isModelExist(id);
+
+      const verify = await this.model.findByIdAndUpdate(
+        id,
+        { finish: { status: updateFinish.verify, date: Date.now() } },
+        {
+          new: true,
+        },
+      );
+
+      this.logger.log(`verify perform success by id#${verify?._id}`);
+
+      return verify;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
   remove(id: number) {
     return `This action removes a #${id} assignTask`;
+  }
+
+  async isModelExist(id, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const errorMessage = msg || `id-> ${AssignTask.name} not found`;
+    const isExist = await this.findOne(id);
+    if (!isExist) throw new Error(errorMessage);
   }
 }

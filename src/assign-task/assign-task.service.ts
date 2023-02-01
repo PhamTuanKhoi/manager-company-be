@@ -151,7 +151,7 @@ export class AssignTaskService {
       {
         $project: {
           _id: '$_id',
-          perform: '$perform',
+          finish: '$finish',
           taskId: '$task',
           taskName: '$taskEX.name',
           userId: '$worker',

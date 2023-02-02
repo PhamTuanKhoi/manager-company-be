@@ -123,14 +123,23 @@ export class WorkerProjectService {
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ['$worker', '$$worked'] },
+                $expr: {
+                  $eq: ['$worker', '$$worked'],
+                },
+              },
+            },
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$task', { $toObjectId: task }],
+                },
               },
             },
           ],
           as: 'assign',
         },
       },
-      { $unwind: { path: '$assign', preserveNullAndEmptyArrays: true } },
+      // { $unwind: { path: '$assign', preserveNullAndEmptyArrays: true } },
 
       {
         $lookup: {
@@ -153,18 +162,6 @@ export class WorkerProjectService {
       },
     ]);
 
-    const ids = data.map((item) =>
-      item?.assign?.task?.toString() === task ? item._id : '',
-    );
-
-    let arrayUser = [];
-
-    data.map((item) => {
-      if (!ids.some((id) => item._id.toString() === id.toString())) {
-        arrayUser.push(item);
-      }
-    });
-
-    return arrayUser;
+    return data.filter((item) => item.assign.length === 0);
   }
 }

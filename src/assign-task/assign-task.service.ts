@@ -162,6 +162,103 @@ export class AssignTaskService {
     ]);
   }
 
+  async precentFinishTrueByIdProject(id: string) {
+    const data = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: 'task',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'project',
+                foreignField: '_id',
+                as: 'projectEX',
+              },
+            },
+            {
+              $unwind: '$projectEX',
+            },
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$projectEX._id', { $toObjectId: id }],
+                },
+              },
+            },
+          ],
+          as: 'taskEX',
+        },
+      },
+      {
+        $unwind: '$taskEX',
+      },
+      {
+        $addFields: {
+          group: 'this is for grouping',
+        },
+      },
+      {
+        $group: {
+          _id: {
+            finish: '$finish.status',
+            group: '$group',
+          },
+          total: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          group: '$_id.group',
+          total: '$total',
+          true: {
+            $cond: {
+              if: { $eq: [true, '$_id.finish'] },
+              then: '$total',
+              else: 0,
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$group',
+          total: {
+            $sum: '$total',
+          },
+          true: {
+            $sum: '$true',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          precent: {
+            $round: [
+              {
+                $multiply: [
+                  {
+                    $divide: ['$true', '$total'],
+                  },
+                  100,
+                ],
+              },
+              2,
+            ],
+          },
+        },
+      },
+    ]);
+
+    return data;
+  }
+
   async taskPerformTrueByIdProject(id: string) {
     return await this.model.aggregate([
       {

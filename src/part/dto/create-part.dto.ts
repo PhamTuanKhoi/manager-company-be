@@ -12,4 +12,8 @@ export class CreatePartDto {
   @IsOptional()
   @IsString()
   workers: [];
+
+  @IsNotEmpty()
+  @IsString()
+  creator: string;
 }

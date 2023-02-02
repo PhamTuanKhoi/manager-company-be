@@ -17,6 +17,9 @@ export class Part {
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
   workers: User[];
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  creator: User;
 }
 
 export const PartSchema = SchemaFactory.createForClass(Part);

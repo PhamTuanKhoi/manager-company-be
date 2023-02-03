@@ -15,8 +15,18 @@ export class Part {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Project.name })
   project: Project;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
-  workers: User[];
+  @Prop({
+    type: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+        date: Number,
+      },
+    ],
+  })
+  workers: {
+    userId: User;
+    date: number;
+  };
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   creator: User;

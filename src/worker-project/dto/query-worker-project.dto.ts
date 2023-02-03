@@ -1,9 +1,12 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class QueryWorkerProjectDto {
   @IsNotEmpty()
   project: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   task: string;
+
+  @IsOptional()
+  part: string;
 }

@@ -164,4 +164,18 @@ export class WorkerProjectService {
 
     return data.filter((item) => item.assign.length === 0);
   }
+
+  async checkNotAssignPart(queryWorkerProjectDto: QueryWorkerProjectDto) {
+    const { project, part } = queryWorkerProjectDto;
+
+    return this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: project }],
+          },
+        },
+      },
+    ]);
+  }
 }

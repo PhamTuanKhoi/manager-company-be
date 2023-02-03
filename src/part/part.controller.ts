@@ -24,4 +24,12 @@ export class PartController {
   findByIdProject(@Param('id') id: string) {
     return this.partService.findByIdProject(id);
   }
+
+  @Patch('workers/:id')
+  updateFieldWorkers(
+    @Param('id') id: string,
+    @Body() updatePartDto: UpdatePartDto,
+  ) {
+    return this.partService.updateFieldWorkers(id, updatePartDto);
+  }
 }

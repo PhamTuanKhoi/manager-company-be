@@ -17,8 +17,13 @@ export class WorkerProjectController {
   constructor(private readonly workerProjectService: WorkerProjectService) {}
 
   @Get('assign-task')
-  checkAssignTask(@Query() queryWorkerProjectDto: QueryWorkerProjectDto) {
+  checkNotAssignTask(@Query() queryWorkerProjectDto: QueryWorkerProjectDto) {
     return this.workerProjectService.checkAssignTask(queryWorkerProjectDto);
+  }
+
+  @Get('assign-part')
+  checkNotAssignPart(@Query() queryWorkerProjectDto: QueryWorkerProjectDto) {
+    return this.workerProjectService.checkNotAssignPart(queryWorkerProjectDto);
   }
 
   @Get(':id')

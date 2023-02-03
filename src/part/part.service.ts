@@ -43,6 +43,18 @@ export class PartService {
     }
   }
 
+  async findOne(id: string) {
+    return this.model.findById(id).lean();
+  }
+
+  async isModelExit(id, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const message = msg || `id ${Part.name} not found`;
+    const isExit = await this.findOne(id);
+    if (!isExit) throw new Error(message);
+    return isExit;
+  }
+
   async findByIdProject(id: string) {
     return this.model.aggregate([
       {
@@ -53,5 +65,46 @@ export class PartService {
         },
       },
     ]);
+  }
+
+  async updateFieldWorkers(id: string, updatePartDto: UpdatePartDto) {
+    try {
+      const { userId } = updatePartDto;
+
+      // check input data
+      const isExist: any = await this.isModelExit(id);
+
+      await this.userService.isModelExist(updatePartDto.userId);
+
+      const checkUserId = isExist.workers?.find(
+        (item) => item?.userId?.toString() === userId,
+      );
+
+      if (checkUserId) {
+        this.logger.log(`user have in array workers`);
+        return;
+      }
+
+      const updated = await this.model.findByIdAndUpdate(
+        id,
+        {
+          workers: [
+            ...isExist.workers,
+            {
+              userId,
+              date: Date.now(),
+            },
+          ],
+        },
+        { new: true },
+      );
+
+      this.logger.log(`updated field part by id #${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 }

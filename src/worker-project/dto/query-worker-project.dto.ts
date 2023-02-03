@@ -6,7 +6,4 @@ export class QueryWorkerProjectDto {
 
   @IsOptional()
   task: string;
-
-  @IsOptional()
-  part: string;
 }

@@ -166,9 +166,9 @@ export class WorkerProjectService {
   }
 
   async checkNotAssignPart(queryWorkerProjectDto: QueryWorkerProjectDto) {
-    const { project, part } = queryWorkerProjectDto;
+    const { project } = queryWorkerProjectDto;
 
-    return this.model.aggregate([
+    const data = await this.model.aggregate([
       {
         $match: {
           $expr: {
@@ -176,6 +176,36 @@ export class WorkerProjectService {
           },
         },
       },
+      {
+        $lookup: {
+          from: 'parts',
+          localField: 'worker',
+          foreignField: 'workers',
+          as: 'partEX',
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'worker',
+          foreignField: '_id',
+          as: 'userEX',
+        },
+      },
+      {
+        $unwind: '$userEX',
+      },
+      {
+        $project: {
+          WorkerProjectId: '$_id',
+          userId: '$worker',
+          name: '$userEX.name',
+          field: '$userEX.field',
+          partEX: '$partEX',
+        },
+      },
     ]);
+
+    return data?.filter((item) => item.partEX.length === 0);
   }
 }

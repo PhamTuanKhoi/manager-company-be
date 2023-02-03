@@ -77,7 +77,7 @@ export class PartService {
       await this.userService.isModelExist(updatePartDto.userId);
 
       const checkUserId = isExist.workers?.find(
-        (item) => item?.userId?.toString() === userId,
+        (item) => item?.toString() === userId,
       );
 
       if (checkUserId) {
@@ -88,13 +88,7 @@ export class PartService {
       const updated = await this.model.findByIdAndUpdate(
         id,
         {
-          workers: [
-            ...isExist.workers,
-            {
-              userId,
-              date: Date.now(),
-            },
-          ],
+          workers: [...isExist.workers, userId],
         },
         { new: true },
       );

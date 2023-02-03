@@ -43,19 +43,15 @@ export class PartService {
     }
   }
 
-  findAll() {
-    return `This action returns all part`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} part`;
-  }
-
-  update(id: number, updatePartDto: UpdatePartDto) {
-    return `This action updates a #${id} part`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} part`;
+  async findByIdProject(id: string) {
+    return this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: id }],
+          },
+        },
+      },
+    ]);
   }
 }

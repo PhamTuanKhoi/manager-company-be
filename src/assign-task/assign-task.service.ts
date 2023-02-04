@@ -546,12 +546,9 @@ export class AssignTaskService {
   async create(createAssignTaskDto: CreateAssignTaskDto) {
     try {
       //check user
-      const isWorkerExits = await this.userService.findOne(
+      const isWorkerExits = await this.userService.isModelExist(
         createAssignTaskDto.worker,
       );
-
-      if (!isWorkerExits)
-        throw new HttpException(`User not found`, HttpStatus.BAD_REQUEST);
 
       if (isWorkerExits.role !== UserRoleEnum.WORKER)
         throw new HttpException(
@@ -571,6 +568,10 @@ export class AssignTaskService {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
     }
+  }
+
+  async createByPart(createAssignTaskDto: CreateAssignTaskDto) {
+    console.log(createAssignTaskDto);
   }
 
   async updatePerform(id: string, updatePerform: { verify: boolean }) {

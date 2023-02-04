@@ -61,7 +61,7 @@ export class TaskService {
   }
 
   findOne(id: string) {
-    return this.model.findById(id);
+    return this.model.findById(id).lean();
   }
 
   async isExitModel(id: string, isOptional = false, msg = '') {
@@ -69,6 +69,7 @@ export class TaskService {
     const errorMessage = msg || `id-> ${TaskService.name} not found`;
     const isExist = await this.findOne(id);
     if (!isExist) throw new Error(errorMessage);
+    return isExist;
   }
 
   async updateFieldUser(id: string, updateTaskDto: UpdateTaskDto) {

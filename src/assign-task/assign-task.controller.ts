@@ -60,6 +60,11 @@ export class AssignTaskController {
     return this.assignTaskService.create(createAssignTaskDto);
   }
 
+  @Post('part')
+  createByPart(@Body() createAssignTaskDto: CreateAssignTaskDto) {
+    return this.assignTaskService.createByPart(createAssignTaskDto);
+  }
+
   @Patch('perform/:id')
   updatePerform(
     @Param('id') id: string,

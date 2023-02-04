@@ -101,4 +101,25 @@ export class PartService {
       throw new BadRequestException(error?.message);
     }
   }
+
+  async updateFiledTask(id: string, task: string) {
+    try {
+      const isExits = await this.isModelExit(id);
+
+      const updated = await this.model.findByIdAndUpdate(
+        id,
+        {
+          tasks: [...isExits.tasks, task],
+        },
+        { new: true },
+      );
+
+      this.logger.log(`updated a part by id#${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
 }

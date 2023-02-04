@@ -5,11 +5,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AssignTask, AssignTaskSchema } from './schema/assign-task.schema';
 import { UserModule } from 'src/user/user.module';
 import { TaskModule } from 'src/task/task.module';
+import { PartModule } from 'src/part/part.module';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
     forwardRef(() => TaskModule),
+    forwardRef(() => PartModule),
     MongooseModule.forFeature([
       { name: AssignTask.name, schema: AssignTaskSchema },
     ]),

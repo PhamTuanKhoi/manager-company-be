@@ -13,6 +13,11 @@ export class CreateAssignTaskDto {
   @IsString()
   workers: string;
 
+  // value borrow to updated part
+  @IsOptional()
+  @IsString()
+  part: string;
+
   @IsNotEmpty()
   @IsString()
   creator: string;

@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { PartService } from 'src/part/part.service';
 import { TaskService } from 'src/task/task.service';
 import { UserRoleEnum } from 'src/user/interfaces/role-user.enum';
 import { UserService } from 'src/user/user.service';
@@ -26,6 +27,8 @@ export class AssignTaskService {
     private userService: UserService,
     @Inject(forwardRef(() => TaskService))
     private taskService: TaskService,
+    @Inject(forwardRef(() => PartService))
+    private partService: PartService,
   ) {}
 
   async list() {
@@ -571,7 +574,7 @@ export class AssignTaskService {
   }
 
   async createByPart(createAssignTaskDto: CreateAssignTaskDto) {
-    const { task, workers, creator } = createAssignTaskDto;
+    const { task, workers, creator, part } = createAssignTaskDto;
 
     const ids: string[] = JSON.parse(workers);
 
@@ -580,6 +583,8 @@ export class AssignTaskService {
       this.taskService.isExitModel(task),
       this.userService.isModelExist(creator),
       this.userService.isModelManyExist(ids),
+      this.partService.isModelExit(part),
+      this.partService.updateFiledTask(part, task),
     ]);
 
     // find id in assigntask

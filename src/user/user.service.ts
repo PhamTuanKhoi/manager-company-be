@@ -923,14 +923,6 @@ export class UserService {
     }
   }
 
-  async isModelExist(id, isOptional = false, msg = '') {
-    if (isOptional && !id) return;
-    const errorMessage = msg || `${User.name} not found`;
-    const isExist = await this.findOne(id);
-    if (!isExist) throw new HttpException(errorMessage, HttpStatus.BAD_REQUEST);
-    return isExist;
-  }
-
   async remove(id: string) {
     try {
       await this.isModelExist(id);
@@ -944,5 +936,28 @@ export class UserService {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
     }
+  }
+
+  async findMany(ids: string[]) {
+    return this.model.find({
+      _id: ids,
+    });
+  }
+
+  async isModelExist(id, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const errorMessage = msg || `${User.name} not found`;
+    const isExist = await this.findOne(id);
+    if (!isExist) throw new HttpException(errorMessage, HttpStatus.BAD_REQUEST);
+    return isExist;
+  }
+
+  async isModelManyExist(ids, isOptional = false, msg = '') {
+    if (isOptional && ids.length === 0) return;
+    const errorMessage = msg || `${User.name} not found`;
+    const isExist = await this.findMany(ids);
+    if (isExist.length !== ids.length)
+      throw new HttpException(errorMessage, HttpStatus.BAD_REQUEST);
+    return isExist;
   }
 }

@@ -17,8 +17,8 @@ export class Task {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Project.name })
   project: Project;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
-  user: User[];
+  // @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
+  // user: User[];
 
   @Prop()
   status: TaskStatusEnum;

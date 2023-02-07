@@ -67,7 +67,7 @@ export class PartService {
         },
       },
       {
-        $unwind: '$tasks',
+        $unwind: { path: '$tasks', preserveNullAndEmptyArrays: true },
       },
       {
         $project: {

@@ -6,10 +6,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import { ProjectService } from 'src/project/project.service';
 import { UserService } from 'src/user/user.service';
 import { CreatePartDto } from './dto/create-part.dto';
+import { QueryPartDto } from './dto/query-part.dto';
 import { UpdatePartDto } from './dto/update-part.dto';
 import { Part, PartDocument } from './schema/part.schema';
 
@@ -55,6 +56,55 @@ export class PartService {
     return isExit;
   }
 
+  // not use
+  async checkNotTask(queryPartDto: QueryPartDto) {
+    const data = await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: queryPartDto.project }],
+          },
+        },
+      },
+      {
+        $unwind: '$tasks',
+      },
+      {
+        $project: {
+          _id: '$_id',
+          name: '$name',
+          tasks: {
+            $cond: {
+              if: { $eq: [{ $toObjectId: queryPartDto.task }, '$tasks'] },
+              then: '$tasks',
+              else: '$$REMOVE',
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            _id: '$_id',
+            name: '$name',
+          },
+          tasks: {
+            $push: '$tasks',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: '$_id._id',
+          name: '$_id.name',
+          tasks: '$tasks',
+        },
+      },
+    ]);
+
+    return data?.filter((item) => item.tasks.length === 0);
+  }
+
   async findByIdProject(id: string) {
     return this.model.aggregate([
       {
@@ -62,6 +112,25 @@ export class PartService {
           $expr: {
             $eq: ['$project', { $toObjectId: id }],
           },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'workers',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: {
+                _id: '$_id',
+                userId: '$_id',
+                name: '$name',
+                filed: '$field',
+                avartar: '$avartar',
+              },
+            },
+          ],
+          as: 'userEX',
         },
       },
     ]);

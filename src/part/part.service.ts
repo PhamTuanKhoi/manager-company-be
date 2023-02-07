@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
+import { AssignTaskService } from 'src/assign-task/assign-task.service';
+import { AssignTask } from 'src/assign-task/schema/assign-task.schema';
 import { ProjectService } from 'src/project/project.service';
 import { UserService } from 'src/user/user.service';
 import { CreatePartDto } from './dto/create-part.dto';
@@ -24,6 +26,8 @@ export class PartService {
     private projectService: ProjectService,
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
+    @Inject(forwardRef(() => AssignTaskService))
+    private assignTaskService: AssignTaskService,
   ) {}
 
   async create(createPartDto: CreatePartDto) {
@@ -73,6 +77,8 @@ export class PartService {
         $project: {
           _id: '$_id',
           name: '$name',
+          workers: '$workers',
+          creator: '$creator',
           tasks: {
             $cond: {
               if: { $eq: [{ $toObjectId: queryPartDto.task }, '$tasks'] },
@@ -87,6 +93,8 @@ export class PartService {
           _id: {
             _id: '$_id',
             name: '$name',
+            workers: '$workers',
+            creator: '$creator',
           },
           tasks: {
             $push: '$tasks',
@@ -97,6 +105,8 @@ export class PartService {
         $project: {
           _id: '$_id._id',
           name: '$_id.name',
+          workers: '$_id.workers',
+          creator: '$_id.creator',
           tasks: '$tasks',
         },
       },
@@ -161,6 +171,21 @@ export class PartService {
         },
         { new: true },
       );
+
+      // create assign task
+      if (isExist.tasks.length > 0) {
+        const createAssignTask = isExist.tasks.map((item: string) =>
+          this.assignTaskService.create({
+            task: item,
+            creator: updatePartDto.creator,
+            worker: userId,
+            workers: '',
+            part: '',
+          }),
+        );
+
+        await Promise.all(createAssignTask);
+      }
 
       this.logger.log(`updated field part by id #${updated?._id}`);
 

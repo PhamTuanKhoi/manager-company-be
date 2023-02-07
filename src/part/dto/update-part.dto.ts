@@ -6,4 +6,8 @@ export class UpdatePartDto extends PartialType(CreatePartDto) {
   @IsNotEmpty()
   @IsString()
   userId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  creator?: string;
 }

@@ -548,10 +548,9 @@ export class AssignTaskService {
 
   async create(createAssignTaskDto: CreateAssignTaskDto) {
     try {
+      const { worker, task } = createAssignTaskDto;
       //check user
-      const isWorkerExits = await this.userService.isModelExist(
-        createAssignTaskDto.worker,
-      );
+      const isWorkerExits = await this.userService.isModelExist(worker);
 
       if (isWorkerExits.role !== UserRoleEnum.WORKER)
         throw new HttpException(
@@ -561,6 +560,14 @@ export class AssignTaskService {
 
       // check task
       await this.taskService.isExitModel(createAssignTaskDto.task);
+
+      // assign task
+      const assignExits = await this.model.find({ worker, task });
+
+      if (assignExits.length > 0) {
+        this.logger.log(`user have assign task`);
+        return;
+      }
 
       const created = await this.model.create(createAssignTaskDto);
 

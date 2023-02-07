@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateAssignTaskDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   task: string;
 
@@ -10,15 +10,13 @@ export class CreateAssignTaskDto {
   worker: string;
 
   @IsOptional()
-  @IsString()
   workers: string;
 
   // value borrow to updated part
   @IsOptional()
-  @IsString()
   part: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   creator: string;
 }

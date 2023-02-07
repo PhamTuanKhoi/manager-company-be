@@ -71,6 +71,25 @@ export class PartService {
         },
       },
       {
+        $lookup: {
+          from: 'users',
+          localField: 'workers',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: {
+                _id: '$_id',
+                userId: '$_id',
+                name: '$name',
+                filed: '$field',
+                avartar: '$avartar',
+              },
+            },
+          ],
+          as: 'userEX',
+        },
+      },
+      {
         $unwind: { path: '$tasks', preserveNullAndEmptyArrays: true },
       },
       {
@@ -79,6 +98,7 @@ export class PartService {
           name: '$name',
           workers: '$workers',
           creator: '$creator',
+          userEX: '$userEX',
           tasks: {
             $cond: {
               if: { $eq: [{ $toObjectId: queryPartDto.task }, '$tasks'] },
@@ -95,6 +115,7 @@ export class PartService {
             name: '$name',
             workers: '$workers',
             creator: '$creator',
+            userEX: '$userEX',
           },
           tasks: {
             $push: '$tasks',
@@ -107,6 +128,7 @@ export class PartService {
           name: '$_id.name',
           workers: '$_id.workers',
           creator: '$_id.creator',
+          userEX: '$_id.userEX',
           tasks: '$tasks',
         },
       },

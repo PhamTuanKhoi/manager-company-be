@@ -529,6 +529,27 @@ export class AssignTaskService {
         $unwind: '$task',
       },
       {
+        $lookup: {
+          from: 'parts',
+          localField: 'task._id',
+          foreignField: 'tasks',
+          as: 'parts',
+        },
+      },
+      {
+        $unwind: '$parts',
+      },
+      {
+        $unwind: { path: '$parts.workers', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$worker', '$parts.workers'],
+          },
+        },
+      },
+      {
         $project: {
           _id: '$_id',
           userId: '$user._id',
@@ -539,6 +560,8 @@ export class AssignTaskService {
           taskName: '$task.name',
           perform: '$perform',
           finish: '$finish',
+          partId: '$parts._id',
+          partName: '$parts.name',
         },
       },
     ]);

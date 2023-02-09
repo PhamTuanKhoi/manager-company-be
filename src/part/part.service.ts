@@ -165,6 +165,22 @@ export class PartService {
           as: 'userEX',
         },
       },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: 'tasks',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: {
+                name: '$name',
+                project: '$project',
+              },
+            },
+          ],
+          as: 'taskEX',
+        },
+      },
     ]);
   }
 

@@ -32,6 +32,11 @@ export class PartController {
     return this.partService.findByIdProject(id);
   }
 
+  @Get('precent')
+  precent(@Query() queryPartDto: QueryPartDto) {
+    return this.partService.precent(queryPartDto);
+  }
+
   @Patch('workers/:id')
   updateFieldWorkers(
     @Param('id') id: string,

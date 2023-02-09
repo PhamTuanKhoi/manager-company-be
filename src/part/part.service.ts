@@ -184,6 +184,126 @@ export class PartService {
     ]);
   }
 
+  async precent(queryPartDto: QueryPartDto) {
+    const data = await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: queryPartDto.project }],
+          },
+        },
+      },
+      {
+        $unwind: { path: '$workers', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: 'tasks',
+          foreignField: '_id',
+          as: 'taskEX',
+        },
+      },
+      {
+        $unwind: { path: '$taskEX', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: 'assigntasks',
+          localField: 'taskEX._id',
+          foreignField: 'task',
+          as: 'assignTask',
+        },
+      },
+      {
+        $unwind: '$assignTask',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$workers', '$assignTask.worker'],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: '$_id',
+          name: '$name',
+          performTrue: {
+            $cond: {
+              if: { $eq: [true, '$assignTask.perform.status'] },
+              then: 1,
+              else: 0,
+            },
+          },
+          finishTrue: {
+            $cond: {
+              if: { $eq: [true, '$assignTask.finish.status'] },
+              then: 1,
+              else: 0,
+            },
+          },
+          total: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            _id: '$_id',
+            name: '$name',
+          },
+          total: {
+            $sum: '$total',
+          },
+          performTrue: {
+            $sum: '$performTrue',
+          },
+          finishTrue: {
+            $sum: '$finishTrue',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: '$_id._id',
+          name: '$_id.name',
+          performTrue: '$performTrue',
+          finishTrue: '$finishTrue',
+          precentPerform: {
+            $round: [
+              {
+                $multiply: [
+                  {
+                    $divide: ['$performTrue', '$total'],
+                  },
+                  100,
+                ],
+              },
+              2,
+            ],
+          },
+          precentFinish: {
+            $round: [
+              {
+                $multiply: [
+                  {
+                    $divide: ['$finishTrue', '$total'],
+                  },
+                  100,
+                ],
+              },
+              2,
+            ],
+          },
+        },
+      },
+    ]);
+
+    return data;
+  }
+
   async updateFieldWorkers(id: string, updatePartDto: UpdatePartDto) {
     try {
       const { userId } = updatePartDto;

@@ -709,6 +709,24 @@ export class AssignTaskService {
     return `This action removes a #${id} assignTask`;
   }
 
+  async removeByIdUserAndTask(tasks, userId: string) {
+    try {
+      // custom query
+      const query = tasks?.map((id) =>
+        this.model.deleteOne({ _id: id, worker: userId }),
+      );
+
+      const removed = await Promise.all(query);
+
+      this.logger.log(`removed ${removed.length} assign task success`);
+
+      return removed;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
   async isModelExist(id, isOptional = false, msg = '') {
     if (isOptional && !id) return;
     const errorMessage = msg || `id-> ${AssignTask.name} not found`;

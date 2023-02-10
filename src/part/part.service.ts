@@ -52,14 +52,6 @@ export class PartService {
     return this.model.findById(id).lean();
   }
 
-  async isModelExit(id, isOptional = false, msg = '') {
-    if (isOptional && !id) return;
-    const message = msg || `id ${Part.name} not found`;
-    const isExit = await this.findOne(id);
-    if (!isExit) throw new Error(message);
-    return isExit;
-  }
-
   // not use
   async checkNotTask(queryPartDto: QueryPartDto) {
     const data = await this.model.aggregate([
@@ -157,7 +149,7 @@ export class PartService {
                 _id: '$_id',
                 userId: '$_id',
                 name: '$name',
-                filed: '$field',
+                field: '$field',
                 avartar: '$avartar',
               },
             },
@@ -373,5 +365,45 @@ export class PartService {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
     }
+  }
+
+  async removeUserInPart(partId: string, userId: string) {
+    try {
+      const part = await this.isModelExit(partId);
+
+      const removeAssign = this.assignTaskService.removeByIdUserAndTask(
+        part?.tasks,
+        userId,
+      );
+
+      const removedUser = this.model.findByIdAndUpdate(
+        partId,
+        {
+          workers: part.workers.filter(
+            (item) => item.toString() !== userId.toString(),
+          ),
+        },
+        {
+          new: true,
+        },
+      );
+
+      const exec = await Promise.all([removedUser, removeAssign]);
+
+      this.logger.log(`removed a user in part by id#${exec[0]?._id}`);
+
+      return exec[0];
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async isModelExit(id, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const message = msg || `id ${Part.name} not found`;
+    const isExit = await this.findOne(id);
+    if (!isExit) throw new Error(message);
+    return isExit;
   }
 }

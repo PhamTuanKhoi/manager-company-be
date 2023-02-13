@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { ClientProject } from 'src/client-project/entities/client-project.entity';
 import { EmployeeDepartmentEnum } from 'src/user/interfaces/department-employess.enum';
 import { ProjectPriorityEnum } from '../interfaces/priority-enum';
 import * as mongoose from 'mongoose';

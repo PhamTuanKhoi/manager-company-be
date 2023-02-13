@@ -12,5 +12,6 @@ import { JoinProject, JoinProjectSchema } from './schema/join-project.schema';
   ],
   controllers: [JoinProjectController],
   providers: [JoinProjectService],
+  exports: [JoinProjectService],
 })
 export class JoinProjectModule {}

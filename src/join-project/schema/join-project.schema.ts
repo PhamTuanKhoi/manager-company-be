@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Project } from 'src/project/schema/project.schema';
+import { UserRoleEnum } from 'src/user/interfaces/role-user.enum';
 import { User } from 'src/user/schema/user.schema';
 
 export type JoinProjectDocument = HydratedDocument<JoinProject>;
@@ -10,10 +11,10 @@ export type JoinProjectDocument = HydratedDocument<JoinProject>;
 })
 export class JoinProject {
   @Prop()
-  role: number;
+  role: UserRoleEnum;
 
-  @Prop()
-  date: string;
+  @Prop({ default: Date.now() })
+  date: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   joinor: User;

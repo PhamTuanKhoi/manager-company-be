@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateJoinProjectDto } from './dto/create-join-project.dto';
@@ -13,8 +13,17 @@ export class JoinProjectService {
     @InjectModel(JoinProject.name) private model: Model<JoinProjectDocument>,
   ) {}
 
-  create(createJoinProjectDto: CreateJoinProjectDto) {
-    return 'This action adds a new joinProject';
+  async create(createJoinProjectDto: CreateJoinProjectDto) {
+    try {
+      const created = await this.model.create(createJoinProjectDto);
+
+      this.logger.log(`created a new join-project by id#${created?._id}`);
+
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
   findAll() {

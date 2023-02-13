@@ -46,21 +46,21 @@ export class Project {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   creator: User;
 
-  //client
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
-  })
-  client: User[];
+  // //client
+  // @Prop({
+  //   type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
+  // })
+  // client: User[];
 
-  // employ
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
-  })
-  team: User[];
+  // // employ
+  // @Prop({
+  //   type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
+  // })
+  // team: User[];
 
-  // leader
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
-  leader: User;
+  // // leader
+  // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  // leader: User;
 
   // payslip
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Payslip.name })

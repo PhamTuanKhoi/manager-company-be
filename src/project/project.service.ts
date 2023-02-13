@@ -9,7 +9,9 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { JoinProjectService } from 'src/join-project/join-project.service';
 import { PayslipService } from 'src/payslip/payslip.service';
+import { UserRoleEnum } from 'src/user/interfaces/role-user.enum';
 import { UserService } from 'src/user/user.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -25,6 +27,8 @@ export class ProjectService {
     private userService: UserService,
     @Inject(forwardRef(() => PayslipService))
     private payslipService: PayslipService,
+    @Inject(forwardRef(() => JoinProjectService))
+    private JoinProjectService: JoinProjectService,
   ) {}
 
   findAll() {
@@ -264,36 +268,58 @@ export class ProjectService {
 
   async create(createProjectDto: CreateProjectDto) {
     try {
-      let clientApi = createProjectDto.client.map((i) => {
-        return this.userService.findOne(i);
+      const { client, team, creator, leader } = createProjectDto;
+      const clientApi = client.map((i) => {
+        return this.userService.isModelExist(i);
       });
 
-      let teamApi = createProjectDto.team.map((i) => {
-        return this.userService.findOne(i);
+      const teamApi = team.map((i) => {
+        return this.userService.isModelExist(i);
       });
-      //check client
-      const client = await Promise.all(clientApi);
-      //check team
-      const team = await Promise.all(teamApi);
-      //check creator
-      await this.userService.isModelExist(createProjectDto.creator);
-      //check leader
-      if (createProjectDto.leader)
-        await this.userService.isModelExist(createProjectDto.leader);
 
-      if (createProjectDto.client.length !== client.length) {
-        throw new HttpException(`client not found`, HttpStatus.BAD_REQUEST);
+      // check client, team.
+      await Promise.all([
+        ...clientApi,
+        ...teamApi,
+        this.userService.isModelExist(creator),
+        this.userService.isModelExist(leader),
+      ]);
+
+      // create project
+      const created = await this.model.create(createProjectDto);
+
+      if (created) {
+        // create client join project
+        const clientJoin = client.map((i) =>
+          this.JoinProjectService.create({
+            joinor: i,
+            role: UserRoleEnum.CLIENT,
+            project: created?._id.toString(),
+          }),
+        );
+
+        // create employees join project
+        const teamJoin = client.map((i) =>
+          this.JoinProjectService.create({
+            joinor: i,
+            role: UserRoleEnum.EMPLOYEE,
+            project: created?._id.toString(),
+          }),
+        );
+
+        // create employees join project
+        const leaderJoin = this.JoinProjectService.create({
+          joinor: leader,
+          role: UserRoleEnum.LEADER,
+          project: created?._id.toString(),
+        });
+
+        await Promise.all([...clientJoin, ...teamJoin, leaderJoin]);
       }
 
-      if (createProjectDto.team.length !== team.length) {
-        throw new HttpException(`team not found`, HttpStatus.BAD_REQUEST);
-      }
+      this.logger.log(`created a new project by id #${created?._id}`);
 
-      const creator = await this.model.create(createProjectDto);
-
-      this.logger.log(`create a new project by id #${creator?._id}`);
-
-      return creator;
+      return created;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

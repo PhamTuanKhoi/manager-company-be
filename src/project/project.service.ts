@@ -205,14 +205,6 @@ export class ProjectService {
         {
           $lookup: {
             from: 'users',
-            localField: 'team',
-            foreignField: '_id',
-            as: 'teamEX',
-          },
-        },
-        {
-          $lookup: {
-            from: 'users',
             localField: 'creator',
             foreignField: '_id',
             as: 'creator',
@@ -223,21 +215,23 @@ export class ProjectService {
         },
         {
           $lookup: {
-            from: 'users',
-            localField: 'leader',
-            foreignField: '_id',
-            as: 'leaderEX',
-          },
-        },
-        {
-          $unwind: '$leaderEX',
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'client',
-            foreignField: '_id',
-            as: 'clientEX',
+            from: 'joinprojects',
+            localField: '_id',
+            foreignField: 'project',
+            pipeline: [
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'joinor',
+                  foreignField: '_id',
+                  as: 'userEX',
+                },
+              },
+              {
+                $unwind: '$userEX',
+              },
+            ],
+            as: 'joinprojectEX',
           },
         },
         {
@@ -245,7 +239,21 @@ export class ProjectService {
             from: 'payslips',
             localField: 'payslip',
             foreignField: '_id',
-            as: 'payslip',
+            as: 'payslipEX',
+          },
+        },
+        {
+          $project: {
+            name: '$name',
+            priority: '$priority',
+            price: '$price',
+            start: '$start',
+            end: '$end',
+            status: '$status',
+            content: '$content',
+            paylip: '$paylip',
+            payslipEX: '$payslipEX',
+            userEX: '$joinprojectEX.userEX',
           },
         },
       ]);

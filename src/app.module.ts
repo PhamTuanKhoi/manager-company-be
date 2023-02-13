@@ -13,6 +13,7 @@ import { AssignTaskModule } from './assign-task/assign-task.module';
 import { MessageModule } from './message/message.module';
 import { MessageApiModule } from './message-api/message-api.module';
 import { PartModule } from './part/part.module';
+import { JoinProjectModule } from './join-project/join-project.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PartModule } from './part/part.module';
     MessageModule,
     MessageApiModule,
     PartModule,
+    JoinProjectModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -23,9 +23,9 @@ export class PersonalInfor {
   @IsString()
   avartar: string;
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  cccd: number;
+  cccd: string;
 
   @IsNumber()
   @IsNotEmpty()

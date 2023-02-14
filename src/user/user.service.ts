@@ -35,7 +35,16 @@ export class UserService {
   ) {}
 
   async findAllEloyees() {
-    return this.model.find({ role: UserRoleEnum.EMPLOYEE });
+    return this.model.find({
+      $or: [
+        {
+          role: UserRoleEnum.EMPLOYEE,
+        },
+        {
+          role: UserRoleEnum.LEADER,
+        },
+      ],
+    });
   }
 
   async notificationMessage(
@@ -708,7 +717,6 @@ export class UserService {
       const created = await this.model.create({
         ...createEmployeeDto,
         password,
-        role: UserRoleEnum.EMPLOYEE,
       });
 
       this.logger.log(`created new employees by id ${created?._id}`);

@@ -26,7 +26,7 @@ export class User {
   name: string;
 
   @Prop()
-  cccd: number;
+  cccd: string;
 
   @Prop()
   department: EmployeeDepartmentEnum;

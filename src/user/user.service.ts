@@ -47,6 +47,73 @@ export class UserService {
     });
   }
 
+  async notAssignPart(id: string) {
+    return await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$project', { $toObjectId: id }],
+                },
+              },
+            },
+          ],
+          as: 'joinprojectEX',
+        },
+      },
+      {
+        $addFields: {
+          siznjoinproject: {
+            $size: '$joinprojectEX',
+          },
+        },
+      },
+      {
+        $match: {
+          siznjoinproject: {
+            $ne: 0,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinparts',
+          localField: '_id',
+          foreignField: 'joiner',
+          as: 'joinpartEX',
+        },
+      },
+      {
+        $addFields: {
+          siznjoinpart: {
+            $size: '$joinpartEX',
+          },
+        },
+      },
+      {
+        $match: {
+          siznjoinpart: 0,
+        },
+      },
+      {
+        $project: {
+          name: '$name',
+          filed: '$field',
+        },
+      },
+    ]);
+  }
+
   async notificationMessage(
     queryNotificationMessage: QueryNotificationMessage,
   ) {

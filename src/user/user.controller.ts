@@ -43,6 +43,11 @@ export class UserController {
     return this.userService.findAllEloyees();
   }
 
+  @Get('not-assign-part/:id')
+  notAssignPart(@Param('id') id: string) {
+    return this.userService.notAssignPart(id);
+  }
+
   @Get('employees-role-client/:id')
   findAllEloyeesByClient(@Param('id') id: string) {
     return this.userService.findAllEloyeesByClient(id);

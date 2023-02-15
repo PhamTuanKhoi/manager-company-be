@@ -357,7 +357,7 @@ export class UserService {
   }
 
   async workerNoAssign() {
-    const data = await this.model.aggregate([
+    return await this.model.aggregate([
       {
         $match: {
           role: UserRoleEnum.WORKER,
@@ -370,15 +370,25 @@ export class UserService {
       },
       {
         $lookup: {
-          from: 'workerprojects',
+          from: 'joinprojects',
           localField: '_id',
-          foreignField: 'worker',
-          as: 'workerprojectEX',
+          foreignField: 'joinor',
+          as: 'joinprojectEX',
+        },
+      },
+      {
+        $addFields: {
+          size: {
+            $size: '$joinprojectEX',
+          },
+        },
+      },
+      {
+        $match: {
+          size: 0,
         },
       },
     ]);
-
-    return data.filter((item) => item.workerprojectEX.length === 0);
   }
 
   async workerProjectByClient(queryWorkerProject: QueryWorkerProject) {

@@ -15,9 +15,6 @@ export class JoinPart {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Part })
   part: Part;
 
-  @Prop()
-  role: string;
-
   @Prop({ default: Date.now() })
   date: number;
 }

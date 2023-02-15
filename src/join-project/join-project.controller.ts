@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { JoinProjectService } from './join-project.service';
 import { CreateJoinProjectDto } from './dto/create-join-project.dto';
 import { UpdateJoinProjectDto } from './dto/update-join-project.dto';
@@ -23,7 +31,10 @@ export class JoinProjectController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateJoinProjectDto: UpdateJoinProjectDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateJoinProjectDto: UpdateJoinProjectDto,
+  ) {
     return this.joinProjectService.update(+id, updateJoinProjectDto);
   }
 

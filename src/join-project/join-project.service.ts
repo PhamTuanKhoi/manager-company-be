@@ -1,6 +1,14 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ProjectService } from 'src/project/project.service';
+import { UserService } from 'src/user/user.service';
 import { CreateJoinProjectDto } from './dto/create-join-project.dto';
 import { UpdateJoinProjectDto } from './dto/update-join-project.dto';
 import { JoinProject, JoinProjectDocument } from './schema/join-project.schema';
@@ -11,10 +19,20 @@ export class JoinProjectService {
 
   constructor(
     @InjectModel(JoinProject.name) private model: Model<JoinProjectDocument>,
+    @Inject(forwardRef(() => UserService))
+    private userService: UserService,
+    @Inject(forwardRef(() => ProjectService))
+    private projectService: ProjectService,
   ) {}
 
   async create(createJoinProjectDto: CreateJoinProjectDto) {
     try {
+      // check input data
+      await Promise.all([
+        this.userService.isModelExist(createJoinProjectDto.joinor),
+        this.projectService.isModelExist(createJoinProjectDto.project),
+      ]);
+
       const created = await this.model.create(createJoinProjectDto);
 
       this.logger.log(`created a new join-project by id#${created?._id}`);

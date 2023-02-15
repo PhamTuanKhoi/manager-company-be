@@ -89,7 +89,7 @@ export class UserService {
         $lookup: {
           from: 'joinparts',
           localField: '_id',
-          foreignField: 'joiner',
+          foreignField: 'joinor',
           as: 'joinpartEX',
         },
       },

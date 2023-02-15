@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ProjectService } from 'src/project/project.service';
+import { PartService } from 'src/part/part.service';
 import { UserService } from 'src/user/user.service';
 import { CreateJoinPartDto } from './dto/create-join-part.dto';
 import { UpdateJoinPartDto } from './dto/update-join-part.dto';
@@ -21,8 +21,8 @@ export class JoinPartService {
     @InjectModel(JoinPart.name) private model: Model<JoinPartDocument>,
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
-    @Inject(forwardRef(() => ProjectService))
-    private projectService: ProjectService,
+    @Inject(forwardRef(() => PartService))
+    private partService: PartService,
   ) {}
 
   async create(createJoinPartDto: CreateJoinPartDto) {
@@ -30,7 +30,7 @@ export class JoinPartService {
       // check input data
       await Promise.all([
         this.userService.isModelExist(createJoinPartDto.joinor),
-        this.projectService.isModelExist(createJoinPartDto.project),
+        this.partService.isModelExit(createJoinPartDto.part),
       ]);
 
       const created = await this.model.create(createJoinPartDto);

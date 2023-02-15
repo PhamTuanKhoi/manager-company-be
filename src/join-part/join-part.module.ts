@@ -4,12 +4,12 @@ import { JoinPartController } from './join-part.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JoinPart, JoinPartSchema } from './schema/join-part.schema';
 import { UserModule } from 'src/user/user.module';
-import { ProjectModule } from 'src/project/project.module';
+import { PartModule } from 'src/part/part.module';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
-    forwardRef(() => ProjectModule),
+    forwardRef(() => PartModule),
     MongooseModule.forFeature([
       { name: JoinPart.name, schema: JoinPartSchema },
     ]),

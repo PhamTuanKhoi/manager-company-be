@@ -143,6 +143,36 @@ export class PartService {
           from: 'joinparts',
           localField: '_id',
           foreignField: 'part',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'joinor',
+                foreignField: '_id',
+                pipeline: [
+                  {
+                    $project: {
+                      name: '$name',
+                      field: '$field',
+                    },
+                  },
+                ],
+                as: 'userEX',
+              },
+            },
+            {
+              $unwind: '$userEX',
+            },
+            {
+              $project: {
+                _id: 0,
+                joinpartId: '$_id',
+                userId: '$userEX._id',
+                name: '$userEX.name',
+                field: '$userEX.field',
+              },
+            },
+          ],
           as: 'joinpartEX',
         },
       },
@@ -340,37 +370,37 @@ export class PartService {
     }
   }
 
-  async removeUserInPart(partId: string, userId: string) {
-    try {
-      const part = await this.isModelExit(partId);
+  // async removeUserInPart(partId: string, userId: string) {
+  //   try {
+  //     const part = await this.isModelExit(partId);
 
-      const removeAssign = this.assignTaskService.removeByIdUserAndTask(
-        part?.tasks,
-        userId,
-      );
+  //     const removeAssign = this.assignTaskService.removeByIdUserAndTask(
+  //       part?.tasks,
+  //       userId,
+  //     );
 
-      const removedUser = this.model.findByIdAndUpdate(
-        partId,
-        {
-          workers: part.workers.filter(
-            (item) => item.toString() !== userId.toString(),
-          ),
-        },
-        {
-          new: true,
-        },
-      );
+  //     const removedUser = this.model.findByIdAndUpdate(
+  //       partId,
+  //       {
+  //         workers: part.workers.filter(
+  //           (item) => item.toString() !== userId.toString(),
+  //         ),
+  //       },
+  //       {
+  //         new: true,
+  //       },
+  //     );
 
-      const exec = await Promise.all([removedUser, removeAssign]);
+  //     const exec = await Promise.all([removedUser, removeAssign]);
 
-      this.logger.log(`removed a user in part by id#${exec[0]?._id}`);
+  //     this.logger.log(`removed a user in part by id#${exec[0]?._id}`);
 
-      return exec[0];
-    } catch (error) {
-      this.logger.error(error?.message, error.stack);
-      throw new BadRequestException(error?.message);
-    }
-  }
+  //     return exec[0];
+  //   } catch (error) {
+  //     this.logger.error(error?.message, error.stack);
+  //     throw new BadRequestException(error?.message);
+  //   }
+  // }
 
   async isModelExit(id, isOptional = false, msg = '') {
     if (isOptional && !id) return;

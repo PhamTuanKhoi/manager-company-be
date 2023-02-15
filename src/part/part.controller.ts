@@ -45,11 +45,11 @@ export class PartController {
   //   return this.partService.updateFieldWorkers(id, updatePartDto);
   // }
 
-  @Delete('remove-user/:partId/:userId')
-  removeUserInPart(
-    @Param('partId') partId: string,
-    @Param('userId') userId: string,
-  ) {
-    return this.partService.removeUserInPart(partId, userId);
-  }
+  // @Delete('remove-user/:partId/:userId')
+  // removeUserInPart(
+  //   @Param('partId') partId: string,
+  //   @Param('userId') userId: string,
+  // ) {
+  //   return this.partService.removeUserInPart(partId, userId);
+  // }
 }

@@ -7,5 +7,5 @@ export class CreateJoinPartDto {
 
   @IsNotEmpty()
   @IsString()
-  part: string;
+  project: string;
 }

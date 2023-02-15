@@ -30,7 +30,7 @@ export class JoinPartService {
       // check input data
       await Promise.all([
         this.userService.isModelExist(createJoinPartDto.joinor),
-        this.projectService.isModelExist(createJoinPartDto.part),
+        this.projectService.isModelExist(createJoinPartDto.project),
       ]);
 
       const created = await this.model.create(createJoinPartDto);

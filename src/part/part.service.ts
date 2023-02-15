@@ -140,37 +140,10 @@ export class PartService {
       },
       {
         $lookup: {
-          from: 'users',
-          localField: 'workers',
-          foreignField: '_id',
-          pipeline: [
-            {
-              $project: {
-                _id: '$_id',
-                userId: '$_id',
-                name: '$name',
-                field: '$field',
-                avartar: '$avartar',
-              },
-            },
-          ],
-          as: 'userEX',
-        },
-      },
-      {
-        $lookup: {
-          from: 'tasks',
-          localField: 'tasks',
-          foreignField: '_id',
-          pipeline: [
-            {
-              $project: {
-                name: '$name',
-                project: '$project',
-              },
-            },
-          ],
-          as: 'taskEX',
+          from: 'joinparts',
+          localField: '_id',
+          foreignField: 'part',
+          as: 'joinpartEX',
         },
       },
     ]);

@@ -307,7 +307,7 @@ export class ProjectService {
         );
 
         // create employees join project
-        const teamJoin = client.map((i) =>
+        const teamJoin = team.map((i) =>
           this.JoinProjectService.create({
             joinor: i,
             role: UserRoleEnum.EMPLOYEE,

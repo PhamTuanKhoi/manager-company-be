@@ -14,6 +14,7 @@ import { MessageModule } from './message/message.module';
 import { MessageApiModule } from './message-api/message-api.module';
 import { PartModule } from './part/part.module';
 import { JoinProjectModule } from './join-project/join-project.module';
+import { JoinPartModule } from './join-part/join-part.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { JoinProjectModule } from './join-project/join-project.module';
     MessageApiModule,
     PartModule,
     JoinProjectModule,
+    JoinPartModule,
   ],
   controllers: [AppController],
   providers: [AppService],

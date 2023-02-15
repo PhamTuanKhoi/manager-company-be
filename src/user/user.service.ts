@@ -108,7 +108,7 @@ export class UserService {
       {
         $project: {
           name: '$name',
-          filed: '$field',
+          field: '$field',
         },
       },
     ]);

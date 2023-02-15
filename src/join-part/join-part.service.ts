@@ -48,15 +48,34 @@ export class JoinPartService {
     return `This action returns all joinPart`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} joinPart`;
+  findOne(id: string) {
+    return this.model.findById(id).lean();
   }
 
   update(id: number, updateJoinPartDto: UpdateJoinPartDto) {
     return `This action updates a #${id} joinPart`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} joinPart`;
+  async remove(id: string) {
+    try {
+      await this.isModelExist(id);
+
+      const removed = await this.model.findByIdAndDelete(id);
+
+      this.logger.log(`removed a join-part by id#${removed?._id}`);
+
+      return removed;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async isModelExist(id, opition = false, mess = '') {
+    if (!id && opition) return;
+    const message = mess || 'join-part not found';
+    const isExist = await this.findOne(id);
+    if (!isExist) throw new Error(message);
+    return isExist;
   }
 }

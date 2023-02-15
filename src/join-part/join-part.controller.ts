@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { JoinPartService } from './join-part.service';
 import { CreateJoinPartDto } from './dto/create-join-part.dto';
 import { UpdateJoinPartDto } from './dto/update-join-part.dto';
@@ -19,16 +27,19 @@ export class JoinPartController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.joinPartService.findOne(+id);
+    return this.joinPartService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateJoinPartDto: UpdateJoinPartDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateJoinPartDto: UpdateJoinPartDto,
+  ) {
     return this.joinPartService.update(+id, updateJoinPartDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.joinPartService.remove(+id);
+    return this.joinPartService.remove(id);
   }
 }

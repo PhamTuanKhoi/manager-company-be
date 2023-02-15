@@ -296,55 +296,55 @@ export class PartService {
     return data;
   }
 
-  async updateFieldWorkers(id: string, updatePartDto: UpdatePartDto) {
-    try {
-      const { userId } = updatePartDto;
+  // async updateFieldWorkers(id: string, updatePartDto: UpdatePartDto) {
+  //   try {
+  //     const { userId } = updatePartDto;
 
-      // check input data
-      const isExist: any = await this.isModelExit(id);
+  //     // check input data
+  //     const isExist: any = await this.isModelExit(id);
 
-      await this.userService.isModelExist(updatePartDto.userId);
+  //     await this.userService.isModelExist(updatePartDto.userId);
 
-      const checkUserId = isExist.workers?.find(
-        (item) => item?.toString() === userId,
-      );
+  //     const checkUserId = isExist.workers?.find(
+  //       (item) => item?.toString() === userId,
+  //     );
 
-      if (checkUserId) {
-        this.logger.log(`user have in array workers`);
-        return;
-      }
+  //     if (checkUserId) {
+  //       this.logger.log(`user have in array workers`);
+  //       return;
+  //     }
 
-      const updated = await this.model.findByIdAndUpdate(
-        id,
-        {
-          workers: [...isExist.workers, userId],
-        },
-        { new: true },
-      );
+  //     const updated = await this.model.findByIdAndUpdate(
+  //       id,
+  //       {
+  //         workers: [...isExist.workers, userId],
+  //       },
+  //       { new: true },
+  //     );
 
-      // create assigntask
-      if (isExist.tasks.length > 0) {
-        const createAssignTask = isExist.tasks.map((item: string) =>
-          this.assignTaskService.create({
-            task: item,
-            creator: updatePartDto.creator,
-            worker: userId,
-            workers: '',
-            part: '',
-          }),
-        );
+  //     // create assigntask
+  //     if (isExist.tasks.length > 0) {
+  //       const createAssignTask = isExist.tasks.map((item: string) =>
+  //         this.assignTaskService.create({
+  //           task: item,
+  //           creator: updatePartDto.creator,
+  //           worker: userId,
+  //           workers: '',
+  //           part: '',
+  //         }),
+  //       );
 
-        await Promise.all(createAssignTask);
-      }
+  //       await Promise.all(createAssignTask);
+  //     }
 
-      this.logger.log(`updated field part by id #${updated?._id}`);
+  //     this.logger.log(`updated field part by id #${updated?._id}`);
 
-      return updated;
-    } catch (error) {
-      this.logger.error(error?.message, error.stack);
-      throw new BadRequestException(error?.message);
-    }
-  }
+  //     return updated;
+  //   } catch (error) {
+  //     this.logger.error(error?.message, error.stack);
+  //     throw new BadRequestException(error?.message);
+  //   }
+  // }
 
   async updateFiledTask(id: string, task: string) {
     try {

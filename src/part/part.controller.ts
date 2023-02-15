@@ -37,13 +37,13 @@ export class PartController {
     return this.partService.precent(queryPartDto);
   }
 
-  @Patch('workers/:id')
-  updateFieldWorkers(
-    @Param('id') id: string,
-    @Body() updatePartDto: UpdatePartDto,
-  ) {
-    return this.partService.updateFieldWorkers(id, updatePartDto);
-  }
+  // @Patch('workers/:id')
+  // updateFieldWorkers(
+  //   @Param('id') id: string,
+  //   @Body() updatePartDto: UpdatePartDto,
+  // ) {
+  //   return this.partService.updateFieldWorkers(id, updatePartDto);
+  // }
 
   @Delete('remove-user/:partId/:userId')
   removeUserInPart(

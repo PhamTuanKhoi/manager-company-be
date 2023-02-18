@@ -66,6 +66,9 @@ export class User {
 
   @Prop()
   fieldContent: string;
+
+  @Prop({ default: false })
+  excellent: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

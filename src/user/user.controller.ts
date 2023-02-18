@@ -43,6 +43,11 @@ export class UserController {
     return this.userService.findAllEloyees();
   }
 
+  @Get('worker/excellent')
+  findAllWorkerExcellent() {
+    return this.userService.findAllWorkerExcellent();
+  }
+
   @Get('not-assign-part/:id')
   notAssignPart(@Param('id') id: string) {
     return this.userService.notAssignPart(id);

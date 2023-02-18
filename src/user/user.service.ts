@@ -47,6 +47,21 @@ export class UserService {
     });
   }
 
+  async findAllWorkerExcellent() {
+    return await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $match: {
+          excellent: true,
+        },
+      },
+    ]);
+  }
+
   async notAssignPart(id: string) {
     return await this.model.aggregate([
       {

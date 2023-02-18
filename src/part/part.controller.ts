@@ -27,6 +27,11 @@ export class PartController {
     return this.partService.checkNotTask(queryPartDto);
   }
 
+  @Get('child')
+  findPartByIdPartAndProject(@Query() queryPartDto: QueryPartDto) {
+    return this.partService.findPartByIdPartAndProject(queryPartDto);
+  }
+
   @Get(':id/project')
   findByIdProject(@Param('id') id: string) {
     return this.partService.findByIdProject(id);

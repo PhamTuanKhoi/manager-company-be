@@ -137,6 +137,25 @@ export class PartService {
     return data?.filter((item) => item.tasks.length === 0);
   }
 
+  async findPartByIdPartAndProject(queryPartDto: QueryPartDto) {
+    return this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: queryPartDto.project }],
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$parent', { $toObjectId: queryPartDto.part }],
+          },
+        },
+      },
+    ]);
+  }
+
   async findByIdProject(id: string) {
     return this.model.aggregate([
       {

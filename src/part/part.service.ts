@@ -32,10 +32,18 @@ export class PartService {
 
   async create(createPartDto: CreatePartDto) {
     try {
-      await Promise.all([
-        this.projectService.isModelExist(createPartDto.project),
-        this.userService.isModelExist(createPartDto.creator),
-      ]);
+      const { project, creator, heador, parent } = createPartDto;
+
+      const checkInput = [
+        this.projectService.isModelExist(project),
+        this.userService.isModelExist(creator),
+        this.userService.isModelExist(heador),
+      ];
+
+      // check input data
+      await Promise.all(
+        parent ? [...checkInput, this.isModelExit(parent)] : checkInput,
+      );
 
       const created = await this.model.create(createPartDto);
 
@@ -349,26 +357,26 @@ export class PartService {
   //   }
   // }
 
-  async updateFiledTask(id: string, task: string) {
-    try {
-      const isExits = await this.isModelExit(id);
+  // async updateFiledTask(id: string, task: string) {
+  //   try {
+  //     const isExits = await this.isModelExit(id);
 
-      const updated = await this.model.findByIdAndUpdate(
-        id,
-        {
-          tasks: [...isExits.tasks, task],
-        },
-        { new: true },
-      );
+  //     const updated = await this.model.findByIdAndUpdate(
+  //       id,
+  //       {
+  //         tasks: [...isExits.tasks, task],
+  //       },
+  //       { new: true },
+  //     );
 
-      this.logger.log(`updated a part by id#${updated?._id}`);
+  //     this.logger.log(`updated a part by id#${updated?._id}`);
 
-      return updated;
-    } catch (error) {
-      this.logger.error(error?.message, error.stack);
-      throw new BadRequestException(error?.message);
-    }
-  }
+  //     return updated;
+  //   } catch (error) {
+  //     this.logger.error(error?.message, error.stack);
+  //     throw new BadRequestException(error?.message);
+  //   }
+  // }
 
   // async removeUserInPart(partId: string, userId: string) {
   //   try {

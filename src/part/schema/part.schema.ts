@@ -16,14 +16,14 @@ export class Part {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Project.name })
   project: Project;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
-  workers: User[];
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  heador: User;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   creator: User;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: Task.name }] })
-  tasks: Task[];
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  parent: User;
 }
 
 export const PartSchema = SchemaFactory.createForClass(Part);

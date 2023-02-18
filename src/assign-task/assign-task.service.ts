@@ -614,7 +614,7 @@ export class AssignTaskService {
       this.userService.isModelExist(creator),
       this.userService.isModelManyExist(ids),
       this.partService.isModelExit(part),
-      this.partService.updateFiledTask(part, task),
+      // this.partService.updateFiledTask(part, task),
     ]);
 
     // find id in assigntask

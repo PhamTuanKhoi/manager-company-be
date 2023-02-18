@@ -9,11 +9,15 @@ export class CreatePartDto {
   @IsString()
   project: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  workers: [];
+  heador: string;
 
   @IsNotEmpty()
   @IsString()
   creator: string;
+
+  @IsOptional()
+  @IsString()
+  parent: string;
 }

@@ -79,7 +79,7 @@ export class PartService {
             {
               $match: {
                 $expr: {
-                  $eq: ['$_id', { $toObjectId: queryPartDto.task }],
+                  $eq: ['$task', { $toObjectId: queryPartDto.task }],
                 },
               },
             },

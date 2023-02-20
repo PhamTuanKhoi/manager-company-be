@@ -603,62 +603,62 @@ export class AssignTaskService {
     }
   }
 
-  async createByPart(createAssignTaskDto: CreateAssignTaskDto) {
-    const { task, workers, creator, part } = createAssignTaskDto;
+  // async createByPart(createAssignTaskDto: CreateAssignTaskDto) {
+  //   const { task, workers, creator, part } = createAssignTaskDto;
 
-    const ids: string[] = JSON.parse(workers);
+  //   const ids: string[] = JSON.parse(workers);
 
-    // check input data
-    await Promise.all([
-      this.taskService.isExitModel(task),
-      this.userService.isModelExist(creator),
-      this.userService.isModelManyExist(ids),
-      this.partService.isModelExit(part),
-      // this.partService.updateFiledTask(part, task),
-    ]);
+  //   // check input data
+  //   await Promise.all([
+  //     this.taskService.isExitModel(task),
+  //     this.userService.isModelExist(creator),
+  //     this.userService.isModelManyExist(ids),
+  //     this.partService.isModelExit(part),
+  //     // this.partService.updateFiledTask(part, task),
+  //   ]);
 
-    // find id in assigntask
-    const idExits: any = await this.model.find({ worker: ids, task });
+  //   // find id in assigntask
+  //   const idExits: any = await this.model.find({ worker: ids, task });
 
-    // check id in assigntask
-    let input: string[] = [];
+  //   // check id in assigntask
+  //   let input: string[] = [];
 
-    if (idExits.length > 0) {
-      idExits?.map((item) =>
-        ids.map((i) => {
-          if (i !== item.worker.toString()) {
-            input.push(i);
-          }
-        }),
-      );
-    }
+  //   if (idExits.length > 0) {
+  //     idExits?.map((item) =>
+  //       ids.map((i) => {
+  //         if (i !== item.worker.toString()) {
+  //           input.push(i);
+  //         }
+  //       }),
+  //     );
+  //   }
 
-    // 1 create ids  in assigntask
-    if (input.length > 0) {
-      const query = input.map((i) =>
-        this.model.create({ task, worker: i, creator }),
-      );
+  //   // 1 create ids  in assigntask
+  //   if (input.length > 0) {
+  //     const query = input.map((i) =>
+  //       this.model.create({ task, worker: i, creator }),
+  //     );
 
-      const created = await Promise.all(query);
+  //     const created = await Promise.all(query);
 
-      this.logger.log(`created ${created.length} new assign`);
+  //     this.logger.log(`created ${created.length} new assign`);
 
-      return created;
-    }
-    // 1 create ids  in assigntask
+  //     return created;
+  //   }
+  //   // 1 create ids  in assigntask
 
-    // 2. create ids not in assign task
-    const query = ids.map((i) =>
-      this.model.create({ task, worker: i, creator }),
-    );
+  //   // 2. create ids not in assign task
+  //   const query = ids.map((i) =>
+  //     this.model.create({ task, worker: i, creator }),
+  //   );
 
-    const created = await Promise.all(query);
+  //   const created = await Promise.all(query);
 
-    this.logger.log(`created ${created.length} new assign`);
+  //   this.logger.log(`created ${created.length} new assign`);
 
-    return created;
-    // 2. create ids not in assign task
-  }
+  //   return created;
+  //   // 2. create ids not in assign task
+  // }
 
   async updatePerform(id: string, updatePerform: { verify: boolean }) {
     try {

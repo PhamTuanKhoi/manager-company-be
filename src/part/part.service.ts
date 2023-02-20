@@ -139,40 +139,64 @@ export class PartService {
       },
       {
         $lookup: {
+          from: 'parttasks',
+          localField: '_id',
+          foreignField: 'part',
+          as: 'parttaskEX',
+        },
+      },
+      {
+        $addFields: {
+          size: {
+            $size: '$parttaskEX',
+          },
+        },
+      },
+      {
+        $match: {
+          parent: {
+            $exists: false,
+          },
+        },
+      },
+      {
+        $lookup: {
           from: 'joinparts',
           localField: '_id',
           foreignField: 'part',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'joinor',
-                foreignField: '_id',
-                pipeline: [
-                  {
-                    $project: {
-                      name: '$name',
-                      field: '$field',
-                    },
-                  },
-                ],
-                as: 'userEX',
-              },
-            },
-            {
-              $unwind: '$userEX',
-            },
-            {
-              $project: {
-                _id: 0,
-                joinpartId: '$_id',
-                userId: '$userEX._id',
-                name: '$userEX.name',
-                field: '$userEX.field',
-              },
-            },
-          ],
           as: 'joinpartEX',
+        },
+      },
+      {
+        $addFields: {
+          sizeJoinPart: {
+            $size: '$joinpartEX',
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'parts',
+          localField: '_id',
+          foreignField: 'parent',
+          as: 'childEX',
+        },
+      },
+      {
+        $addFields: {
+          sizeChild: {
+            $size: '$childEX',
+          },
+        },
+      },
+      {
+        $project: {
+          name: '$name',
+          project: '$project',
+          heador: '$heador',
+          size: '$size',
+          sizeJoinPart: '$sizeJoinPart',
+          sizeChild: '$sizeChild',
         },
       },
     ]);

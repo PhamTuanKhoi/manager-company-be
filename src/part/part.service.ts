@@ -62,7 +62,7 @@ export class PartService {
 
   // not use
   async checkNotTask(queryPartDto: QueryPartDto) {
-    const data = await this.model.aggregate([
+    return await this.model.aggregate([
       {
         $match: {
           $expr: {
@@ -72,69 +72,41 @@ export class PartService {
       },
       {
         $lookup: {
-          from: 'users',
-          localField: 'workers',
-          foreignField: '_id',
+          from: 'parttasks',
+          localField: '_id',
+          foreignField: 'part',
           pipeline: [
             {
-              $project: {
-                _id: '$_id',
-                userId: '$_id',
-                name: '$name',
-                filed: '$field',
-                avartar: '$avartar',
+              $match: {
+                $expr: {
+                  $eq: ['$_id', { $toObjectId: queryPartDto.task }],
+                },
               },
             },
           ],
-          as: 'userEX',
+          as: 'parttaskEX',
         },
       },
       {
-        $unwind: { path: '$tasks', preserveNullAndEmptyArrays: true },
-      },
-      {
-        $project: {
-          _id: '$_id',
-          name: '$name',
-          workers: '$workers',
-          creator: '$creator',
-          userEX: '$userEX',
-          tasks: {
-            $cond: {
-              if: { $eq: [{ $toObjectId: queryPartDto.task }, '$tasks'] },
-              then: '$tasks',
-              else: '$$REMOVE',
-            },
+        $addFields: {
+          size: {
+            $size: '$parttaskEX',
           },
         },
       },
       {
-        $group: {
-          _id: {
-            _id: '$_id',
-            name: '$name',
-            workers: '$workers',
-            creator: '$creator',
-            userEX: '$userEX',
-          },
-          tasks: {
-            $push: '$tasks',
-          },
+        $match: {
+          size: 0,
         },
       },
       {
-        $project: {
-          _id: '$_id._id',
-          name: '$_id.name',
-          workers: '$_id.workers',
-          creator: '$_id.creator',
-          userEX: '$_id.userEX',
-          tasks: '$tasks',
+        $match: {
+          parent: {
+            $exists: false,
+          },
         },
       },
     ]);
-
-    return data?.filter((item) => item.tasks.length === 0);
   }
 
   async findPartByIdPartAndProject(queryPartDto: QueryPartDto) {

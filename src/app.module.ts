@@ -16,6 +16,7 @@ import { PartModule } from './part/part.module';
 import { JoinProjectModule } from './join-project/join-project.module';
 import { JoinPartModule } from './join-part/join-part.module';
 import { PartTaskModule } from './part-task/part-task.module';
+import { AttendanceModule } from './attendance/attendance.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PartTaskModule } from './part-task/part-task.module';
     JoinProjectModule,
     JoinPartModule,
     PartTaskModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

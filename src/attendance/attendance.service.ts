@@ -6,13 +6,14 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Response } from 'express';
 import { Model } from 'mongoose';
 import { ProjectService } from 'src/project/project.service';
 import { UserService } from 'src/user/user.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { Attendance, AttendanceDocument } from './schema/attendance.schema';
-
+import * as WiFiControl from 'wifi-control';
 @Injectable()
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
@@ -32,7 +33,36 @@ export class AttendanceService {
         this.userService.isModelExist(createAttendanceDto.user),
         this.projectService.isModelExist(createAttendanceDto.project),
       ]);
+      // var _ap = {
+      //   ssid: 'FCE Solutions',
+      //   password: '55558888',
+      // };
+
+      // // get login wifi
+      // let res: boolean = false;
+      // WiFiControl.connectToAP(_ap, function (err, response) {
+      //   if (err) console.log(err);
+      //   res = response.success;
+      // });
       return 'This action adds a new attendance';
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async fetchWiffi(res: Response) {
+    try {
+      //  Initialize wifi-control package with verbose output
+      WiFiControl.init({
+        debug: true,
+      });
+
+      //  Try scanning for access points:
+      WiFiControl.scanForWiFi(function (err, response) {
+        if (err) console.log(err);
+        if (response.networks) res.status(200).json(response.networks);
+      });
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

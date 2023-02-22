@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Get, Param } from '@nestjs/common';
 import { RulesService } from './rules.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
@@ -7,8 +7,18 @@ import { UpdateRuleDto } from './dto/update-rule.dto';
 export class RulesController {
   constructor(private readonly rulesService: RulesService) {}
 
+  @Get(':id/project')
+  findOneRefProject(@Param('id') id: string) {
+    return this.rulesService.findOneRefProject(id);
+  }
+
   @Post()
   create(@Body() createRuleDto: CreateRuleDto) {
     return this.rulesService.create(createRuleDto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateRuleDto: UpdateRuleDto) {
+    return this.rulesService.update(id, updateRuleDto);
   }
 }

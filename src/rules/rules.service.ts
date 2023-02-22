@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   forwardRef,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Logger,
@@ -23,36 +25,63 @@ export class RulesService {
     private readonly projectService: ProjectService,
   ) {}
 
+  findOneRefProject(id: string) {
+    return this.model.findOne({ project: id }).lean();
+  }
+
   async create(createRuleDto: CreateRuleDto) {
     try {
+      const isExists = await this.findOneRefProject(createRuleDto.project);
+      if (isExists)
+        throw new HttpException(
+          'wiffi đã được cài đặt trướt đó!',
+          HttpStatus.FORBIDDEN,
+        );
+
       await this.projectService.isModelExist(createRuleDto.project);
-      var _ap = {
-        ssid: createRuleDto.wiffi,
-        password: createRuleDto.password,
-      };
 
-      WiFiControl.init({
-        debug: true,
+      // check loggin wiffi
+      await this.logginWiffi(createRuleDto.wiffi, createRuleDto.password);
+
+      const created = await this.model.create(createRuleDto);
+
+      this.logger.log(`created a new rules by id#${created?._id}`);
+
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async update(id: string, updateRuleDto: UpdateRuleDto) {
+    try {
+      const { wiffi, wiffiOld, password, passwordOld, project } = updateRuleDto;
+
+      // check input project id
+      await this.projectService.isModelExist(project);
+
+      // assign api
+      const updatedRules = this.model.findByIdAndUpdate(id, updateRuleDto, {
+        new: true,
       });
-      // get login wifi
-      let res: boolean = false;
 
-      WiFiControl.connectToAP(_ap, function (err, response) {
-        if (err) console.log(err);
-        // assign value res
-        res = response.success;
+      if (wiffi === wiffiOld && password === passwordOld) {
+        const updated = await updatedRules;
 
-        if (!response.success)
-          throw new Error('Tên wiffi hoặc mật khẩu không chính xác!');
-      });
+        this.logger.log(`updated a rules by id#${updated?._id}`);
 
-      if (res) {
-        const created = await this.model.create(createRuleDto);
-
-        this.logger.log(`created a new rules by id#${created?._id}`);
-
-        return created;
+        return updated;
       }
+
+      // check login wiffi
+      await this.logginWiffi(wiffi, password);
+
+      const updated = await updatedRules;
+
+      this.logger.log(`updated a rules by id#${updated?._id}`);
+
+      return updated;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
@@ -69,5 +98,32 @@ export class RulesService {
     const isExists = this.findOne(id);
     if (!isExists) throw new Error(message);
     return isExists;
+  }
+
+  async logginWiffi(wiffi, password) {
+    // check login wiffi
+    var _ap = {
+      ssid: wiffi,
+      password: password,
+    };
+
+    WiFiControl.init({
+      debug: true,
+    });
+    // get login wifi
+    let res: boolean = false;
+
+    WiFiControl.connectToAP(_ap, function (err, response) {
+      if (err) console.log(err);
+      // assign value res
+      res = response.success;
+
+      console.log(response);
+
+      if (!response.success)
+        throw new Error('Tên wiffi hoặc mật khẩu không chính xác!');
+    });
+
+    return res;
   }
 }

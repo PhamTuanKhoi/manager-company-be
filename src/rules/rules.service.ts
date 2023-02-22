@@ -11,6 +11,7 @@ import { ProjectService } from 'src/project/project.service';
 import { CreateRuleDto } from './dto/create-rule.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { Rule, RuleDocument } from './schema/rule.schema';
+import * as WiFiControl from 'wifi-control';
 
 @Injectable()
 export class RulesService {
@@ -22,9 +23,36 @@ export class RulesService {
     private readonly projectService: ProjectService,
   ) {}
 
-  create(createRuleDto: CreateRuleDto) {
+  async create(createRuleDto: CreateRuleDto) {
     try {
-      return 'This action adds a new rule';
+      await this.projectService.isModelExist(createRuleDto.project);
+      var _ap = {
+        ssid: createRuleDto.wiffi,
+        password: createRuleDto.password,
+      };
+
+      WiFiControl.init({
+        debug: true,
+      });
+      // get login wifi
+      let res: boolean = false;
+
+      WiFiControl.connectToAP(_ap, function (err, response) {
+        if (err) console.log(err);
+        // assign value res
+        res = response.success;
+
+        if (!response.success)
+          throw new Error('Tên wiffi hoặc mật khẩu không chính xác!');
+      });
+
+      if (res) {
+        const created = await this.model.create(createRuleDto);
+
+        this.logger.log(`created a new rules by id#${created?._id}`);
+
+        return created;
+      }
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

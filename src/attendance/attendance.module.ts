@@ -5,11 +5,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Attendance, AttendanceSchema } from './schema/attendance.schema';
 import { UserModule } from 'src/user/user.module';
 import { ProjectModule } from 'src/project/project.module';
+import { RulesModule } from 'src/rules/rules.module';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
     forwardRef(() => ProjectModule),
+    forwardRef(() => RulesModule),
     MongooseModule.forFeature([
       { name: Attendance.name, schema: AttendanceSchema },
     ]),

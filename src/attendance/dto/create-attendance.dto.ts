@@ -8,4 +8,8 @@ export class CreateAttendanceDto {
   @IsNotEmpty()
   @IsString()
   project: string;
+
+  @IsNotEmpty()
+  @IsString()
+  wiffi: string;
 }

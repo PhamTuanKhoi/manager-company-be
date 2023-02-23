@@ -19,9 +19,6 @@ export class Attendance {
   datetime: number;
 
   @Prop()
-  date: number;
-
-  @Prop()
   time: number;
 }
 

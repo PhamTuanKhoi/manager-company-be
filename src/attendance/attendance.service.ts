@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   forwardRef,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Logger,
@@ -14,6 +16,7 @@ import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { Attendance, AttendanceDocument } from './schema/attendance.schema';
 import * as WiFiControl from 'wifi-control';
+import { RulesService } from 'src/rules/rules.service';
 @Injectable()
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
@@ -24,27 +27,42 @@ export class AttendanceService {
     private readonly userService: UserService,
     @Inject(forwardRef(() => ProjectService))
     private readonly projectService: ProjectService,
+    @Inject(forwardRef(() => RulesService))
+    private readonly rulesService: RulesService,
   ) {}
 
   async create(createAttendanceDto: CreateAttendanceDto) {
     try {
+      const { user, project, wiffi } = createAttendanceDto;
       // check input data
       await Promise.all([
-        this.userService.isModelExist(createAttendanceDto.user),
-        this.projectService.isModelExist(createAttendanceDto.project),
+        this.userService.isModelExist(user),
+        this.projectService.isModelExist(project),
       ]);
-      // var _ap = {
-      //   ssid: 'FCE Solutions',
-      //   password: '55558888',
-      // };
 
-      // // get login wifi
-      // let res: boolean = false;
-      // WiFiControl.connectToAP(_ap, function (err, response) {
-      //   if (err) console.log(err);
-      //   res = response.success;
-      // });
-      return 'This action adds a new attendance';
+      const rules = await this.rulesService.findByIdProjects(wiffi, project);
+
+      if (!rules)
+        throw new HttpException(
+          `${wiffi} không phải wiffi chấm công của dự án!`,
+          HttpStatus.FORBIDDEN,
+        );
+
+      // format date time
+      const datetime = Date.now();
+      const hour = new Date(datetime).getHours();
+      const minute = new Date(datetime).getMinutes();
+      const time = hour * 3600 + minute * 60;
+
+      const created = await this.model.create({
+        ...createAttendanceDto,
+        datetime,
+        time,
+      });
+
+      this.logger.log(`Created a new attendance by id#${created?._id}`);
+
+      return created;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

@@ -92,6 +92,10 @@ export class RulesService {
     return this.model.findById(id).lean();
   }
 
+  findByIdProjects(wiffi: string, project: string) {
+    return this.model.findOne({ wiffi, project }).lean();
+  }
+
   async isModelExists(id, isOption = false, msg = '') {
     if (!id && isOption) return;
     const message = msg || 'Rule not found';

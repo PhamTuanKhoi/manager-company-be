@@ -167,19 +167,19 @@ export class ProjectService {
     const data = await this.model.aggregate([
       {
         $lookup: {
-          from: 'workerprojects',
+          from: 'joinprojects',
           localField: '_id',
           foreignField: 'project',
-          as: 'workerprojectEX',
+          as: 'joinproject',
         },
       },
       {
-        $unwind: '$workerprojectEX',
+        $unwind: '$joinproject',
       },
       {
         $match: {
           $expr: {
-            $eq: ['$workerprojectEX.worker', { $toObjectId: id }],
+            $eq: ['$joinproject.joinor', { $toObjectId: id }],
           },
         },
       },

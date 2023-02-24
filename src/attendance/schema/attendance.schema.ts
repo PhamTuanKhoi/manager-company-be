@@ -28,7 +28,7 @@ export class Attendance {
   timein: number;
 
   @Prop({ default: 0 })
-  timeout: number;
+  timeout?: number;
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);

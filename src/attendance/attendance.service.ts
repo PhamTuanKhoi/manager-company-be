@@ -17,6 +17,7 @@ import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { Attendance, AttendanceDocument } from './schema/attendance.schema';
 import * as WiFiControl from 'wifi-control';
 import { RulesService } from 'src/rules/rules.service';
+import { QueryAttendanceDto } from './dto/query-attendance.dto';
 @Injectable()
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
@@ -31,13 +32,37 @@ export class AttendanceService {
     private readonly rulesService: RulesService,
   ) {}
 
-  async getAttendancePersonal(query: { user: string }) {
-    const data = await this.model.aggregate([]);
-
-    return { data };
+  async getAttendancePersonal(queryAttendanceDto: QueryAttendanceDto) {
+    return await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$user', { $toObjectId: queryAttendanceDto.user }],
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: queryAttendanceDto.project }],
+          },
+        },
+      },
+      {
+        $match: {
+          month: new Date().getMonth() + 1,
+        },
+      },
+      {
+        $sort: {
+          datetime: -1,
+        },
+      },
+    ]);
   }
 
-  async toDayAttendance(user: string, project: string, date: number) {
+  async toDayAttendance(queryAttendanceDto: QueryAttendanceDto) {
+    const { user, project, date } = queryAttendanceDto;
     return await this.model.findOne({ user, project, date }).lean();
   }
 
@@ -58,13 +83,13 @@ export class AttendanceService {
           HttpStatus.FORBIDDEN,
         );
 
-      const attendance = await this.toDayAttendance(
+      const attendance = await this.toDayAttendance({
         user,
         project,
-        new Date().getDate(),
-      );
+        date: new Date().getDate(),
+      });
 
-      if (attendance.timeout > 0)
+      if (attendance?.timeout > 0)
         throw new HttpException(
           `Bạn đã chấm công 2 lần trong ngày!`,
           HttpStatus.FORBIDDEN,
@@ -77,18 +102,19 @@ export class AttendanceService {
       const time = hour * 3600 + minute * 60;
 
       //  ----------------------------- update ------------------------
-      if (attendance.timeout === 0) {
-        const updated = this.update(attendance._id.toString(), {
+      if (attendance?.timeout === 0) {
+        return this.update(attendance._id.toString(), {
           user,
           project,
           timeout: time,
         });
       }
 
+      //  ----------------------------- create ------------------------
       const created = await this.model.create({
         ...createAttendanceDto,
         datetime,
-        time,
+        timein: time,
       });
 
       this.logger.log(`Created a new attendance by id#${created?._id}`);

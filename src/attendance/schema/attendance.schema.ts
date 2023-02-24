@@ -21,8 +21,14 @@ export class Attendance {
   @Prop({ default: new Date().getMonth() + 1 })
   month: number;
 
-  @Prop()
-  time: number;
+  @Prop({ default: new Date().getDate() })
+  date: number;
+
+  @Prop({ default: 0 })
+  timein: number;
+
+  @Prop({ default: 0 })
+  timeout: number;
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);

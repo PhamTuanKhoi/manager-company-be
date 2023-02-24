@@ -18,6 +18,9 @@ export class Attendance {
   @Prop()
   datetime: number;
 
+  @Prop({ default: new Date().getMonth() + 1 })
+  month: number;
+
   @Prop()
   time: number;
 }

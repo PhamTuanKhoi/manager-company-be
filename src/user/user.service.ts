@@ -24,6 +24,7 @@ import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
 
 @Injectable()
 export class UserService {
@@ -777,6 +778,132 @@ export class UserService {
     }
 
     return employees || leader;
+  }
+
+  async userAttendance(query: { project: string; date: string }) {
+    const dates = JSON.parse(query.date).sort((a, b) => a - b);
+
+    const mock = await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $lookup: {
+          from: 'attendances',
+          localField: '_id',
+          foreignField: 'user',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$project', { $toObjectId: query.project }],
+                },
+              },
+            },
+            {
+              $match: {
+                month: new Date().getMonth() + 1,
+              },
+            },
+            {
+              $sort: {
+                datetime: 1,
+              },
+            },
+          ],
+          as: 'attendance',
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$project', { $toObjectId: query.project }],
+                },
+              },
+            },
+          ],
+          as: 'joinproject',
+        },
+      },
+      {
+        $unwind: '$joinproject',
+      },
+      {
+        $addFields: {
+          timeIn: {
+            $first: '$attendance',
+          },
+        },
+      },
+      {
+        $addFields: {
+          timeOut: {
+            $first: {
+              $slice: ['$attendance', 1, 1],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: '$_id',
+          name: '$name',
+          attendance: '$attendance',
+          timeIn: {
+            $ifNull: ['$timeIn.time', 0],
+          },
+          timeOut: {
+            $ifNull: ['$timeOut.time', 0],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: '$_id',
+          name: '$name',
+          attendance: '$attendance',
+          timeIn: '$timeIn',
+          timeOut: '$timeOut',
+          status: {
+            $switch: {
+              branches: [
+                {
+                  case: {
+                    $gte: [{ $subtract: ['$timeOut', '$timeIn'] }, 28800],
+                  },
+                  then: true,
+                },
+                {
+                  case: {
+                    $eq: [{ $subtract: ['$timeOut', '$timeIn'] }, 0],
+                  },
+                  then: false,
+                },
+                {
+                  case: {
+                    $lt: [{ $subtract: ['$timeOut', '$timeIn'] }, 28800],
+                  },
+                  then: 'faile',
+                },
+              ],
+            },
+          },
+          hieu: { $subtract: ['$timeOut', '$timeIn'] },
+        },
+      },
+    ]);
+
+    console.log(dates);
+
+    return { c: mock.length, mock };
   }
 
   findOne(id: string) {

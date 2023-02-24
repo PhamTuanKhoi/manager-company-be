@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   SetMetadata,
+  Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-dto/create-user.dto';
@@ -22,6 +23,7 @@ import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { UserRoleEnum } from './interfaces/role-user.enum';
+import { Response } from 'express';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -103,6 +105,11 @@ export class UserController {
   @Get('worker-role-employees/:id')
   findAllWorkerByEmployees(@Param('id') id: string) {
     return this.userService.findAllWorkerByEmployees(id);
+  }
+
+  @Get('attendance')
+  userAttendance(@Query() query: { project: string; date: string }) {
+    return this.userService.userAttendance(query);
   }
 
   @Get(':id')

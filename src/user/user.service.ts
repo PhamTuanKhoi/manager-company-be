@@ -781,7 +781,12 @@ export class UserService {
   }
 
   async userAttendance(query: { project: string; date: string }) {
-    const dates = JSON.parse(query.date).sort((a, b) => a - b);
+    const dateInMonth = JSON.parse(query.date).sort((a, b) => a - b);
+    const dateInMonthAttendance = dateInMonth?.map((item) => ({
+      date: item,
+      timein: 0,
+      timeout: 0,
+    }));
 
     const mock = await this.model.aggregate([
       {
@@ -812,6 +817,99 @@ export class UserService {
                 datetime: 1,
               },
             },
+            {
+              $project: {
+                _id: 0,
+                adjustedGrades: {
+                  $map: {
+                    input: dateInMonthAttendance,
+                    as: 'item',
+                    in: {
+                      $cond: {
+                        if: { $eq: ['$$item.date', '$date'] },
+                        then: {
+                          date: '$date',
+                          timein: '$timein',
+                          timeout: '$timeout',
+                        },
+                        else: '$$item',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $unwind: '$adjustedGrades',
+            },
+            {
+              $group: {
+                _id: {
+                  adjustedGrades: '$adjustedGrades',
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                date: '$_id.adjustedGrades.date',
+                timein: '$_id.adjustedGrades.timein',
+                timeout: '$_id.adjustedGrades.timeout',
+                status: {
+                  $switch: {
+                    branches: [
+                      {
+                        case: {
+                          $gte: [
+                            {
+                              $subtract: [
+                                '$_id.adjustedGrades.timeout',
+                                '$_id.adjustedGrades.timein',
+                              ],
+                            },
+                            28800,
+                          ],
+                        },
+                        then: true,
+                      },
+                      {
+                        case: {
+                          $eq: [
+                            {
+                              $subtract: [
+                                '$_id.adjustedGrades.timeout',
+                                '$_id.adjustedGrades.timein',
+                              ],
+                            },
+                            0,
+                          ],
+                        },
+                        then: false,
+                      },
+                      {
+                        case: {
+                          $lt: [
+                            {
+                              $subtract: [
+                                '$_id.adjustedGrades.timeout',
+                                '$_id.adjustedGrades.timein',
+                              ],
+                            },
+                            28800,
+                          ],
+                        },
+                        then: 'faile',
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            {
+              $sort: {
+                date: 1,
+              },
+            },
           ],
           as: 'attendance',
         },
@@ -837,73 +935,17 @@ export class UserService {
         $unwind: '$joinproject',
       },
       {
-        $addFields: {
-          timeIn: {
-            $first: '$attendance',
-          },
-        },
-      },
-      {
-        $addFields: {
-          timeOut: {
-            $first: {
-              $slice: ['$attendance', 1, 1],
-            },
-          },
-        },
-      },
-      {
         $project: {
           _id: '$_id',
           name: '$name',
+          email: '$email',
           attendance: '$attendance',
-          timeIn: {
-            $ifNull: ['$timeIn.time', 0],
-          },
-          timeOut: {
-            $ifNull: ['$timeOut.time', 0],
-          },
-        },
-      },
-      {
-        $project: {
-          _id: '$_id',
-          name: '$name',
-          attendance: '$attendance',
-          timeIn: '$timeIn',
-          timeOut: '$timeOut',
-          status: {
-            $switch: {
-              branches: [
-                {
-                  case: {
-                    $gte: [{ $subtract: ['$timeOut', '$timeIn'] }, 28800],
-                  },
-                  then: true,
-                },
-                {
-                  case: {
-                    $eq: [{ $subtract: ['$timeOut', '$timeIn'] }, 0],
-                  },
-                  then: false,
-                },
-                {
-                  case: {
-                    $lt: [{ $subtract: ['$timeOut', '$timeIn'] }, 28800],
-                  },
-                  then: 'faile',
-                },
-              ],
-            },
-          },
-          hieu: { $subtract: ['$timeOut', '$timeIn'] },
         },
       },
     ]);
 
-    console.log(dates);
-
-    return { c: mock.length, mock };
+    return mock;
+    // return { c: mock.length, mock };
   }
 
   findOne(id: string) {

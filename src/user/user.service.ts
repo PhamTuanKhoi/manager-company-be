@@ -25,6 +25,7 @@ import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
+import { QueryUserAttendaceDto } from './dto/query-dto/user-attendance-query.dto';
 
 @Injectable()
 export class UserService {
@@ -780,15 +781,16 @@ export class UserService {
     return employees || leader;
   }
 
-  async userAttendance(query: { project: string; date: string }) {
-    const dateInMonth = JSON.parse(query.date).sort((a, b) => a - b);
+  async userAttendance(query: QueryUserAttendaceDto) {
+    const { page, limit, project, date } = query;
+    const dateInMonth = JSON.parse(date).sort((a, b) => a - b);
     const dateInMonthAttendance = dateInMonth?.map((item) => ({
       date: item,
       timein: 0,
       timeout: 0,
     }));
 
-    const mock = await this.model.aggregate([
+    const pipeline: any = [
       {
         $match: {
           role: UserRoleEnum.WORKER,
@@ -803,18 +805,13 @@ export class UserService {
             {
               $match: {
                 $expr: {
-                  $eq: ['$project', { $toObjectId: query.project }],
+                  $eq: ['$project', { $toObjectId: project }],
                 },
               },
             },
             {
               $match: {
                 month: new Date().getMonth() + 1,
-              },
-            },
-            {
-              $sort: {
-                datetime: 1,
               },
             },
             {
@@ -908,6 +905,7 @@ export class UserService {
             {
               $sort: {
                 date: 1,
+                timein: -1,
               },
             },
           ],
@@ -942,10 +940,26 @@ export class UserService {
           attendance: '$attendance',
         },
       },
+    ];
+    let findQuery = this.model.aggregate(pipeline);
+
+    if (page && limit) {
+      findQuery = findQuery.limit(limit * page).skip((page - 1) * limit);
+    }
+
+    const [data, count] = await Promise.all([
+      findQuery,
+      (await this.model.aggregate(pipeline)).length,
     ]);
 
-    return mock;
-    // return { c: mock.length, mock };
+    return {
+      items: data,
+      paginate: {
+        count: count || 0,
+        limit: limit,
+        page: page,
+      },
+    };
   }
 
   findOne(id: string) {

@@ -189,7 +189,116 @@ export class ProjectService {
   }
 
   findByIdAdmin() {
-    return this.model.find();
+    return this.model.aggregate([
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'project',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'joinor',
+                pipeline: [
+                  {
+                    $match: {
+                      role: UserRoleEnum.WORKER,
+                    },
+                  },
+                ],
+                foreignField: '_id',
+                as: 'userEX',
+              },
+            },
+            {
+              $unwind: '$userEX',
+            },
+          ],
+          as: 'joinprojectWorker',
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'project',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'joinor',
+                pipeline: [
+                  {
+                    $match: {
+                      role: UserRoleEnum.CLIENT,
+                    },
+                  },
+                ],
+                foreignField: '_id',
+                as: 'userEX',
+              },
+            },
+            {
+              $unwind: '$userEX',
+            },
+          ],
+          as: 'joinprojectClient',
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'project',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'joinor',
+                pipeline: [
+                  {
+                    $match: {
+                      role: UserRoleEnum.EMPLOYEE,
+                    },
+                  },
+                ],
+                foreignField: '_id',
+                as: 'userEX',
+              },
+            },
+            {
+              $unwind: '$userEX',
+            },
+          ],
+          as: 'joinprojectEmployee',
+        },
+      },
+      {
+        $lookup: {
+          from: 'payslips',
+          localField: 'payslip',
+          foreignField: '_id',
+          as: 'payslipEX',
+        },
+      },
+      {
+        $project: {
+          name: '$name',
+          priority: '$priority',
+          price: '$price',
+          start: '$start',
+          end: '$end',
+          status: '$status',
+          content: '$content',
+          paylip: '$paylip',
+          payslipEX: '$payslipEX',
+          workers: '$joinprojectWorker.userEX',
+          clients: '$joinprojectClient.userEX',
+          employees: '$joinprojectEmployee.userEX',
+        },
+      },
+    ]);
   }
 
   findById(id: string) {
@@ -204,14 +313,31 @@ export class ProjectService {
         },
         {
           $lookup: {
-            from: 'users',
-            localField: 'creator',
-            foreignField: '_id',
-            as: 'creator',
+            from: 'joinprojects',
+            localField: '_id',
+            foreignField: 'project',
+            pipeline: [
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'joinor',
+                  pipeline: [
+                    {
+                      $match: {
+                        role: UserRoleEnum.WORKER,
+                      },
+                    },
+                  ],
+                  foreignField: '_id',
+                  as: 'userEX',
+                },
+              },
+              {
+                $unwind: '$userEX',
+              },
+            ],
+            as: 'joinprojectWorker',
           },
-        },
-        {
-          $unwind: '$creator',
         },
         {
           $lookup: {
@@ -223,6 +349,13 @@ export class ProjectService {
                 $lookup: {
                   from: 'users',
                   localField: 'joinor',
+                  pipeline: [
+                    {
+                      $match: {
+                        role: UserRoleEnum.CLIENT,
+                      },
+                    },
+                  ],
                   foreignField: '_id',
                   as: 'userEX',
                 },
@@ -231,7 +364,35 @@ export class ProjectService {
                 $unwind: '$userEX',
               },
             ],
-            as: 'joinprojectEX',
+            as: 'joinprojectClient',
+          },
+        },
+        {
+          $lookup: {
+            from: 'joinprojects',
+            localField: '_id',
+            foreignField: 'project',
+            pipeline: [
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'joinor',
+                  pipeline: [
+                    {
+                      $match: {
+                        role: UserRoleEnum.EMPLOYEE,
+                      },
+                    },
+                  ],
+                  foreignField: '_id',
+                  as: 'userEX',
+                },
+              },
+              {
+                $unwind: '$userEX',
+              },
+            ],
+            as: 'joinprojectEmployee',
           },
         },
         {
@@ -253,7 +414,9 @@ export class ProjectService {
             content: '$content',
             paylip: '$paylip',
             payslipEX: '$payslipEX',
-            userEX: '$joinprojectEX.userEX',
+            workers: '$joinprojectWorker.userEX',
+            clients: '$joinprojectClient.userEX',
+            employees: '$joinprojectEmployee.userEX',
           },
         },
       ]);

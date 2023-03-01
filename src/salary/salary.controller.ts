@@ -15,6 +15,11 @@ import { UpdateSalaryDto } from './dto/update-salary.dto';
 export class SalaryController {
   constructor(private readonly salaryService: SalaryService) {}
 
+  @Get()
+  list() {
+    return this.salaryService.list();
+  }
+
   @Post()
   create(@Body() createSalaryDto: CreateSalaryDto) {
     return this.salaryService.create(createSalaryDto);

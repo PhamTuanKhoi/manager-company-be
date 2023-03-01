@@ -26,7 +26,26 @@ export class SalaryService {
   ) {}
 
   list() {
-    return this.model.find();
+    return this.model.aggregate([
+      {
+        $lookup: {
+          from: 'projects',
+          localField: 'project',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: {
+                name: '$name',
+              },
+            },
+          ],
+          as: 'projectEX',
+        },
+      },
+      {
+        $unwind: '$projectEX',
+      },
+    ]);
   }
 
   findOne(id: string) {

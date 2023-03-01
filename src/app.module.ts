@@ -18,6 +18,7 @@ import { JoinPartModule } from './join-part/join-part.module';
 import { PartTaskModule } from './part-task/part-task.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { RulesModule } from './rules/rules.module';
+import { SalaryModule } from './salary/salary.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { RulesModule } from './rules/rules.module';
     PartTaskModule,
     AttendanceModule,
     RulesModule,
+    SalaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

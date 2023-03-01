@@ -14,6 +14,10 @@ export class CreateSalaryDto {
 
   @IsNotEmpty()
   @IsString()
+  creator: string;
+
+  @IsNotEmpty()
+  @IsString()
   @Length(4, 100)
   beneficiary: string;
 

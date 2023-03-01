@@ -25,6 +25,10 @@ export class SalaryService {
     private readonly projectService: ProjectService,
   ) {}
 
+  list() {
+    return this.model.find();
+  }
+
   findOne(id: string) {
     return this.model.findById(id).lean();
   }

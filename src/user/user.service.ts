@@ -432,6 +432,16 @@ export class UserService {
     ]);
   }
 
+  findAllLeader() {
+    return this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.LEADER,
+        },
+      },
+    ]);
+  }
+
   findByUsername(username: string) {
     return this.model.findOne({ username }).select('+password').lean();
   }

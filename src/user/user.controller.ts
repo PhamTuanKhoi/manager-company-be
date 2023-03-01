@@ -83,6 +83,11 @@ export class UserController {
     return this.userService.findAllWorker();
   }
 
+  @Get('leader')
+  findAllLeader() {
+    return this.userService.findAllLeader();
+  }
+
   @Get('worker-no-assign')
   workerNoAssign() {
     return this.userService.workerNoAssign();

@@ -163,7 +163,7 @@ export class ProjectService {
   //   return [];
   // }
 
-  async findByIdWorker(id: string) {
+  async findByIdUser(id: string) {
     const data = await this.model.aggregate([
       {
         $lookup: {

@@ -35,9 +35,9 @@ export class ProjectController {
   //   return this.projectService.findByIdEmployees(id);
   // }
 
-  @Get('worker/:id')
-  findByIdWorker(@Param('id') id: string) {
-    return this.projectService.findByIdWorker(id);
+  @Get('user/:id')
+  findByIdUser(@Param('id') id: string) {
+    return this.projectService.findByIdUser(id);
   }
 
   @Get(':id')

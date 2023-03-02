@@ -15,6 +15,11 @@ import { UpdateContractDto } from './dto/update-contract.dto';
 export class ContractController {
   constructor(private readonly contractService: ContractService) {}
 
+  @Post('create-or-update')
+  createOrUpdate(@Body() updateContractDto: UpdateContractDto) {
+    return this.contractService.createOrUpdate(updateContractDto);
+  }
+
   @Post()
   create(@Body() createContractDto: CreateContractDto) {
     return this.contractService.create(createContractDto);

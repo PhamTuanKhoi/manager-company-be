@@ -11,5 +11,9 @@ export class CreateContractDto {
 
   @IsNotEmpty()
   @IsString()
+  project: string;
+
+  @IsNotEmpty()
+  @IsString()
   creator: string;
 }

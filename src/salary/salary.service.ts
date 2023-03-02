@@ -55,8 +55,10 @@ export class SalaryService {
   async create(createSalaryDto: CreateSalaryDto) {
     try {
       // check data input
-      await this.userService.isModelExist(createSalaryDto.creator);
-      await this.projectService.isModelExist(createSalaryDto.project);
+      await Promise.all([
+        this.userService.isModelExist(createSalaryDto.creator),
+        this.projectService.isModelExist(createSalaryDto.project),
+      ]);
 
       const created = await this.model.create(createSalaryDto);
 

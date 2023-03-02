@@ -1033,7 +1033,7 @@ export class UserService {
       },
       {
         $lookup: {
-          from: 'salarys',
+          from: 'salaries',
           localField: 'contract.salary',
           foreignField: '_id',
           as: 'salary',

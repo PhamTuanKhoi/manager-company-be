@@ -26,6 +26,7 @@ import { QueryNotificationMessage } from './interfaces/notification-message-quer
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { QueryUserAttendaceDto } from './dto/query-dto/user-attendance-query.dto';
+import { QueryUserSalaryDto } from './dto/query-dto/user-salary-query.dto';
 
 @Injectable()
 export class UserService {
@@ -970,6 +971,93 @@ export class UserService {
         page: page,
       },
     };
+  }
+
+  async userSalary(queryUserSalaryDto: QueryUserSalaryDto) {
+    const query = await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          as: 'joinprojects',
+        },
+      },
+      {
+        $unwind: '$joinprojects',
+      },
+      {
+        $lookup: {
+          from: 'projects',
+          localField: 'joinprojects.project',
+          foreignField: '_id',
+          as: 'projectEX',
+        },
+      },
+      {
+        $unwind: '$projectEX',
+      },
+      {
+        $lookup: {
+          from: 'salaries',
+          localField: 'projectEX._id',
+          foreignField: 'project',
+          pipeline: [
+            {
+              $project: {
+                beneficiary: '$beneficiary',
+              },
+            },
+          ],
+          as: 'salarys',
+        },
+      },
+      {
+        $lookup: {
+          from: 'contracts',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'contract',
+        },
+      },
+      {
+        $unwind: {
+          path: '$contract',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'salarys',
+          localField: 'contract.salary',
+          foreignField: '_id',
+          as: 'salary',
+        },
+      },
+      {
+        $unwind: {
+          path: '$salary',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          name: '$name',
+          field: '$field',
+          projectId: '$projectEX._id',
+          projectName: '$projectEX.name',
+          salarys: '$salarys',
+          salary: '$salary',
+        },
+      },
+    ]);
+
+    return query;
   }
 
   findOne(id: string) {

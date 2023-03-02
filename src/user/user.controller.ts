@@ -23,8 +23,8 @@ import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { UserRoleEnum } from './interfaces/role-user.enum';
-import { Response } from 'express';
 import { QueryUserAttendaceDto } from './dto/query-dto/user-attendance-query.dto';
+import { QueryUserSalaryDto } from './dto/query-dto/user-salary-query.dto';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -116,6 +116,11 @@ export class UserController {
   @Get('attendance')
   userAttendance(@Query() queryUserAttendaceDto: QueryUserAttendaceDto) {
     return this.userService.userAttendance(queryUserAttendaceDto);
+  }
+
+  @Get('salary')
+  userSalary(@Query() queryUserSalaryDto: QueryUserSalaryDto) {
+    return this.userService.userSalary(queryUserSalaryDto);
   }
 
   @Get(':id')

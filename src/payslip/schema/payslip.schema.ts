@@ -16,9 +16,6 @@ export class Payslip {
   reward: number;
 
   @Prop({ default: 0 })
-  rice: number;
-
-  @Prop({ default: 0 })
   bonus: number;
 
   @Prop({ default: 0 })
@@ -32,25 +29,6 @@ export class Payslip {
 
   @Prop({ default: 0 })
   service: number;
-
-  //Allowance
-  @Prop({ default: 0 })
-  go: number;
-
-  @Prop({ default: 0 })
-  home: number;
-
-  @Prop({ default: 0 })
-  toxic: number;
-
-  @Prop({ default: 0 })
-  diligence: number;
-
-  @Prop({ default: 0 })
-  effectively: number;
-
-  @Prop({ default: 0 })
-  eat: number;
 
   //Insurance
   @Prop({ default: 0 })

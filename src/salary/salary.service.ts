@@ -69,11 +69,41 @@ export class SalaryService {
     }
   }
 
-  update(id: string, updateSalaryDto: UpdateSalaryDto) {
-    return `This action updates a #${id} salary`;
+  async update(id: string, updateSalaryDto: UpdateSalaryDto) {
+    try {
+      // check input data
+      await this.userService.isModelExist(updateSalaryDto.creator);
+      await this.projectService.isModelExist(updateSalaryDto.project);
+
+      const updated = await this.model.findByIdAndUpdate(id, updateSalaryDto, {
+        new: true,
+      });
+
+      this.logger.log(`updated a salary by id#${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
-  async isModelExists(id, isOptional = false, msg: '') {
+  async delete(id: string) {
+    try {
+      await this.isModelExists(id);
+
+      const removed = await this.model.findByIdAndRemove(id);
+
+      this.logger.log(`Remove a salary by id#${removed?._id}`);
+
+      return removed;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async isModelExists(id, isOptional = false, msg = '') {
     if (!id && isOptional) return;
     const message = msg || 'Salary not found';
     const isExist = await this.findOne(id);

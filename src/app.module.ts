@@ -19,6 +19,7 @@ import { PartTaskModule } from './part-task/part-task.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { RulesModule } from './rules/rules.module';
 import { SalaryModule } from './salary/salary.module';
+import { ContractModule } from './contract/contract.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SalaryModule } from './salary/salary.module';
     AttendanceModule,
     RulesModule,
     SalaryModule,
+    ContractModule,
   ],
   controllers: [AppController],
   providers: [AppService],

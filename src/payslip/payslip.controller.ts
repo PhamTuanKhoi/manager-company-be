@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PayslipService } from './payslip.service';
 import { CreatePayslipDto } from './dto/create-payslip.dto';
 import { UpdatePayslipDto } from './dto/update-payslip.dto';
+import { QueryPayslipDto } from './dto/query-payslip.dto';
 
 @Controller('payslip')
 export class PayslipController {
@@ -18,6 +20,11 @@ export class PayslipController {
   @Get()
   list() {
     return this.payslipService.list();
+  }
+
+  @Get('detail')
+  detail(@Query() queryPayslipDto: QueryPayslipDto) {
+    return this.payslipService.detail(queryPayslipDto);
   }
 
   @Get(':id')

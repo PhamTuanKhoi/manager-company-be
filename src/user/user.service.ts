@@ -1004,6 +1004,24 @@ export class UserService {
       },
       {
         $lookup: {
+          from: 'payslips',
+          localField: 'projectEX.payslip',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: {
+                name: '$name',
+              },
+            },
+          ],
+          as: 'payslipEX',
+        },
+      },
+      {
+        $unwind: '$payslipEX',
+      },
+      {
+        $lookup: {
           from: 'salaries',
           localField: 'projectEX._id',
           foreignField: 'project',
@@ -1053,6 +1071,7 @@ export class UserService {
           projectName: '$projectEX.name',
           salarys: '$salarys',
           salary: '$salary',
+          payslip: '$payslipEX',
         },
       },
     ]);

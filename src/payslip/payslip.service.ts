@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserService } from 'src/user/user.service';
 import { CreatePayslipDto } from './dto/create-payslip.dto';
+import { QueryPayslipDto } from './dto/query-payslip.dto';
 import { UpdatePayslipDto } from './dto/update-payslip.dto';
 import { Payslip, PayslipDocument } from './schema/payslip.schema';
 @Injectable()
@@ -22,7 +23,99 @@ export class PayslipService {
   ) {}
 
   list() {
-    return this.model.find();
+    return this.model.aggregate([
+      {
+        $lookup: {
+          from: 'projects',
+          localField: '_id',
+          foreignField: 'payslip',
+          pipeline: [
+            {
+              $project: {
+                name: '$name',
+              },
+            },
+          ],
+          as: 'projectEX',
+        },
+      },
+      {
+        $unwind: {
+          path: '$projectEX',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ]);
+  }
+
+  async detail(queryPayslipDto: QueryPayslipDto) {
+    const { payslip, project, salary } = queryPayslipDto;
+    let query: any = [
+      {
+        $match: {
+          $expr: {
+            $eq: ['$_id', { $toObjectId: payslip }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'projects',
+          localField: '_id',
+          foreignField: 'payslip',
+          pipeline: [
+            {
+              $project: {
+                name: '$name',
+              },
+            },
+          ],
+          as: 'project',
+        },
+      },
+    ];
+
+    if (project) {
+      query = [
+        ...query,
+        {
+          $unwind: '$project',
+        },
+        {
+          $match: {
+            $expr: {
+              $eq: ['$project._id', { $toObjectId: project }],
+            },
+          },
+        },
+      ];
+    }
+
+    if (salary) {
+      query = [
+        ...query,
+        {
+          $lookup: {
+            from: 'salaries',
+            localField: 'project._id',
+            foreignField: 'project',
+            as: 'salary',
+          },
+        },
+        {
+          $unwind: '$salary',
+        },
+        {
+          $match: {
+            $expr: {
+              $eq: ['$salary._id', { $toObjectId: salary }],
+            },
+          },
+        },
+      ];
+    }
+
+    return this.model.aggregate(query);
   }
 
   async create(createPayslipDto: CreatePayslipDto) {

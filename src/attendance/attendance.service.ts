@@ -134,6 +134,8 @@ export class AttendanceService {
         this.projectService.isModelExist(updateAttendanceDto.project),
       ]);
 
+      // const isExists = await this.isModelExists(id);
+
       const updated = await this.model.findByIdAndUpdate(
         id,
         updateAttendanceDto,

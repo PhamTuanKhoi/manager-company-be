@@ -29,6 +29,9 @@ export class Attendance {
 
   @Prop({ default: 0 })
   timeout?: number;
+
+  @Prop({ default: 0 })
+  workday?: number;
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);

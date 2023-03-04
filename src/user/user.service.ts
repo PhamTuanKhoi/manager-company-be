@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  forwardRef,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -24,10 +26,10 @@ import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
 import { QueryUserAttendaceDto } from './dto/query-dto/query-user-attendance.dto';
 import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
 import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
+import { RulesService } from '../rules/rules.service';
 
 @Injectable()
 export class UserService {
@@ -35,6 +37,8 @@ export class UserService {
 
   constructor(
     @InjectModel(User.name) private model: Model<UserDocument>,
+    @Inject(forwardRef(() => RulesService))
+    private readonly rulesService: RulesService,
     private configService: ConfigService,
   ) {}
 
@@ -802,6 +806,8 @@ export class UserService {
       timeout: 0,
     }));
 
+    const rule = await this.rulesService.findOneRefProject(project);
+
     const pipeline: any = [
       {
         $match: {
@@ -864,6 +870,12 @@ export class UserService {
                 date: '$_id.adjustedGrades.date',
                 timein: '$_id.adjustedGrades.timein',
                 timeout: '$_id.adjustedGrades.timeout',
+                workHour: {
+                  $subtract: [
+                    '$_id.adjustedGrades.timeout',
+                    '$_id.adjustedGrades.timein',
+                  ],
+                },
                 status: {
                   $switch: {
                     branches: [
@@ -876,10 +888,10 @@ export class UserService {
                                 '$_id.adjustedGrades.timein',
                               ],
                             },
-                            28800,
+                            rule.workHour,
                           ],
                         },
-                        then: true,
+                        then: 'redundant',
                       },
                       {
                         case: {
@@ -893,7 +905,7 @@ export class UserService {
                             0,
                           ],
                         },
-                        then: false,
+                        then: 'leave',
                       },
                       {
                         case: {
@@ -904,10 +916,24 @@ export class UserService {
                                 '$_id.adjustedGrades.timein',
                               ],
                             },
-                            28800,
+                            rule.workHour,
                           ],
                         },
-                        then: 'faile',
+                        then: 'lack',
+                      },
+                      {
+                        case: {
+                          $eq: [
+                            {
+                              $subtract: [
+                                '$_id.adjustedGrades.timeout',
+                                '$_id.adjustedGrades.timein',
+                              ],
+                            },
+                            rule.workHour,
+                          ],
+                        },
+                        then: 'enough',
                       },
                     ],
                   },

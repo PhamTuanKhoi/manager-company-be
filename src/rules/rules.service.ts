@@ -30,20 +30,28 @@ export class RulesService {
   }
 
   async create(createRuleDto: CreateRuleDto) {
+    const { project, wiffi, password, timeIn, timeOut, lunchIn, lunchOut } =
+      createRuleDto;
     try {
-      const isExists = await this.findOneRefProject(createRuleDto.project);
+      const isExists = await this.findOneRefProject(project);
       if (isExists)
         throw new HttpException(
           'wiffi đã được cài đặt trướt đó!',
           HttpStatus.FORBIDDEN,
         );
 
-      await this.projectService.isModelExist(createRuleDto.project);
+      await this.projectService.isModelExist(project);
 
       // check loggin wiffi
-      await this.logginWiffi(createRuleDto.wiffi, createRuleDto.password);
+      await this.logginWiffi(wiffi, password);
 
-      const created = await this.model.create(createRuleDto);
+      const created = await this.model.create({
+        ...createRuleDto,
+        workHour:
+          lunchIn && lunchOut
+            ? timeOut - timeIn - (lunchIn - lunchOut)
+            : timeOut - timeIn,
+      });
 
       this.logger.log(`created a new rules by id#${created?._id}`);
 
@@ -56,15 +64,35 @@ export class RulesService {
 
   async update(id: string, updateRuleDto: UpdateRuleDto) {
     try {
-      const { wiffi, wiffiOld, password, passwordOld, project } = updateRuleDto;
+      const {
+        wiffi,
+        wiffiOld,
+        password,
+        passwordOld,
+        project,
+        timeIn,
+        timeOut,
+        lunchIn,
+        lunchOut,
+      } = updateRuleDto;
 
       // check input project id
       await this.projectService.isModelExist(project);
 
       // assign api
-      const updatedRules = this.model.findByIdAndUpdate(id, updateRuleDto, {
-        new: true,
-      });
+      const updatedRules = this.model.findByIdAndUpdate(
+        id,
+        {
+          ...updateRuleDto,
+          workHour:
+            lunchIn && lunchOut
+              ? timeOut - timeIn - (lunchIn - lunchOut)
+              : timeOut - timeIn,
+        },
+        {
+          new: true,
+        },
+      );
 
       if (wiffi === wiffiOld && password === passwordOld) {
         const updated = await updatedRules;

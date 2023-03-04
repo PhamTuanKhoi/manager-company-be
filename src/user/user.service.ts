@@ -25,8 +25,9 @@ import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { QueryUserAttendaceDto } from './dto/query-dto/user-attendance-query.dto';
-import { QueryUserSalaryDto } from './dto/query-dto/user-salary-query.dto';
+import { QueryUserAttendaceDto } from './dto/query-dto/query-user-attendance.dto';
+import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
+import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 
 @Injectable()
 export class UserService {
@@ -1073,6 +1074,119 @@ export class UserService {
           salary: '$salary',
           payslip: '$payslipEX',
         },
+      },
+    ]);
+
+    return query;
+  }
+
+  async userPayroll(queryUserPayrollDto: QueryUserPayrollDto) {
+    const { user, project, payslip, salary } = queryUserPayrollDto;
+
+    const query = await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$_id', { $toObjectId: user }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'attendances',
+          localField: '_id',
+          foreignField: 'user',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$project', { $toObjectId: project }],
+                },
+              },
+            },
+          ],
+          as: 'attendance',
+        },
+      },
+      {
+        $lookup: {
+          from: 'contracts',
+          localField: '_id',
+          foreignField: 'user',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$salary', { $toObjectId: salary }],
+                },
+              },
+            },
+          ],
+          as: 'contract',
+        },
+      },
+      {
+        $unwind: '$contract',
+      },
+      {
+        $lookup: {
+          from: 'salaries',
+          localField: 'contract.salary',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', { $toObjectId: salary }],
+                },
+              },
+            },
+          ],
+          as: 'salary',
+        },
+      },
+      {
+        $unwind: '$salary',
+      },
+      {
+        $lookup: {
+          from: 'projects',
+          localField: 'salary.project',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', { $toObjectId: project }],
+                },
+              },
+            },
+          ],
+          as: 'project',
+        },
+      },
+      {
+        $unwind: '$project',
+      },
+      {
+        $lookup: {
+          from: 'payslips',
+          localField: 'project.payslip',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$_id', { $toObjectId: payslip }],
+                },
+              },
+            },
+          ],
+          as: 'payslip',
+        },
+      },
+      {
+        $unwind: '$payslip',
       },
     ]);
 

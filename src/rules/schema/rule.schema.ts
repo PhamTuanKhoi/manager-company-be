@@ -20,6 +20,15 @@ export class Rule {
 
   @Prop()
   password: string;
+
+  @Prop()
+  lunchOut: number;
+
+  @Prop()
+  lunchIn: number;
+
+  @Prop()
+  workHour: number;
 }
 
 export const RuleSchema = SchemaFactory.createForClass(Rule);

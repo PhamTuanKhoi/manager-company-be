@@ -9,7 +9,6 @@ import {
   Query,
   UseGuards,
   SetMetadata,
-  Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-dto/create-user.dto';
@@ -23,8 +22,9 @@ import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { UserRoleEnum } from './interfaces/role-user.enum';
-import { QueryUserAttendaceDto } from './dto/query-dto/user-attendance-query.dto';
-import { QueryUserSalaryDto } from './dto/query-dto/user-salary-query.dto';
+import { QueryUserAttendaceDto } from './dto/query-dto/query-user-attendance.dto';
+import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
+import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -121,6 +121,11 @@ export class UserController {
   @Get('salary')
   userSalary(@Query() queryUserSalaryDto: QueryUserSalaryDto) {
     return this.userService.userSalary(queryUserSalaryDto);
+  }
+
+  @Get('payroll')
+  userPayroll(@Query() queryUserPayrollDto: QueryUserPayrollDto) {
+    return this.userService.userPayroll(queryUserPayrollDto);
   }
 
   @Get(':id')

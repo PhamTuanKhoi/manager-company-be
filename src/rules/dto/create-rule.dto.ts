@@ -1,9 +1,17 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateRuleDto {
   @IsNotEmpty()
   @IsString()
   project: string;
+
+  @IsNotEmpty()
+  @IsString()
+  wiffi: string;
+
+  @IsNotEmpty()
+  @IsString()
+  password: string;
 
   @IsNotEmpty()
   @IsNumber()
@@ -13,11 +21,11 @@ export class CreateRuleDto {
   @IsNumber()
   timeOut: number;
 
-  @IsNotEmpty()
-  @IsString()
-  wiffi: string;
+  @IsOptional()
+  @IsNumber()
+  lunchIn: number;
 
-  @IsNotEmpty()
-  @IsString()
-  password: string;
+  @IsOptional()
+  @IsNumber()
+  lunchOut: number;
 }

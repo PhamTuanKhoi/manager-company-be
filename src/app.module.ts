@@ -20,6 +20,7 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { RulesModule } from './rules/rules.module';
 import { SalaryModule } from './salary/salary.module';
 import { ContractModule } from './contract/contract.module';
+import { OvertimeModule } from './overtime/overtime.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ContractModule } from './contract/contract.module';
     RulesModule,
     SalaryModule,
     ContractModule,
+    OvertimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

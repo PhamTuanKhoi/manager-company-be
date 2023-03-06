@@ -870,68 +870,124 @@ export class UserService {
                 date: '$_id.adjustedGrades.date',
                 timein: '$_id.adjustedGrades.timein',
                 timeout: '$_id.adjustedGrades.timeout',
+                timeinStandard: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        {
+                          $gt: ['$_id.adjustedGrades.timein', 0],
+                        },
+                        {
+                          $lte: ['$_id.adjustedGrades.timein', rule?.timeIn],
+                        },
+                      ],
+                    },
+                    then: rule?.timeIn,
+                    else: '$_id.adjustedGrades.timein',
+                  },
+                },
+                timeoutStandard: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        {
+                          $gt: ['$_id.adjustedGrades.timeout', 0],
+                        },
+                        {
+                          $gte: ['$_id.adjustedGrades.timeout', rule?.timeOut],
+                        },
+                      ],
+                    },
+                    then: rule?.timeOut,
+                    else: '$_id.adjustedGrades.timeout',
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                date: '$date',
+                timein: '$timein',
+                timeout: '$timeout',
+                timeinStandard: '$timeinStandard',
+                timeoutStandard: '$timeoutStandard',
                 workHour: {
-                  $subtract: [
-                    '$_id.adjustedGrades.timeout',
-                    '$_id.adjustedGrades.timein',
-                  ],
+                  $cond: {
+                    if: {
+                      $gt: [
+                        // time out - time in
+                        {
+                          $subtract: ['$timeoutStandard', '$timeinStandard'],
+                        },
+                        0,
+                      ],
+                    },
+                    then: {
+                      // suntract time lunch
+                      $subtract: [
+                        {
+                          $subtract: ['$timeoutStandard', '$timeinStandard'],
+                        },
+                        rule?.lunchIn - rule.lunchOut >= 0
+                          ? rule?.lunchIn - rule?.lunchOut
+                          : 0,
+                      ],
+                    },
+                    else: 0,
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                date: '$date',
+                timein: '$timein',
+                timeout: '$timeout',
+                timeinStandard: '$timeinStandard',
+                timeoutStandard: '$timeoutStandard',
+                workHour: '$workHour',
+                omtime: {
+                  $cond: {
+                    if: {
+                      $or: [
+                        {
+                          $gt: ['$timein', rule.timeIn],
+                        },
+                        {
+                          $lt: ['$timeout', rule.timeOut],
+                        },
+                      ],
+                    },
+                    then: {
+                      $cond: [{ $gt: ['$timein', 0] }, 'notontime', '$$REMOVE'],
+                    },
+                    else: 'ontime',
+                  },
                 },
                 status: {
                   $switch: {
                     branches: [
                       {
                         case: {
-                          $gte: [
-                            {
-                              $subtract: [
-                                '$_id.adjustedGrades.timeout',
-                                '$_id.adjustedGrades.timein',
-                              ],
-                            },
-                            rule.workHour,
-                          ],
+                          $gt: ['$workHour', rule?.workHour],
                         },
                         then: 'redundant',
                       },
                       {
                         case: {
-                          $eq: [
-                            {
-                              $subtract: [
-                                '$_id.adjustedGrades.timeout',
-                                '$_id.adjustedGrades.timein',
-                              ],
-                            },
-                            0,
-                          ],
+                          $eq: ['$workHour', 0],
                         },
                         then: 'leave',
                       },
                       {
                         case: {
-                          $lt: [
-                            {
-                              $subtract: [
-                                '$_id.adjustedGrades.timeout',
-                                '$_id.adjustedGrades.timein',
-                              ],
-                            },
-                            rule.workHour,
-                          ],
+                          $lt: ['$workHour', rule?.workHour],
                         },
                         then: 'lack',
                       },
                       {
                         case: {
-                          $eq: [
-                            {
-                              $subtract: [
-                                '$_id.adjustedGrades.timeout',
-                                '$_id.adjustedGrades.timein',
-                              ],
-                            },
-                            rule.workHour,
-                          ],
+                          $eq: ['$workHour', rule?.workHour],
                         },
                         then: 'enough',
                       },

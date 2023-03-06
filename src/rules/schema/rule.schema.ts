@@ -21,10 +21,10 @@ export class Rule {
   @Prop()
   password: string;
 
-  @Prop()
+  @Prop({ default: 0 })
   lunchOut: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   lunchIn: number;
 
   @Prop()

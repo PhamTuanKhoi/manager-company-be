@@ -1,14 +1,23 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class QueryAttendanceDto {
   @IsOptional()
   @IsString()
-  user: string;
+  user?: string;
 
   @IsOptional()
   @IsString()
-  project: string;
+  project?: string;
 
   @IsOptional()
-  date: number;
+  @IsNumber()
+  year?: number;
+
+  @IsOptional()
+  @IsNumber()
+  month?: number;
+
+  @IsOptional()
+  @IsNumber()
+  date?: number;
 }

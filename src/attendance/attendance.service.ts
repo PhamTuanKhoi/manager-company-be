@@ -66,7 +66,14 @@ export class AttendanceService {
     return await this.model.findOne({ user, project, date }).lean();
   }
 
-  async create(createAttendanceDto: CreateAttendanceDto) {
+  async getAttendanceByDate(queryAttendanceDto: QueryAttendanceDto) {
+    const { user, project, date, month, year } = queryAttendanceDto;
+    return await this.model
+      .findOne({ user, project, date, month, year })
+      .lean();
+  }
+
+  async create(createAttendanceDto: CreateAttendanceDto): Promise<Attendance> {
     try {
       const { user, project, wiffi } = createAttendanceDto;
       // check input data
@@ -126,7 +133,10 @@ export class AttendanceService {
     }
   }
 
-  async update(id: string, updateAttendanceDto: UpdateAttendanceDto) {
+  async update(
+    id: string,
+    updateAttendanceDto: UpdateAttendanceDto,
+  ): Promise<Attendance> {
     try {
       // check input data
       await Promise.all([
@@ -141,6 +151,21 @@ export class AttendanceService {
         updateAttendanceDto,
         { new: true },
       );
+
+      this.logger.log(`updated a attendance by id#${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async updateFieldOvertime(
+    updateAttendanceDto: UpdateAttendanceDto,
+  ): Promise<Attendance> {
+    try {
+      const updated = await this.model.findByIdAndUpdate(updateAttendanceDto);
 
       this.logger.log(`updated a attendance by id#${updated?._id}`);
 

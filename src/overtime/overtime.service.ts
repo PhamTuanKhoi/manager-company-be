@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { AttendanceService } from 'src/attendance/attendance.service';
 import { ProjectService } from 'src/project/project.service';
 import { UserService } from 'src/user/user.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
@@ -23,6 +24,8 @@ export class OvertimeService {
     private readonly userService: UserService,
     @Inject(forwardRef(() => ProjectService))
     private readonly projectService: ProjectService,
+    @Inject(forwardRef(() => AttendanceService))
+    private readonly attendanceService: AttendanceService,
   ) {}
   async create(createOvertimeDto: CreateOvertimeDto) {
     const { userIds, project } = createOvertimeDto;
@@ -43,6 +46,19 @@ export class OvertimeService {
       }));
 
       const created = await this.model.insertMany(isInsert);
+
+      const updateAttendanceAPI = created.map((i) => {
+        return this.attendanceService.updateFieldOvertime({
+          overtime: i._id.toString(),
+          project,
+          user: i.user.toString(),
+          date: new Date().getDate(),
+          month: new Date().getMonth() + 1,
+          year: new Date().getDate(),
+        });
+      });
+
+      await Promise.all(updateAttendanceAPI);
 
       this.logger.log(`insert ${created.length} overtime success`);
 

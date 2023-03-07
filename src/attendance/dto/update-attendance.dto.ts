@@ -18,12 +18,4 @@ export class UpdateAttendanceDto extends PartialType(CreateAttendanceDto) {
   @IsOptional()
   @IsNumber()
   date?: number;
-
-  @IsOptional()
-  @IsObject()
-  ovtexport?: {
-    date: number;
-    timein: number;
-    timeout: number;
-  };
 }

@@ -39,19 +39,6 @@ export class Attendance {
 
   @Prop({ default: 0 })
   workday?: number;
-
-  @Prop({
-    type: {
-      date: Number,
-      timein: Number,
-      timeout: Number,
-    },
-  })
-  ovtexport?: {
-    date: number;
-    timein: number;
-    timeout: number;
-  };
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);

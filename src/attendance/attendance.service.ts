@@ -105,7 +105,15 @@ export class AttendanceService {
     const time = hour * 3600 + minute * 60;
 
     //  ----------------------------- update ------------------------
-    if (attendance?.timeout === 0) {
+    if (attendance?.timein === 0) {
+      return this.update(attendance._id.toString(), {
+        user,
+        project,
+        timein: time,
+      });
+    }
+
+    if (attendance?.timeout === 0 && attendance?.timein > 0) {
       return this.update(attendance._id.toString(), {
         user,
         project,
@@ -141,9 +149,8 @@ export class AttendanceService {
       await Promise.all([
         this.userService.isModelExist(updateAttendanceDto.user),
         this.projectService.isModelExist(updateAttendanceDto.project),
+        this.isModelExists(id),
       ]);
-
-      // const isExists = await this.isModelExists(id);
 
       const updated = await this.model.findByIdAndUpdate(
         id,
@@ -163,7 +170,7 @@ export class AttendanceService {
   async updateFieldOvertime(
     updateAttendanceDto: UpdateAttendanceDto,
   ): Promise<Attendance> {
-    const { project, user, date, month, year } = updateAttendanceDto;
+    const { project, user, date, month, year, overtime } = updateAttendanceDto;
 
     try {
       // check is exists
@@ -175,17 +182,13 @@ export class AttendanceService {
         date,
       });
 
+      // update
       if (isExists) {
-        // update
+        return this.update(isExists._id.toString(), { overtime });
       }
 
       // create
-
-      const updated = await this.model.findByIdAndUpdate(updateAttendanceDto);
-
-      this.logger.log(`updated a attendance by id#${updated?._id}`);
-
-      return updated;
+      return this.create({ user, project, overtime });
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
@@ -217,7 +220,7 @@ export class AttendanceService {
   async isModelExists(id, isOptional = false, msg = '') {
     if (!id && isOptional) return;
     const message = msg || 'Attendance not fount!';
-    const isExists = await this.model.findOne(id);
+    const isExists = await this.findOne(id);
     if (!isExists) throw new Error(message);
     return isExists;
   }

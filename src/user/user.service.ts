@@ -808,6 +808,10 @@ export class UserService {
 
     const rule = await this.rulesService.findOneRefProject(project);
 
+    //  lunch break
+    const lunch =
+      rule?.lunchIn - rule.lunchOut >= 0 ? rule?.lunchIn - rule?.lunchOut : 0;
+
     const pipeline: any = [
       {
         $match: {
@@ -919,7 +923,7 @@ export class UserService {
                         {
                           $subtract: ['$timeoutStandard', '$timeinStandard'],
                         },
-                        0,
+                        lunch,
                       ],
                     },
                     then: {
@@ -928,9 +932,7 @@ export class UserService {
                         {
                           $subtract: ['$timeoutStandard', '$timeinStandard'],
                         },
-                        rule?.lunchIn - rule.lunchOut >= 0
-                          ? rule?.lunchIn - rule?.lunchOut
-                          : 0,
+                        lunch,
                       ],
                     },
                     else: 0,

@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Overtime } from 'src/overtime/schema/overtime.schema';
 
 export class CreateAttendanceDto {
   @IsNotEmpty()
@@ -11,9 +18,13 @@ export class CreateAttendanceDto {
 
   @IsOptional()
   @IsString()
+  overtime?: string;
+
+  @IsOptional()
+  @IsString()
   wiffi?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  timein: number;
+  timein?: number;
 }

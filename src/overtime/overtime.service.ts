@@ -1,6 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ProjectService } from 'src/project/project.service';
+import { UserService } from 'src/user/user.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
 import { Overtime, OvertimeDocument } from './schema/overtime.schema';
@@ -11,9 +19,38 @@ export class OvertimeService {
 
   constructor(
     @InjectModel(Overtime.name) private model: Model<OvertimeDocument>,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
+    @Inject(forwardRef(() => ProjectService))
+    private readonly projectService: ProjectService,
   ) {}
-  create(createOvertimeDto: CreateOvertimeDto) {
-    return 'This action adds a new overtime';
+  async create(createOvertimeDto: CreateOvertimeDto) {
+    const { userIds, project } = createOvertimeDto;
+    try {
+      // check id input
+      const isExistUser = userIds.map((id) =>
+        this.userService.isModelExist(id),
+      );
+
+      await Promise.all([
+        ...isExistUser,
+        this.projectService.isModelExist(project),
+      ]);
+
+      const isInsert = userIds.map((id) => ({
+        ...createOvertimeDto,
+        user: id,
+      }));
+
+      const created = await this.model.insertMany(isInsert);
+
+      this.logger.log(`insert ${created.length} overtime success`);
+
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
   findAll() {

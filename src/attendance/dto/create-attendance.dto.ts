@@ -9,7 +9,11 @@ export class CreateAttendanceDto {
   @IsString()
   project: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  wiffi: string;
+  wiffi?: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  timein: number;
 }

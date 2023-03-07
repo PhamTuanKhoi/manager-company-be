@@ -19,7 +19,7 @@ export class Attendance {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Overtime })
   overtime: Overtime;
 
-  @Prop()
+  @Prop({ default: Date.now() })
   datetime: number;
 
   @Prop({ default: new Date().getFullYear() })

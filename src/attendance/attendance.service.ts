@@ -62,66 +62,65 @@ export class AttendanceService {
   }
 
   async toDayAttendance(queryAttendanceDto: QueryAttendanceDto) {
-    const { user, project, date } = queryAttendanceDto;
-    return await this.model.findOne({ user, project, date }).lean();
-  }
-
-  async getAttendanceByDate(queryAttendanceDto: QueryAttendanceDto) {
     const { user, project, date, month, year } = queryAttendanceDto;
     return await this.model
       .findOne({ user, project, date, month, year })
       .lean();
   }
 
-  async create(createAttendanceDto: CreateAttendanceDto): Promise<Attendance> {
-    try {
-      const { user, project, wiffi } = createAttendanceDto;
-      // check input data
-      await Promise.all([
-        this.userService.isModelExist(user),
-        this.projectService.isModelExist(project),
-      ]);
+  async createOrUpdate(updateAttendanceDto: UpdateAttendanceDto) {
+    const { user, project, wiffi } = updateAttendanceDto;
+    // check input data
+    await Promise.all([
+      this.userService.isModelExist(user),
+      this.projectService.isModelExist(project),
+    ]);
 
-      const rules = await this.rulesService.findByIdProjects(wiffi, project);
+    const rules = await this.rulesService.findByIdProjects(wiffi, project);
 
-      if (!rules)
-        throw new HttpException(
-          `${wiffi} không phải wiffi chấm công của dự án!`,
-          HttpStatus.FORBIDDEN,
-        );
+    if (!rules)
+      throw new HttpException(
+        `${wiffi} không phải wiffi chấm công của dự án!`,
+        HttpStatus.FORBIDDEN,
+      );
 
-      const attendance = await this.toDayAttendance({
+    const attendance = await this.toDayAttendance({
+      user,
+      project,
+      date: new Date().getDate(),
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
+    });
+
+    if (attendance?.timeout > 0)
+      throw new HttpException(
+        `Bạn đã chấm công 2 lần trong ngày!`,
+        HttpStatus.FORBIDDEN,
+      );
+
+    // format date time
+    const datetime = Date.now();
+    const hour = new Date(datetime).getHours();
+    const minute = new Date(datetime).getMinutes();
+    const time = hour * 3600 + minute * 60;
+
+    //  ----------------------------- update ------------------------
+    if (attendance?.timeout === 0) {
+      return this.update(attendance._id.toString(), {
         user,
         project,
-        date: new Date().getDate(),
+        timeout: time,
       });
+    }
 
-      if (attendance?.timeout > 0)
-        throw new HttpException(
-          `Bạn đã chấm công 2 lần trong ngày!`,
-          HttpStatus.FORBIDDEN,
-        );
+    return this.create({ user, project, timein: time });
+  }
 
-      // format date time
-      const datetime = Date.now();
-      const hour = new Date(datetime).getHours();
-      const minute = new Date(datetime).getMinutes();
-      const time = hour * 3600 + minute * 60;
-
-      //  ----------------------------- update ------------------------
-      if (attendance?.timeout === 0) {
-        return this.update(attendance._id.toString(), {
-          user,
-          project,
-          timeout: time,
-        });
-      }
-
+  async create(createAttendanceDto: CreateAttendanceDto): Promise<Attendance> {
+    try {
       //  ----------------------------- create ------------------------
       const created = await this.model.create({
         ...createAttendanceDto,
-        datetime,
-        timein: time,
       });
 
       this.logger.log(`Created a new attendance by id#${created?._id}`);
@@ -164,7 +163,24 @@ export class AttendanceService {
   async updateFieldOvertime(
     updateAttendanceDto: UpdateAttendanceDto,
   ): Promise<Attendance> {
+    const { project, user, date, month, year } = updateAttendanceDto;
+
     try {
+      // check is exists
+      const isExists = await this.toDayAttendance({
+        project,
+        user,
+        year,
+        month,
+        date,
+      });
+
+      if (isExists) {
+        // update
+      }
+
+      // create
+
       const updated = await this.model.findByIdAndUpdate(updateAttendanceDto);
 
       this.logger.log(`updated a attendance by id#${updated?._id}`);

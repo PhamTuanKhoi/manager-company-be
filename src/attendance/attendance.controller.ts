@@ -1,16 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Res,
-  Query,
-} from '@nestjs/common';
-import { query, Response } from 'express';
-import { get } from 'http';
+import { Controller, Get, Post, Body, Res, Query } from '@nestjs/common';
+import { Response } from 'express';
 import { AttendanceService } from './attendance.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { QueryAttendanceDto } from './dto/query-attendance.dto';
@@ -28,6 +17,11 @@ export class AttendanceController {
   @Get('today')
   toDayAttendance(@Query() queryAttendanceDto: QueryAttendanceDto) {
     return this.attendanceService.toDayAttendance(queryAttendanceDto);
+  }
+
+  @Post('create-or-update')
+  createOrUpdate(@Body() updateAttendanceDto: UpdateAttendanceDto) {
+    return this.attendanceService.createOrUpdate(updateAttendanceDto);
   }
 
   @Post()

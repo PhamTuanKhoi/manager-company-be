@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
@@ -19,16 +27,14 @@ export class OvertimeController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.overtimeService.findOne(+id);
+    return this.overtimeService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOvertimeDto: UpdateOvertimeDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateOvertimeDto: UpdateOvertimeDto,
+  ) {
     return this.overtimeService.update(+id, updateOvertimeDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.overtimeService.remove(+id);
   }
 }

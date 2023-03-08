@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AttendanceService } from 'src/attendance/attendance.service';
 import { ProjectService } from 'src/project/project.service';
+import { RulesService } from 'src/rules/rules.service';
 import { UserService } from 'src/user/user.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
@@ -26,9 +27,11 @@ export class OvertimeService {
     private readonly projectService: ProjectService,
     @Inject(forwardRef(() => AttendanceService))
     private readonly attendanceService: AttendanceService,
+    @Inject(forwardRef(() => RulesService))
+    private readonly rulesService: RulesService,
   ) {}
   async create(createOvertimeDto: CreateOvertimeDto) {
-    const { userIds, project } = createOvertimeDto;
+    const { userIds, project, timein } = createOvertimeDto;
     try {
       // check id input
       const isExistUser = userIds.map((id) =>
@@ -40,6 +43,9 @@ export class OvertimeService {
         this.projectService.isModelExist(project),
       ]);
 
+      //  get rules by project
+      const rule = await this.rulesService.findOneRefProject(project);
+
       const isInsert = userIds.map((id) => ({
         ...createOvertimeDto,
         user: id,
@@ -47,15 +53,19 @@ export class OvertimeService {
 
       const created = await this.model.insertMany(isInsert);
 
+      // const payload update attendance
       const updateAttendanceAPI = created.map((i) => {
-        return this.attendanceService.updateFieldOvertime({
+        let payload: any = {
           overtime: i._id.toString(),
           project,
           user: i.user.toString(),
           date: new Date().getDate(),
           month: new Date().getMonth() + 1,
-          year: new Date().getDate(),
-        });
+          year: new Date().getFullYear(),
+          breaks: timein - rule.timeOut,
+        };
+
+        return this.attendanceService.updateFieldOvertime(payload);
       });
 
       await Promise.all(updateAttendanceAPI);

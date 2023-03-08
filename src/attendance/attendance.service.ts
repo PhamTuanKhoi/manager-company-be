@@ -105,6 +105,7 @@ export class AttendanceService {
     const time = hour * 3600 + minute * 60;
 
     //  ----------------------------- update ------------------------
+
     if (attendance?.timein === 0) {
       return this.update(attendance._id.toString(), {
         user,
@@ -170,7 +171,8 @@ export class AttendanceService {
   async updateFieldOvertime(
     updateAttendanceDto: UpdateAttendanceDto,
   ): Promise<Attendance> {
-    const { project, user, date, month, year, overtime } = updateAttendanceDto;
+    const { project, user, date, month, year, overtime, breaks } =
+      updateAttendanceDto;
 
     try {
       // check is exists
@@ -182,13 +184,23 @@ export class AttendanceService {
         date,
       });
 
+      let payload: any = {
+        user,
+        project,
+        overtime,
+      };
+
+      if (breaks) {
+        payload = { ...payload, breaks };
+      }
+
       // update
       if (isExists) {
-        return this.update(isExists._id.toString(), { overtime });
+        return this.update(isExists._id.toString(), payload);
       }
 
       // create
-      return this.create({ user, project, overtime });
+      return this.create(payload);
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

@@ -39,6 +39,9 @@ export class Attendance {
 
   @Prop({ default: 0 })
   workday?: number;
+
+  @Prop()
+  breaks?: number;
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);

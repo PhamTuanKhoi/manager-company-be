@@ -27,4 +27,8 @@ export class CreateAttendanceDto {
   @IsOptional()
   @IsNumber()
   timein?: number;
+
+  @IsOptional()
+  @IsNumber()
+  breaks?: number;
 }

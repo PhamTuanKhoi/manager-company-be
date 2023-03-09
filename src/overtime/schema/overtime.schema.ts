@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Project } from 'src/project/schema/project.schema';
 import { User } from 'src/user/schema/user.schema';
+import { OvertimeTypeEnum } from '../enum/type-overtime.enum';
 
 export type OvertimeDocument = HydratedDocument<Overtime>;
 
@@ -30,6 +31,9 @@ export class Overtime {
 
   @Prop()
   timeout: number;
+
+  @Prop({ required: true })
+  type: OvertimeTypeEnum;
 }
 
 export const OvertimeSchema = SchemaFactory.createForClass(Overtime);

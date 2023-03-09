@@ -1,11 +1,13 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { OvertimeTypeEnum } from '../enum/type-overtime.enum';
 
 export class CreateOvertimeDto {
   @IsOptional()
@@ -34,4 +36,8 @@ export class CreateOvertimeDto {
   @Type(() => Number)
   @IsNumber()
   timeout: number;
+
+  @IsNotEmpty()
+  @IsEnum(OvertimeTypeEnum)
+  type: OvertimeTypeEnum;
 }

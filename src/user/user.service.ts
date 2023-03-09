@@ -836,6 +836,14 @@ export class UserService {
                 month: new Date().getMonth() + 1,
               },
             },
+            // {
+            //   $lookup: {
+            //     from: 'overtimes',
+            //     localField: 'overtime',
+            //     foreignField: '_id',
+            //     as: 'overtimeEX',
+            //   },
+            // },
             {
               $project: {
                 _id: 0,
@@ -850,6 +858,8 @@ export class UserService {
                           date: '$date',
                           timein: '$timein',
                           timeout: '$timeout',
+                          overtime: '$overtime',
+                          breaks: '$breaks',
                         },
                         else: '$$item',
                       },
@@ -874,6 +884,8 @@ export class UserService {
                 date: '$_id.adjustedGrades.date',
                 timein: '$_id.adjustedGrades.timein',
                 timeout: '$_id.adjustedGrades.timeout',
+                overtime: '$_id.adjustedGrades.overtime',
+                breaks: '$_id.adjustedGrades.breaks',
                 timeinStandard: {
                   $cond: {
                     if: {
@@ -915,27 +927,52 @@ export class UserService {
                 timeout: '$timeout',
                 timeinStandard: '$timeinStandard',
                 timeoutStandard: '$timeoutStandard',
+                overtime: '$overtime',
+                breaks: '$breaks',
                 workHour: {
-                  $cond: {
-                    if: {
-                      $gt: [
-                        // time out - time in
-                        {
-                          $subtract: ['$timeoutStandard', '$timeinStandard'],
+                  $switch: {
+                    branches: [
+                      // ---------------- case overtime is exists and work hour > 0 -----------------
+                      {
+                        case: { $ne: [{ $type: '$overtime' }, 'missing'] },
+                        then: 'Field exists',
+                      },
+                      // ---------------- case overtime does not exists and work hour > 0 -----------------
+                      {
+                        case: {
+                          $and: [
+                            { $eq: [{ $type: '$overtime' }, 'missing'] },
+                            // time out - time in > lunch
+                            {
+                              $gt: [
+                                {
+                                  $subtract: [
+                                    '$timeoutStandard',
+                                    '$timeinStandard',
+                                  ],
+                                },
+                                lunch,
+                              ],
+                            },
+                          ],
                         },
-                        lunch,
-                      ],
-                    },
-                    then: {
-                      // suntract time lunch
-                      $subtract: [
-                        {
-                          $subtract: ['$timeoutStandard', '$timeinStandard'],
+                        then: {
+                          // work hour = timeout - timein -lunch
+                          $subtract: [
+                            {
+                              $subtract: [
+                                '$timeoutStandard',
+                                '$timeinStandard',
+                              ],
+                            },
+                            // - lunch
+                            lunch,
+                          ],
                         },
-                        lunch,
-                      ],
-                    },
-                    else: 0,
+                      },
+                      // ---------------------------- default = 0 ----------------------------
+                    ],
+                    default: 0,
                   },
                 },
               },
@@ -947,6 +984,8 @@ export class UserService {
                 timeout: '$timeout',
                 timeinStandard: '$timeinStandard',
                 timeoutStandard: '$timeoutStandard',
+                breaks: '$breaks',
+                overtime: '$overtime',
                 workHour: '$workHour',
                 omtime: {
                   $cond: {

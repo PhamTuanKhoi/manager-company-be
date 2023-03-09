@@ -168,44 +168,44 @@ export class AttendanceService {
     }
   }
 
-  async updateFieldOvertime(
-    updateAttendanceDto: UpdateAttendanceDto,
-  ): Promise<Attendance> {
-    const { project, user, date, month, year, overtime, breaks } =
-      updateAttendanceDto;
+  // async updateFieldOvertime(
+  //   updateAttendanceDto: UpdateAttendanceDto,
+  // ): Promise<Attendance> {
+  //   const { project, user, date, month, year, overtime, breaks } =
+  //     updateAttendanceDto;
 
-    try {
-      // check is exists
-      const isExists = await this.toDayAttendance({
-        project,
-        user,
-        year,
-        month,
-        date,
-      });
+  //   try {
+  //     // check is exists
+  //     const isExists = await this.toDayAttendance({
+  //       project,
+  //       user,
+  //       year,
+  //       month,
+  //       date,
+  //     });
 
-      let payload: any = {
-        user,
-        project,
-        overtime,
-      };
+  //     let payload: any = {
+  //       user,
+  //       project,
+  //       overtime,
+  //     };
 
-      if (breaks) {
-        payload = { ...payload, breaks };
-      }
+  //     if (breaks) {
+  //       payload = { ...payload, breaks };
+  //     }
 
-      // update
-      if (isExists) {
-        return this.update(isExists._id.toString(), payload);
-      }
+  //     // update
+  //     if (isExists) {
+  //       return this.update(isExists._id.toString(), payload);
+  //     }
 
-      // create
-      return this.create(payload);
-    } catch (error) {
-      this.logger.error(error?.message, error.stack);
-      throw new BadRequestException(error?.message);
-    }
-  }
+  //     // create
+  //     return this.create(payload);
+  //   } catch (error) {
+  //     this.logger.error(error?.message, error.stack);
+  //     throw new BadRequestException(error?.message);
+  //   }
+  // }
 
   async fetchWiffi(res: Response) {
     try {

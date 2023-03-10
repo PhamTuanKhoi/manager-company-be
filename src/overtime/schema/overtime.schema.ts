@@ -17,13 +17,13 @@ export class Overtime {
   @Prop()
   datetime: number;
 
-  @Prop()
+  @Prop({ default: new Date().getFullYear() })
   year: number;
 
-  @Prop()
+  @Prop({ default: new Date().getMonth() + 1 })
   month: number;
 
-  @Prop()
+  @Prop({ default: new Date().getDate() })
   date: number;
 
   @Prop()

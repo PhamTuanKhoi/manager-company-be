@@ -30,6 +30,7 @@ import { QueryUserAttendaceDto } from './dto/query-dto/query-user-attendance.dto
 import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
 import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 import { RulesService } from '../rules/rules.service';
+import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 
 @Injectable()
 export class UserService {
@@ -812,6 +813,10 @@ export class UserService {
     const lunch =
       rule?.lunchIn - rule.lunchOut >= 0 ? rule?.lunchIn - rule?.lunchOut : 0;
 
+    const cucalationOvertime = [];
+
+    // console.log(rule);
+
     const pipeline: any = [
       {
         $match: {
@@ -836,14 +841,122 @@ export class UserService {
                 month: new Date().getMonth() + 1,
               },
             },
-            // {
-            //   $lookup: {
-            //     from: 'overtimes',
-            //     localField: 'overtime',
-            //     foreignField: '_id',
-            //     as: 'overtimeEX',
-            //   },
-            // },
+            // ------------------------- cucalation Overtime ---------------------------
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'user',
+                foreignField: '_id',
+                pipeline: [
+                  {
+                    $project: {
+                      _id: '$_id',
+                    },
+                  },
+                ],
+                as: 'user',
+              },
+            },
+            {
+              $unwind: '$user',
+            },
+            {
+              $lookup: {
+                from: 'overtimes',
+                let: {
+                  year_attendance: '$year',
+                  month_attendance: '$month',
+                  date_attendance: '$date',
+                  userId: '$user._id',
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ['$$year_attendance', '$year'] },
+                          { $eq: ['$$month_attendance', '$month'] },
+                          { $eq: ['$$date_attendance', '$date'] },
+                          { $eq: ['$$userId', '$user'] },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: 'overtime',
+              },
+            },
+            {
+              $unwind: {
+                path: '$overtime',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $project: {
+                year: '$year',
+                month: '$month',
+                date: '$date',
+                timein: '$timein',
+                timeout: '$timeout',
+                overtimemorning: {
+                  $cond: {
+                    if: {
+                      $eq: ['$overtime.type', OvertimeTypeEnum.MORNING],
+                    },
+                    then: {
+                      timein: '$overtime.timein',
+                      timeout: '$overtime.timeout',
+                    },
+                    else: '$$REMOVE',
+                  },
+                },
+                overtimeverning: {
+                  $cond: {
+                    if: {
+                      $eq: ['$overtime.type', OvertimeTypeEnum.EVERNINGS],
+                    },
+                    then: {
+                      timein: '$overtime.timein',
+                      timeout: '$overtime.timeout',
+                    },
+                    else: '$$REMOVE',
+                  },
+                },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  year: '$year',
+                  month: '$month',
+                  date: '$date',
+                  timein: '$timein',
+                  timeout: '$timeout',
+                },
+                overtimemorning: {
+                  $push: '$overtimemorning',
+                },
+                overtimeverning: {
+                  $push: '$overtimeverning',
+                },
+              },
+            },
+            {
+              $unwind: {
+                path: '$overtimemorning',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $unwind: {
+                path: '$overtimeverning',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+
+            // ------------------------- cucalation Overtime ---------------------------
+
             {
               $project: {
                 _id: 0,
@@ -853,13 +966,16 @@ export class UserService {
                     as: 'item',
                     in: {
                       $cond: {
-                        if: { $eq: ['$$item.date', '$date'] },
+                        // * warning year-month-date sent from client
+                        if: { $eq: ['$$item.date', '$_id.date'] },
                         then: {
-                          date: '$date',
-                          timein: '$timein',
-                          timeout: '$timeout',
-                          overtime: '$overtime',
-                          breaks: '$breaks',
+                          year: '$_id.year',
+                          month: '$_id.month',
+                          date: '$_id.date',
+                          timein: '$_id.timein',
+                          timeout: '$_id.timeout',
+                          overtimemorning: '$overtimemorning',
+                          overtimeverning: '$overtimeverning',
                         },
                         else: '$$item',
                       },
@@ -881,38 +997,28 @@ export class UserService {
             {
               $project: {
                 _id: 0,
+                year: '$_id.adjustedGrades.year',
+                month: '$_id.adjustedGrades.month',
                 date: '$_id.adjustedGrades.date',
                 timein: '$_id.adjustedGrades.timein',
                 timeout: '$_id.adjustedGrades.timeout',
-                overtime: '$_id.adjustedGrades.overtime',
-                breaks: '$_id.adjustedGrades.breaks',
-                timeinStandard: {
+                overtimemorning: '$_id.adjustedGrades.overtimemorning',
+                overtimeverning: '$_id.adjustedGrades.overtimeverning',
+                // hour time in main shift -> if late in rule get time in current , else get time in rule
+                timeinMain: {
                   $cond: {
                     if: {
-                      $and: [
-                        {
-                          $gt: ['$_id.adjustedGrades.timein', 0],
-                        },
-                        {
-                          $lte: ['$_id.adjustedGrades.timein', rule?.timeIn],
-                        },
-                      ],
+                      $lte: ['$_id.adjustedGrades.timein', rule?.timeIn],
                     },
                     then: rule?.timeIn,
                     else: '$_id.adjustedGrades.timein',
                   },
                 },
-                timeoutStandard: {
+                // hour time out maout shift -> if first out rule get time out current , else get time out rule
+                timeoutMain: {
                   $cond: {
                     if: {
-                      $and: [
-                        {
-                          $gt: ['$_id.adjustedGrades.timeout', 0],
-                        },
-                        {
-                          $gte: ['$_id.adjustedGrades.timeout', rule?.timeOut],
-                        },
-                      ],
+                      $gte: ['$_id.adjustedGrades.timeout', rule?.timeOut],
                     },
                     then: rule?.timeOut,
                     else: '$_id.adjustedGrades.timeout',
@@ -920,115 +1026,246 @@ export class UserService {
                 },
               },
             },
+            //  ---------------- time main, time standard, breaks morning and breaks everning -----------------
             {
               $project: {
+                _id: 0,
+                year: '$year',
+                month: '$month',
                 date: '$date',
                 timein: '$timein',
                 timeout: '$timeout',
-                timeinStandard: '$timeinStandard',
-                timeoutStandard: '$timeoutStandard',
-                overtime: '$overtime',
-                breaks: '$breaks',
-                workHour: {
+                overtimemorning: '$overtimemorning',
+                overtimeverning: '$overtimeverning',
+                timeinMain: '$timeinMain',
+                timeoutMain: '$timeoutMain',
+                timeinStandard: {
                   $switch: {
                     branches: [
-                      // ---------------- case overtime is exists and work hour > 0 -----------------
-                      {
-                        case: { $ne: [{ $type: '$overtime' }, 'missing'] },
-                        then: 'Field exists',
-                      },
-                      // ---------------- case overtime does not exists and work hour > 0 -----------------
                       {
                         case: {
-                          $and: [
-                            { $eq: [{ $type: '$overtime' }, 'missing'] },
-                            // time out - time in > lunch
-                            {
-                              $gt: [
-                                {
-                                  $subtract: [
-                                    '$timeoutStandard',
-                                    '$timeinStandard',
-                                  ],
-                                },
-                                lunch,
-                              ],
-                            },
-                          ],
+                          $ne: [{ $type: '$overtimemorning' }, 'missing'],
                         },
                         then: {
-                          // work hour = timeout - timein -lunch
-                          $subtract: [
-                            {
-                              $subtract: [
-                                '$timeoutStandard',
-                                '$timeinStandard',
-                              ],
+                          // if have overtime morning ; if first in get overtime morning else time in
+                          $cond: {
+                            if: {
+                              $lte: ['$timein', '$overtimemorning.timein'],
                             },
-                            // - lunch
-                            lunch,
-                          ],
+                            then: '$overtimemorning.timein',
+                            else: '$timein',
+                          },
                         },
                       },
-                      // ---------------------------- default = 0 ----------------------------
+                    ],
+                    default: '$timeinMain',
+                  },
+                },
+                timeoutStandard: {
+                  $switch: {
+                    branches: [
+                      {
+                        case: {
+                          $ne: [{ $type: '$overtimeverning' }, 'missing'],
+                        },
+                        then: {
+                          // if have overtime everning ; if late in get overtime everning else time out
+                          $cond: {
+                            if: {
+                              $gte: ['$timeout', '$overtimeverning.timeout'],
+                            },
+                            then: '$overtimeverning.timeout',
+                            else: '$timeout',
+                          },
+                        },
+                      },
+                    ],
+                    default: '$timeoutMain',
+                  },
+                },
+
+                breaksMorning: {
+                  $switch: {
+                    branches: [
+                      {
+                        case: {
+                          $ne: [{ $type: '$overtimemorning' }, 'missing'],
+                        },
+                        then: {
+                          // if have overtime morning ; breaksmorning = time in main shift subtract time out morning shift
+                          $subtract: [rule.timeIn, '$overtimemorning.timeout'],
+                        },
+                      },
+                    ],
+                    default: 0,
+                  },
+                },
+
+                breaksEverning: {
+                  $switch: {
+                    branches: [
+                      {
+                        case: {
+                          $ne: [{ $type: '$overtimeverning' }, 'missing'],
+                        },
+                        then: {
+                          // if have overtime everning ; breakseverning = time in morning shift subtract time out main shift
+                          $subtract: ['$overtimeverning.timein', rule.timeOut],
+                        },
+                      },
                     ],
                     default: 0,
                   },
                 },
               },
             },
+            //  ---------------- time main, time standard, breaks morning and breaks everning -----------------
             {
               $project: {
+                year: '$year',
+                month: '$month',
                 date: '$date',
                 timein: '$timein',
                 timeout: '$timeout',
+                overtimemorning: '$overtimemorning',
+                overtimeverning: '$overtimeverning',
+                timeinMain: '$timeinMain',
+                timeoutMain: '$timeoutMain',
+                // hour in did cucalation overtime or not overtime
                 timeinStandard: '$timeinStandard',
+                // hour out did cucalation overtime or not overtime
                 timeoutStandard: '$timeoutStandard',
-                breaks: '$breaks',
-                overtime: '$overtime',
-                workHour: '$workHour',
-                omtime: {
+                breaksMorning: '$breaksMorning',
+                breaksEverning: '$breaksEverning',
+                // time work current of each person
+                workHourPerson: {
                   $cond: {
                     if: {
-                      $or: [
-                        {
-                          $gt: ['$timein', rule.timeIn],
-                        },
-                        {
-                          $lt: ['$timeout', rule.timeOut],
-                        },
+                      $and: [
+                        { $gt: ['$timeinStandard', 0] },
+                        { $gt: ['$timeoutStandard', 0] },
                       ],
                     },
                     then: {
-                      $cond: [{ $gt: ['$timein', 0] }, 'notontime', '$$REMOVE'],
+                      $subtract: [
+                        // sum present
+                        { $subtract: ['$timeoutStandard', '$timeinStandard'] },
+                        // sum breaks
+                        { $add: ['$breaksMorning', '$breaksEverning', lunch] },
+                      ],
                     },
-                    else: 'ontime',
+                    else: 0,
                   },
                 },
+                // time work current of company required
+                workHourRequired: {
+                  $switch: {
+                    branches: [
+                      {
+                        case: {
+                          $and: [
+                            { $ne: [{ $type: '$overtimemorning' }, 'missing'] },
+                            { $ne: [{ $type: '$overtimeverning' }, 'missing'] },
+                          ],
+                        },
+                        then: {
+                          // hour main shift + hour morning shift + hour everning shift
+                          $add: [
+                            rule.workHour,
+                            {
+                              $subtract: [
+                                '$overtimemorning.timeout',
+                                '$overtimemorning.timein',
+                              ],
+                            },
+                            {
+                              $subtract: [
+                                '$overtimeverning.timeout',
+                                '$overtimeverning.timein',
+                              ],
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        case: {
+                          $ne: [{ $type: '$overtimemorning' }, 'missing'],
+                        },
+                        then: {
+                          // hour main shift + hour morning shift
+                          $add: [
+                            rule.workHour,
+                            {
+                              $subtract: [
+                                '$overtimemorning.timeout',
+                                '$overtimemorning.timein',
+                              ],
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        case: {
+                          $ne: [{ $type: '$overtimeverning' }, 'missing'],
+                        },
+                        then: {
+                          // hour main shift + hour everning shift (rule.workHour = 28800)
+                          $add: [
+                            rule.workHour,
+                            {
+                              $subtract: [
+                                '$overtimeverning.timeout',
+                                '$overtimeverning.timein',
+                              ],
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                    default: rule.workHour,
+                  },
+                },
+              },
+            },
+            {
+              $project: {
+                year: '$year',
+                month: '$month',
+                date: '$date',
+                timein: '$timein',
+                timeout: '$timeout',
+                overtimemorning: '$overtimemorning',
+                overtimeverning: '$overtimeverning',
+                timeinMain: '$timeinMain',
+                timeoutMain: '$timeoutMain',
+                // hour in did cucalation overtime or not overtime
+                timeinStandard: '$timeinStandard',
+                // hour out did cucalation overtime or not overtime
+                timeoutStandard: '$timeoutStandard',
+                breaksMorning: '$breaksMorning',
+                breaksEverning: '$breaksEverning',
+                // time work current of each person
+                workHourPerson: '$workHourPerson',
+                // time work current of company required
+                workHourRequired: '$workHourRequired',
                 status: {
                   $switch: {
                     branches: [
                       {
                         case: {
-                          $gt: ['$workHour', rule?.workHour],
-                        },
-                        then: 'redundant',
-                      },
-                      {
-                        case: {
-                          $eq: ['$workHour', 0],
+                          $eq: ['$workHourPerson', 0],
                         },
                         then: 'leave',
                       },
                       {
                         case: {
-                          $lt: ['$workHour', rule?.workHour],
+                          $lt: ['$workHourPerson', '$workHourRequired'],
                         },
                         then: 'lack',
                       },
                       {
                         case: {
-                          $eq: ['$workHour', rule?.workHour],
+                          $eq: ['$workHourPerson', '$workHourRequired'],
                         },
                         then: 'enough',
                       },
@@ -1037,6 +1274,124 @@ export class UserService {
                 },
               },
             },
+
+            // {
+            //   $project: {
+            //     date: '$date',
+            //     timein: '$timein',
+            //     timeout: '$timeout',
+            //     timeinStandard: '$timeinStandard',
+            //     timeoutStandard: '$timeoutStandard',
+            //     overtime: '$overtime',
+            //     breaks: '$breaks',
+            //     workHour: {
+            //       $switch: {
+            //         branches: [
+            //           // ---------------- case overtime is exists and work hour > 0 -----------------
+            //           {
+            //             case: { $ne: [{ $type: '$overtime' }, 'missing'] },
+            //             then: 'Field exists',
+            //           },
+            //           // ---------------- case overtime does not exists and work hour > 0 -----------------
+            //           {
+            //             case: {
+            //               $and: [
+            //                 { $eq: [{ $type: '$overtime' }, 'missing'] },
+            //                 // time out - time in > lunch
+            //                 {
+            //                   $gt: [
+            //                     {
+            //                       $subtract: [
+            //                         '$timeoutStandard',
+            //                         '$timeinStandard',
+            //                       ],
+            //                     },
+            //                     lunch,
+            //                   ],
+            //                 },
+            //               ],
+            //             },
+            //             then: {
+            //               // work hour = timeout - timein -lunch
+            //               $subtract: [
+            //                 {
+            //                   $subtract: [
+            //                     '$timeoutStandard',
+            //                     '$timeinStandard',
+            //                   ],
+            //                 },
+            //                 // - lunch
+            //                 lunch,
+            //               ],
+            //             },
+            //           },
+            //           // ---------------------------- default = 0 ----------------------------
+            //         ],
+            //         default: 0,
+            //       },
+            //     },
+            //   },
+            // },
+            // {
+            //   $project: {
+            //     date: '$date',
+            //     timein: '$timein',
+            //     timeout: '$timeout',
+            //     timeinStandard: '$timeinStandard',
+            //     timeoutStandard: '$timeoutStandard',
+            //     breaks: '$breaks',
+            //     overtime: '$overtime',
+            //     workHour: '$workHour',
+            //     omtime: {
+            //       $cond: {
+            //         if: {
+            //           $or: [
+            //             {
+            //               $gt: ['$timein', rule.timeIn],
+            //             },
+            //             {
+            //               $lt: ['$timeout', rule.timeOut],
+            //             },
+            //           ],
+            //         },
+            //         then: {
+            //           $cond: [{ $gt: ['$timein', 0] }, 'notontime', '$$REMOVE'],
+            //         },
+            //         else: 'ontime',
+            //       },
+            //     },
+            //     status: {
+            //       $switch: {
+            //         branches: [
+            //           {
+            //             case: {
+            //               $gt: ['$workHour', rule?.workHour],
+            //             },
+            //             then: 'redundant',
+            //           },
+            //           {
+            //             case: {
+            //               $eq: ['$workHour', 0],
+            //             },
+            //             then: 'leave',
+            //           },
+            //           {
+            //             case: {
+            //               $lt: ['$workHour', rule?.workHour],
+            //             },
+            //             then: 'lack',
+            //           },
+            //           {
+            //             case: {
+            //               $eq: ['$workHour', rule?.workHour],
+            //             },
+            //             then: 'enough',
+            //           },
+            //         ],
+            //       },
+            //     },
+            //   },
+            // },
             {
               $sort: {
                 date: 1,
@@ -1076,6 +1431,7 @@ export class UserService {
         },
       },
     ];
+
     let findQuery = this.model.aggregate(pipeline);
 
     if (page && limit) {

@@ -25,7 +25,7 @@ export class CreateOvertimeDto {
   @IsNotEmpty()
   @Type(() => Number)
   @IsNumber()
-  date: number;
+  datetime: number;
 
   @IsNotEmpty()
   @Type(() => Number)

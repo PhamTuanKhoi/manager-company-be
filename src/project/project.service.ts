@@ -14,6 +14,7 @@ import { PayslipService } from 'src/payslip/payslip.service';
 import { UserRoleEnum } from 'src/user/interfaces/role-user.enum';
 import { UserService } from 'src/user/user.service';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { QueryProjectDto } from './dto/query-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project, ProjectDocument } from './schema/project.schema';
 
@@ -188,8 +189,8 @@ export class ProjectService {
     return data;
   }
 
-  findByIdAdmin() {
-    return this.model.aggregate([
+  findByIdAdmin(queryProjectDto: QueryProjectDto) {
+    const attendanceToDay = [
       {
         $lookup: {
           from: 'joinprojects',
@@ -206,32 +207,40 @@ export class ProjectService {
                       role: UserRoleEnum.WORKER,
                     },
                   },
-                ],
-                foreignField: '_id',
-                as: 'userEX',
-              },
-            },
-            {
-              $unwind: '$userEX',
-            },
-          ],
-          as: 'joinprojectWorker',
-        },
-      },
-      {
-        $lookup: {
-          from: 'joinprojects',
-          localField: '_id',
-          foreignField: 'project',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'joinor',
-                pipeline: [
+                  {
+                    $project: {
+                      _id: '$_id',
+                    },
+                  },
+                  {
+                    $lookup: {
+                      from: 'attendances',
+                      localField: '_id',
+                      foreignField: 'user',
+                      as: 'attendance',
+                    },
+                  },
+                  {
+                    $unwind: '$attendance',
+                  },
                   {
                     $match: {
-                      role: UserRoleEnum.CLIENT,
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$attendance.year', new Date().getFullYear()],
+                          },
+                          {
+                            $eq: [
+                              '$attendance.month',
+                              new Date().getMonth() + 1,
+                            ],
+                          },
+                          {
+                            $eq: ['$attendance.date', new Date().getDate()],
+                          },
+                        ],
+                      },
                     },
                   },
                 ],
@@ -243,9 +252,12 @@ export class ProjectService {
               $unwind: '$userEX',
             },
           ],
-          as: 'joinprojectClient',
+          as: 'joinproject',
         },
       },
+    ];
+
+    const lookupEmployees = [
       {
         $lookup: {
           from: 'joinprojects',
@@ -262,6 +274,13 @@ export class ProjectService {
                       role: UserRoleEnum.EMPLOYEE,
                     },
                   },
+                  {
+                    $project: {
+                      name: '$name',
+                      role: '$role',
+                      email: '$email',
+                    },
+                  },
                 ],
                 foreignField: '_id',
                 as: 'userEX',
@@ -274,6 +293,139 @@ export class ProjectService {
           as: 'joinprojectEmployee',
         },
       },
+    ];
+
+    const lookupClient = [
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'project',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'joinor',
+                pipeline: [
+                  {
+                    $match: {
+                      role: UserRoleEnum.CLIENT,
+                    },
+                  },
+                  {
+                    $project: {
+                      name: '$name',
+                      role: '$role',
+                      email: '$email',
+                    },
+                  },
+                ],
+                foreignField: '_id',
+                as: 'userEX',
+              },
+            },
+            {
+              $unwind: '$userEX',
+            },
+          ],
+          as: 'joinprojectClient',
+        },
+      },
+    ];
+
+    const lookupWorker = [
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'project',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'joinor',
+                pipeline: [
+                  {
+                    $match: {
+                      role: UserRoleEnum.WORKER,
+                    },
+                  },
+                  {
+                    $project: {
+                      name: '$name',
+                      field: '$field',
+                      role: '$role',
+                      email: '$email',
+                    },
+                  },
+                ],
+                foreignField: '_id',
+                as: 'userEX',
+              },
+            },
+            {
+              $unwind: '$userEX',
+            },
+          ],
+          as: 'joinprojectWorker',
+        },
+      },
+    ];
+
+    // const lookupLeader = [
+    //   {
+    //     $lookup: {
+    //       from: 'joinprojects',
+    //       localField: '_id',
+    //       foreignField: 'project',
+    //       pipeline: [
+    //         {
+    //           $lookup: {
+    //             from: 'users',
+    //             localField: 'joinor',
+    //             pipeline: [
+    //               {
+    //                 $match: {
+    //                   role: UserRoleEnum.LEADER,
+    //                 },
+    //               },
+    //               {
+    //                 $project: {
+    //                   name: '$name',
+    //                   field: '$field',
+    //                   role: '$role',
+    //                   email: '$email',
+    //                 },
+    //               },
+    //             ],
+    //             foreignField: '_id',
+    //             as: 'userEX',
+    //           },
+    //         },
+    //         {
+    //           $unwind: '$userEX',
+    //         },
+    //       ],
+    //       as: 'joinprojectLeader',
+    //     },
+    //   },
+    // ];
+    return this.model.aggregate([
+      // ---------------------------- lookup worker ----------------------------
+      ...lookupWorker,
+      // ---------------------------- lookup worker ----------------------------
+      // ---------------------------- lookup client ----------------------------
+      ...lookupClient,
+      // ---------------------------- lookup client ----------------------------
+      // ---------------------------- lookup employees ----------------------------
+      ...lookupEmployees,
+      // ---------------------------- lookup employees ----------------------------
+      // ---------------------------- lookup leader ----------------------------
+      // ...lookupLeader,
+      // ---------------------------- lookup leader ----------------------------
+      // ---------------------------- lookup attendance to day ----------------------------
+      ...attendanceToDay,
+      // ---------------------------- lookup attendance to day ----------------------------
       {
         $lookup: {
           from: 'payslips',
@@ -296,6 +448,10 @@ export class ProjectService {
           workers: '$joinprojectWorker.userEX',
           clients: '$joinprojectClient.userEX',
           employees: '$joinprojectEmployee.userEX',
+          // leader: '$joinprojectLeader.userEX',
+          attendanceToDay: {
+            $size: '$joinproject.userEX',
+          },
         },
       },
     ]);

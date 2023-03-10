@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { QueryProjectDto } from './dto/query-project.dto';
 
 @Controller('project')
 export class ProjectController {
@@ -21,8 +23,8 @@ export class ProjectController {
   }
 
   @Get('admin')
-  findByIdAdim() {
-    return this.projectService.findByIdAdmin();
+  findByIdAdim(@Query() queryProjectDto: QueryProjectDto) {
+    return this.projectService.findByIdAdmin(queryProjectDto);
   }
 
   // @Get('client/:id')

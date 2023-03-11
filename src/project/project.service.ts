@@ -372,6 +372,65 @@ export class ProjectService {
       },
     ];
 
+    const overtimeToDay = [
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'project',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'joinor',
+                pipeline: [
+                  {
+                    $match: {
+                      role: UserRoleEnum.WORKER,
+                    },
+                  },
+                  {
+                    $lookup: {
+                      from: 'overtimes',
+                      localField: '_id',
+                      foreignField: 'user',
+                      as: 'overtime',
+                    },
+                  },
+                  {
+                    $unwind: '$overtime',
+                  },
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$overtime.year', new Date().getFullYear()],
+                          },
+                          {
+                            $eq: ['$overtime.month', new Date().getMonth() + 1],
+                          },
+                          {
+                            $eq: ['$overtime.date', new Date().getDate()],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                foreignField: '_id',
+                as: 'userEX',
+              },
+            },
+            {
+              $unwind: '$userEX',
+            },
+          ],
+          as: 'joinprojectOvertime',
+        },
+      },
+    ];
+
     // const lookupLeader = [
     //   {
     //     $lookup: {
@@ -426,6 +485,9 @@ export class ProjectService {
       // ---------------------------- lookup attendance to day ----------------------------
       ...attendanceToDay,
       // ---------------------------- lookup attendance to day ----------------------------
+      // ---------------------------- lookup overtime to day ----------------------------
+      ...overtimeToDay,
+      // ---------------------------- lookup overtime to day ----------------------------
       {
         $lookup: {
           from: 'payslips',
@@ -451,6 +513,9 @@ export class ProjectService {
           // leader: '$joinprojectLeader.userEX',
           attendanceToDay: {
             $size: '$joinproject.userEX',
+          },
+          overtimeToDay: {
+            $size: '$joinprojectOvertime',
           },
         },
       },

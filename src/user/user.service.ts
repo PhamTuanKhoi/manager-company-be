@@ -31,6 +31,7 @@ import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
 import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 import { RulesService } from '../rules/rules.service';
 import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
+import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
 
 @Injectable()
 export class UserService {
@@ -799,8 +800,9 @@ export class UserService {
   }
 
   async userAttendance(query: QueryUserAttendaceDto) {
-    const { page, limit, project, date } = query;
-    const dateInMonth = JSON.parse(date).sort((a, b) => a - b);
+    const { page, limit, project, dateStringify } = query;
+
+    const dateInMonth = JSON.parse(dateStringify).sort((a, b) => a - b);
     const dateInMonthAttendance = dateInMonth?.map((item) => ({
       date: item,
       timein: 0,
@@ -1766,6 +1768,55 @@ export class UserService {
     const data = await this.model.aggregate(query);
 
     return data;
+  }
+
+  async toDayOvertime(queryUserOvertimeDto: QueryUserOvertimeDto) {
+    const { project, year, month, date } = queryUserOvertimeDto;
+
+    const query = await this.model.aggregate([
+      {
+        $lookup: {
+          from: 'overtimes',
+          localField: '_id',
+          foreignField: 'user',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$year', +year] },
+                    { $eq: ['$month', +month] },
+                    { $eq: ['$date', +date] },
+                    { $eq: ['$project', { $toObjectId: project }] },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                datetime: '$datetime',
+                timein: '$timein',
+                timeout: '$timeout',
+              },
+            },
+          ],
+          as: 'overtime',
+        },
+      },
+      {
+        $unwind: '$overtime',
+      },
+      {
+        $project: {
+          name: '$name',
+          field: '$field',
+          mobile: '$mobile',
+          overtime: '$overtime',
+        },
+      },
+    ]);
+
+    return query;
   }
 
   findOne(id: string) {

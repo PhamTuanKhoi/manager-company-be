@@ -1,8 +1,7 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
-import { QueryDto } from 'src/gobal/dto/query.dto';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class QueryUserAttendaceDto extends QueryDto {
+export class QueryUserOvertimeDto {
   @IsOptional()
   @IsString()
   project: string;
@@ -21,11 +20,4 @@ export class QueryUserAttendaceDto extends QueryDto {
   @Type(() => Number)
   @IsNumber()
   date: number;
-
-  @IsOptional()
-  @IsString()
-  dateStringify: string;
-
-  @IsOptional()
-  status: string;
 }

@@ -25,6 +25,7 @@ import { UserRoleEnum } from './interfaces/role-user.enum';
 import { QueryUserAttendaceDto } from './dto/query-dto/query-user-attendance.dto';
 import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
 import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
+import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -131,6 +132,11 @@ export class UserController {
   @Get('today-attendance')
   toDayAttendance(@Query() queryUserAttendaceDto: QueryUserAttendaceDto) {
     return this.userService.toDayAttendance(queryUserAttendaceDto);
+  }
+
+  @Get('today-overtime')
+  toDayOvertime(@Query() queryUserOvertimeDto: QueryUserOvertimeDto) {
+    return this.userService.toDayOvertime(queryUserOvertimeDto);
   }
 
   @Get(':id')

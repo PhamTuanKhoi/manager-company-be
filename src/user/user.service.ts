@@ -1672,6 +1672,102 @@ export class UserService {
     return query;
   }
 
+  async toDayAttendance(queryUserAttendanceDto: QueryUserAttendaceDto) {
+    const { year, month, date, project, status } = queryUserAttendanceDto;
+
+    const query: any = [
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          as: 'joinproject',
+        },
+      },
+      {
+        $unwind: '$joinproject',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$joinproject.project', { $toObjectId: project }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'attendances',
+          localField: '_id',
+          foreignField: 'user',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$year', +year] },
+                    { $eq: ['$month', +month] },
+                    { $eq: ['$date', +date] },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                datetime: '$datetime',
+                timein: '$timein',
+                timeout: '$timeout',
+                userEX: '$userEX',
+              },
+            },
+          ],
+          as: 'attendance',
+        },
+      },
+      {
+        $unwind: {
+          path: '$attendance',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // push
+      {
+        $project: {
+          name: '$name',
+          field: '$field',
+          mobile: '$mobile',
+          attendance: '$attendance',
+        },
+      },
+    ];
+
+    if (status === 'true') {
+      query.splice(6, 0, {
+        $match: {
+          $expr: {
+            $ne: [{ $type: '$attendance' }, 'missing'],
+          },
+        },
+      });
+    } else {
+      query.splice(6, 0, {
+        $match: {
+          $expr: {
+            $eq: [{ $type: '$attendance' }, 'missing'],
+          },
+        },
+      });
+    }
+
+    const data = await this.model.aggregate(query);
+
+    return data;
+  }
+
   findOne(id: string) {
     return this.model.findById(id).lean();
   }

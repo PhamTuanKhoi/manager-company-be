@@ -128,6 +128,11 @@ export class UserController {
     return this.userService.userPayroll(queryUserPayrollDto);
   }
 
+  @Get('today-attendance')
+  toDayAttendance(@Query() queryUserAttendaceDto: QueryUserAttendaceDto) {
+    return this.userService.toDayAttendance(queryUserAttendaceDto);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);

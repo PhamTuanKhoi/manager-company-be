@@ -19,27 +19,4 @@ export class JoinProjectController {
   create(@Body() createJoinProjectDto: CreateJoinProjectDto) {
     return this.joinProjectService.create(createJoinProjectDto);
   }
-
-  @Get()
-  findAll() {
-    return this.joinProjectService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.joinProjectService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateJoinProjectDto: UpdateJoinProjectDto,
-  ) {
-    return this.joinProjectService.update(+id, updateJoinProjectDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.joinProjectService.remove(+id);
-  }
 }

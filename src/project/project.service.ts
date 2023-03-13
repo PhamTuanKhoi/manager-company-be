@@ -265,15 +265,15 @@ export class ProjectService {
           foreignField: 'project',
           pipeline: [
             {
+              $match: {
+                role: UserRoleEnum.EMPLOYEE,
+              },
+            },
+            {
               $lookup: {
                 from: 'users',
                 localField: 'joinor',
                 pipeline: [
-                  {
-                    $match: {
-                      role: UserRoleEnum.EMPLOYEE,
-                    },
-                  },
                   {
                     $project: {
                       name: '$name',
@@ -431,44 +431,47 @@ export class ProjectService {
       },
     ];
 
-    // const lookupLeader = [
-    //   {
-    //     $lookup: {
-    //       from: 'joinprojects',
-    //       localField: '_id',
-    //       foreignField: 'project',
-    //       pipeline: [
-    //         {
-    //           $lookup: {
-    //             from: 'users',
-    //             localField: 'joinor',
-    //             pipeline: [
-    //               {
-    //                 $match: {
-    //                   role: UserRoleEnum.LEADER,
-    //                 },
-    //               },
-    //               {
-    //                 $project: {
-    //                   name: '$name',
-    //                   field: '$field',
-    //                   role: '$role',
-    //                   email: '$email',
-    //                 },
-    //               },
-    //             ],
-    //             foreignField: '_id',
-    //             as: 'userEX',
-    //           },
-    //         },
-    //         {
-    //           $unwind: '$userEX',
-    //         },
-    //       ],
-    //       as: 'joinprojectLeader',
-    //     },
-    //   },
-    // ];
+    const lookupLeader = [
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'project',
+          pipeline: [
+            {
+              $match: {
+                role: UserRoleEnum.LEADER,
+              },
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'joinor',
+                foreignField: '_id',
+                pipeline: [
+                  {
+                    $project: {
+                      name: '$name',
+                      field: '$field',
+                      role: '$role',
+                      email: '$email',
+                    },
+                  },
+                ],
+                as: 'userEX',
+              },
+            },
+            {
+              $unwind: '$userEX',
+            },
+          ],
+          as: 'joinprojectLeader',
+        },
+      },
+      {
+        $unwind: '$joinprojectLeader',
+      },
+    ];
     return this.model.aggregate([
       // ---------------------------- lookup worker ----------------------------
       ...lookupWorker,
@@ -480,7 +483,7 @@ export class ProjectService {
       ...lookupEmployees,
       // ---------------------------- lookup employees ----------------------------
       // ---------------------------- lookup leader ----------------------------
-      // ...lookupLeader,
+      ...lookupLeader,
       // ---------------------------- lookup leader ----------------------------
       // ---------------------------- lookup attendance to day ----------------------------
       ...attendanceToDay,
@@ -510,7 +513,7 @@ export class ProjectService {
           workers: '$joinprojectWorker.userEX',
           clients: '$joinprojectClient.userEX',
           employees: '$joinprojectEmployee.userEX',
-          // leader: '$joinprojectLeader.userEX',
+          leader: '$joinprojectLeader.userEX',
           attendanceToDay: {
             $size: '$joinproject.userEX',
           },
@@ -742,37 +745,11 @@ export class ProjectService {
 
   async update(id: string, updateProjectDto: UpdateProjectDto) {
     try {
-      //check project
-      await this.isModelExist(id);
+      const { team, client, leader, creator } = updateProjectDto;
 
-      let clientApi = updateProjectDto.client.map((i) => {
-        return this.userService.findOne(i);
-      });
-
-      let teamApi = updateProjectDto.team.map((i) => {
-        return this.userService.findOne(i);
-      });
-
-      //check client
-      const client = await Promise.all(clientApi);
-
-      //check team
-      const team = await Promise.all(teamApi);
-
-      //check creator
-      await this.userService.isModelExist(updateProjectDto.creator);
-
-      //check leader
-      if (updateProjectDto.leader)
-        await this.userService.isModelExist(updateProjectDto.leader);
-
-      if (updateProjectDto.client.length !== client.length) {
-        throw new HttpException(`client not found`, HttpStatus.BAD_REQUEST);
-      }
-
-      if (updateProjectDto.team.length !== team.length) {
-        throw new HttpException(`team not found`, HttpStatus.BAD_REQUEST);
-      }
+      // check input data
+      await this.validate(id, team, client, leader, creator);
+      await this.updateJoinProject(id, team, client, leader);
 
       const updated = await this.model.findByIdAndUpdate(id, updateProjectDto, {
         new: true,
@@ -796,6 +773,101 @@ export class ProjectService {
       this.logger.log(`Delete project by id #${removed?._id}`);
 
       return removed;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async updateJoinProject(
+    id: string,
+    team: string[],
+    client: string[],
+    leader: string,
+  ) {
+    console.log(team, leader);
+
+    try {
+      // remove join project by id project and role client, employess and leader
+      await Promise.all([
+        this.JoinProjectService.deleteSubportUpdateProject(
+          id,
+          UserRoleEnum.LEADER,
+        ),
+        this.JoinProjectService.deleteSubportUpdateProject(
+          id,
+          UserRoleEnum.EMPLOYEE,
+        ),
+        this.JoinProjectService.deleteSubportUpdateProject(
+          id,
+          UserRoleEnum.CLIENT,
+        ),
+      ]);
+
+      // create join project client, employees, leader
+      const createJoinProjecRoleClient = client.map((i) => {
+        return this.JoinProjectService.create({
+          joinor: i,
+          project: id,
+          role: UserRoleEnum.CLIENT,
+        });
+      });
+
+      const createJoinProjecRoleEmployees = team.map((i) => {
+        return this.JoinProjectService.create({
+          joinor: i,
+          project: id,
+          role: UserRoleEnum.EMPLOYEE,
+        });
+      });
+
+      const createJoinProjecRoleLeader = this.JoinProjectService.create({
+        joinor: leader,
+        project: id,
+        role: UserRoleEnum.LEADER,
+      });
+
+      await Promise.all([
+        createJoinProjecRoleLeader,
+        ...createJoinProjecRoleClient,
+        ...createJoinProjecRoleEmployees,
+      ]);
+
+      return true;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async validate(
+    id: string,
+    team: string[],
+    client: string[],
+    leader: string,
+    creator: string,
+  ) {
+    try {
+      let clientApi = client.map((i) => {
+        return this.userService.findOne(i);
+      });
+
+      let teamApi = team.map((i) => {
+        return this.userService.findOne(i);
+      });
+
+      //check project, client, team , creator
+      await Promise.all([
+        this.isModelExist(id),
+        ...clientApi,
+        ...teamApi,
+        this.userService.isModelExist(creator),
+      ]);
+
+      //check leader
+      if (leader) await this.userService.isModelExist(leader);
+
+      return true;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

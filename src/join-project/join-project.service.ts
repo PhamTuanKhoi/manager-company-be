@@ -44,19 +44,16 @@ export class JoinProjectService {
     }
   }
 
-  findAll() {
-    return `This action returns all joinProject`;
-  }
+  async deleteSubportUpdateProject(projectId: string, role: string) {
+    try {
+      const removed = await this.model.remove({ project: projectId, role });
 
-  findOne(id: number) {
-    return `This action returns a #${id} joinProject`;
-  }
+      this.logger.log(`remove a join project success by id#`);
 
-  update(id: number, updateJoinProjectDto: UpdateJoinProjectDto) {
-    return `This action updates a #${id} joinProject`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} joinProject`;
+      return removed;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 }

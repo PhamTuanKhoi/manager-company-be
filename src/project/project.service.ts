@@ -164,32 +164,32 @@ export class ProjectService {
   //   return [];
   // }
 
-  async findByIdUser(id: string) {
-    const data = await this.model.aggregate([
-      {
-        $lookup: {
-          from: 'joinprojects',
-          localField: '_id',
-          foreignField: 'project',
-          as: 'joinproject',
-        },
-      },
-      {
-        $unwind: '$joinproject',
-      },
-      {
-        $match: {
-          $expr: {
-            $eq: ['$joinproject.joinor', { $toObjectId: id }],
-          },
-        },
-      },
-    ]);
+  // async findByIdUser(id: string) {
+  //   const data = await this.model.aggregate([
+  //     {
+  //       $lookup: {
+  //         from: 'joinprojects',
+  //         localField: '_id',
+  //         foreignField: 'project',
+  //         as: 'joinproject',
+  //       },
+  //     },
+  //     {
+  //       $unwind: '$joinproject',
+  //     },
+  //     {
+  //       $match: {
+  //         $expr: {
+  //           $eq: ['$joinproject.joinor', { $toObjectId: id }],
+  //         },
+  //       },
+  //     },
+  //   ]);
 
-    return data;
-  }
+  //   return data;
+  // }
 
-  findByIdAdmin(queryProjectDto: QueryProjectDto) {
+  async findByAllLevel(queryProjectDto: QueryProjectDto) {
     const attendanceToDay = [
       {
         $lookup: {
@@ -472,7 +472,8 @@ export class ProjectService {
         $unwind: '$joinprojectLeader',
       },
     ];
-    return this.model.aggregate([
+
+    let query: any = [
       // ---------------------------- lookup worker ----------------------------
       ...lookupWorker,
       // ---------------------------- lookup worker ----------------------------
@@ -522,7 +523,36 @@ export class ProjectService {
           },
         },
       },
-    ]);
+    ];
+
+    if (queryProjectDto.userId) {
+      query = [
+        {
+          $lookup: {
+            from: 'joinprojects',
+            localField: '_id',
+            foreignField: 'project',
+            as: 'joinprojectEX',
+          },
+        },
+        {
+          $unwind: '$joinprojectEX',
+        },
+        {
+          $match: {
+            $expr: {
+              $eq: [
+                '$joinprojectEX.joinor',
+                { $toObjectId: queryProjectDto.userId },
+              ],
+            },
+          },
+        },
+        ...query,
+      ];
+    }
+
+    return await this.model.aggregate(query);
   }
 
   findById(id: string) {

@@ -22,25 +22,15 @@ export class ProjectController {
     return this.projectService.findAll();
   }
 
-  @Get('admin')
-  findByIdAdim(@Query() queryProjectDto: QueryProjectDto) {
-    return this.projectService.findByIdAdmin(queryProjectDto);
+  @Get('all')
+  findByAllLevel(@Query() queryProjectDto: QueryProjectDto) {
+    return this.projectService.findByAllLevel(queryProjectDto);
   }
 
-  // @Get('client/:id')
-  // findByIdClient(@Param('id') id: string) {
-  //   return this.projectService.findByIdClient(id);
+  // @Get('user/:id')
+  // findByIdUser(@Param('id') id: string) {
+  //   return this.projectService.findByIdUser(id);
   // }
-
-  // @Get('employees/:id')
-  // findByIdEmployees(@Param('id') id: string) {
-  //   return this.projectService.findByIdEmployees(id);
-  // }
-
-  @Get('user/:id')
-  findByIdUser(@Param('id') id: string) {
-    return this.projectService.findByIdUser(id);
-  }
 
   @Get(':id')
   findById(@Param('id') id: string) {

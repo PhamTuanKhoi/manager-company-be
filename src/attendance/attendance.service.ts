@@ -18,6 +18,7 @@ import { Attendance, AttendanceDocument } from './schema/attendance.schema';
 import * as WiFiControl from 'wifi-control';
 import { RulesService } from 'src/rules/rules.service';
 import { QueryAttendanceDto } from './dto/query-attendance.dto';
+import { OvertimeService } from 'src/overtime/overtime.service';
 @Injectable()
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
@@ -30,6 +31,8 @@ export class AttendanceService {
     private readonly projectService: ProjectService,
     @Inject(forwardRef(() => RulesService))
     private readonly rulesService: RulesService,
+    @Inject(forwardRef(() => OvertimeService))
+    private readonly overtimeService: OvertimeService,
   ) {}
 
   async getAttendancePersonal(queryAttendanceDto: QueryAttendanceDto) {
@@ -92,11 +95,11 @@ export class AttendanceService {
       year: new Date().getFullYear(),
     });
 
-    if (attendance?.timeout > 0)
-      throw new HttpException(
-        `Bạn đã chấm công 2 lần trong ngày!`,
-        HttpStatus.FORBIDDEN,
-      );
+    // if (attendance?.timeout > 0)
+    //   throw new HttpException(
+    //     `Bạn đã chấm công 2 lần trong ngày!`,
+    //     HttpStatus.FORBIDDEN,
+    //   );
 
     // format date time
     const datetime = Date.now();
@@ -122,7 +125,9 @@ export class AttendanceService {
       });
     }
 
-    return this.create({ user, project, timein: time });
+    const created = await this.create({ user, project, timein: time });
+
+    return created;
   }
 
   async create(createAttendanceDto: CreateAttendanceDto): Promise<Attendance> {

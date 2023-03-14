@@ -53,23 +53,6 @@ export class OvertimeService {
 
       const created = await this.model.insertMany(isInsert);
 
-      // const payload update attendance
-      // const updateAttendanceAPI = created.map((i) => {
-      //   let payload: any = {
-      //     overtime: i._id.toString(),
-      //     project,
-      //     user: i.user.toString(),
-      //     date: new Date().getDate(),
-      //     month: new Date().getMonth() + 1,
-      //     year: new Date().getFullYear(),
-      //     breaks: timein - rule.timeOut,
-      //   };
-
-      //   return this.attendanceService.updateFieldOvertime(payload);
-      // });
-
-      // await Promise.all(updateAttendanceAPI);
-
       this.logger.log(`insert ${created.length} overtime success`);
 
       return created;
@@ -77,6 +60,10 @@ export class OvertimeService {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
     }
+  }
+
+  async toDayOvertimeOfIndividual(project, user, year, month, date) {
+    return this.model.find({ project, user, year, month, date });
   }
 
   findAll() {

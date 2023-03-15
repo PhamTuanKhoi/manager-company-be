@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { Attendance } from 'src/attendance/schema/attendance.schema';
 import { Time } from 'src/gobal/schema/time.schema';
 import { Project } from 'src/project/schema/project.schema';
 import { User } from 'src/user/schema/user.schema';
@@ -14,26 +15,11 @@ export class Overtime extends Time {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   user: User;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Project })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Project.name })
   project: Project;
 
-  // @Prop()
-  // datetime: number;
-
-  // @Prop({ default: new Date().getFullYear() })
-  // year: number;
-
-  // @Prop({ default: new Date().getMonth() + 1 })
-  // month: number;
-
-  // @Prop({ default: new Date().getDate() })
-  // date: number;
-
-  // @Prop()
-  // timein: number;
-
-  // @Prop()
-  // timeout: number;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Attendance' })
+  attendance: Attendance;
 
   @Prop({ required: true })
   type: OvertimeTypeEnum;

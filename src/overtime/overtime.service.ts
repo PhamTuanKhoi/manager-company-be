@@ -12,6 +12,7 @@ import { ProjectService } from 'src/project/project.service';
 import { RulesService } from 'src/rules/rules.service';
 import { UserService } from 'src/user/user.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
+import { QueryOvertimeDto } from './dto/query-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
 import { Overtime, OvertimeDocument } from './schema/overtime.schema';
 
@@ -62,16 +63,29 @@ export class OvertimeService {
     }
   }
 
-  async toDayOvertimeOfIndividual(project, user, year, month, date) {
-    return this.model.find({ project, user, year, month, date });
+  async toDayOvertimeOfIndividual(queryOvertimeDto: QueryOvertimeDto) {
+    return this.model.find(queryOvertimeDto).sort({ timein: 1 });
   }
 
-  findAll() {
-    return `This action returns all overtime`;
-  }
+  async updateFieldAttendance(id: string, payload: { attendanceId: string }) {
+    try {
+      await this.isModelExists(id);
 
-  update(id: number, updateOvertimeDto: UpdateOvertimeDto) {
-    return `This action updates a #${id} overtime`;
+      const updated = await this.model.findByIdAndUpdate(
+        id,
+        { attendance: payload.attendanceId },
+        {
+          new: true,
+        },
+      );
+
+      this.logger.log(`updated field attendance by id#${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
   }
 
   async findOne(id: string) {

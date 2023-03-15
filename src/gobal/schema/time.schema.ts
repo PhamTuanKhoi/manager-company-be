@@ -13,9 +13,9 @@ export class Time {
   @Prop({ default: new Date().getDate() })
   date: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   timein: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   timeout?: number;
 }

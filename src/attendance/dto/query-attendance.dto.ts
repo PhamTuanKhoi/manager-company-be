@@ -23,5 +23,10 @@ export class QueryAttendanceDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  timeout?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
   date?: number;
 }

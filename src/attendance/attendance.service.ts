@@ -19,6 +19,7 @@ import * as WiFiControl from 'wifi-control';
 import { RulesService } from 'src/rules/rules.service';
 import { QueryAttendanceDto } from './dto/query-attendance.dto';
 import { OvertimeService } from 'src/overtime/overtime.service';
+import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 @Injectable()
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
@@ -64,21 +65,18 @@ export class AttendanceService {
     ]);
   }
 
-  async toDayAttendance(queryAttendanceDto: QueryAttendanceDto) {
+  async toDayAllAttendance(queryAttendanceDto: QueryAttendanceDto) {
     const { user, project, date, month, year } = queryAttendanceDto;
     return await this.model
-      .findOne({ user, project, date, month, year })
-      .lean();
+      .find({ user, project, date, month, year })
+      .sort({ timein: 1 });
   }
 
-  async createOrUpdate(updateAttendanceDto: UpdateAttendanceDto) {
-    const { user, project, wiffi } = updateAttendanceDto;
-    // check input data
-    await Promise.all([
-      this.userService.isModelExist(user),
-      this.projectService.isModelExist(project),
-    ]);
+  async toDayAttendance(queryAttendanceDto: QueryAttendanceDto) {
+    return await this.model.findOne(queryAttendanceDto).lean();
+  }
 
+  async checkRules(wiffi: string, project: string) {
     const rules = await this.rulesService.findByIdProjects(wiffi, project);
 
     if (!rules)
@@ -87,47 +85,153 @@ export class AttendanceService {
         HttpStatus.FORBIDDEN,
       );
 
-    const attendance = await this.toDayAttendance({
-      user,
-      project,
-      date: new Date().getDate(),
-      month: new Date().getMonth() + 1,
-      year: new Date().getFullYear(),
-    });
+    return rules;
+  }
 
-    // if (attendance?.timeout > 0)
-    //   throw new HttpException(
-    //     `Bạn đã chấm công 2 lần trong ngày!`,
-    //     HttpStatus.FORBIDDEN,
-    //   );
+  // async checkAttendance(user, project, year, month, date){
+  //   retu
+  // }
 
-    // format date time
-    const datetime = Date.now();
-    const hour = new Date(datetime).getHours();
-    const minute = new Date(datetime).getMinutes();
-    const time = hour * 3600 + minute * 60;
+  async createOrUpdate(updateAttendanceDto: UpdateAttendanceDto) {
+    const { user, project, wiffi } = updateAttendanceDto;
+    try {
+      // check input data
+      await Promise.all([
+        this.userService.isModelExist(user),
+        this.projectService.isModelExist(project),
+        this.checkRules(wiffi, project),
+      ]);
 
-    //  ----------------------------- update ------------------------
+      const toDate = {
+        date: new Date().getDate(),
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+      };
 
-    if (attendance?.timein === 0) {
-      return this.update(attendance._id.toString(), {
+      // [ shifts ]
+      const isShifts = await this.overtimeService.toDayOvertimeOfIndividual({
+        user,
+        project,
+        type: OvertimeTypeEnum.SHIFTS,
+        ...toDate,
+      });
+
+      // { attendance }
+      const attendance = await this.toDayAttendance({
+        user,
+        project,
+        ...toDate,
+        timeout: 0,
+      });
+
+      // { attendance }
+      const uniqueAttendance = await this.toDayAttendance({
+        user,
+        project,
+        ...toDate,
+      });
+
+      // [ attendance ]
+      const toDayAllAttendance = await this.toDayAllAttendance({
+        project,
+        user,
+        ...toDate,
+      });
+
+      // to day overtime sort -> timein: 1
+      const todayOvertime =
+        await this.overtimeService.toDayOvertimeOfIndividual({
+          project,
+          user,
+          ...toDate,
+        });
+
+      if (
+        toDayAllAttendance.length === todayOvertime.length &&
+        todayOvertime.length > 0 &&
+        attendance === null
+      )
+        throw new HttpException(
+          `Bạn đã chấm công đủ ${todayOvertime.length * 2} lần!`,
+          HttpStatus.FORBIDDEN,
+        );
+
+      if (uniqueAttendance?.timeout > 0 && isShifts.length === 0)
+        throw new HttpException(
+          `Bạn đã chấm công 2 lần trong ngày!`,
+          HttpStatus.FORBIDDEN,
+        );
+
+      // format date time
+      const datetime = Date.now();
+      const hour = new Date(datetime).getHours();
+      const minute = new Date(datetime).getMinutes();
+      const time = hour * 3600 + minute * 60;
+
+      //  ----------------------------- update ------------------------
+
+      if (attendance?.timeout === 0 && attendance?.timein > 0) {
+        return this.update(attendance._id.toString(), {
+          user,
+          project,
+          timeout: time,
+        });
+      }
+
+      const created: any = await this.create({
         user,
         project,
         timein: time,
       });
-    }
 
-    if (attendance?.timeout === 0 && attendance?.timein > 0) {
-      return this.update(attendance._id.toString(), {
-        user,
+      // logic asynchronous
+      if (isShifts.length > 0) {
+        this.checkUpdateOverTime(
+          project,
+          user,
+          toDate,
+          created?._id,
+          todayOvertime,
+        );
+      }
+
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async checkUpdateOverTime(
+    project,
+    user,
+    toDate,
+    attendanceId,
+    todayOvertime,
+  ) {
+    try {
+      // [ attendance ]
+      const toDayAllAttendance = await this.toDayAllAttendance({
         project,
-        timeout: time,
+        user,
+        ...toDate,
       });
+
+      if (todayOvertime.length > 0 && toDayAllAttendance.length > 0) {
+        let overtimeId = todayOvertime[toDayAllAttendance.length - 1]?._id;
+
+        if (overtimeId)
+          await this.overtimeService.updateFieldAttendance(
+            overtimeId.toString(),
+            {
+              attendanceId,
+            },
+          );
+      }
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
     }
-
-    const created = await this.create({ user, project, timein: time });
-
-    return created;
   }
 
   async create(createAttendanceDto: CreateAttendanceDto): Promise<Attendance> {
@@ -172,45 +276,6 @@ export class AttendanceService {
       throw new BadRequestException(error?.message);
     }
   }
-
-  // async updateFieldOvertime(
-  //   updateAttendanceDto: UpdateAttendanceDto,
-  // ): Promise<Attendance> {
-  //   const { project, user, date, month, year, overtime, breaks } =
-  //     updateAttendanceDto;
-
-  //   try {
-  //     // check is exists
-  //     const isExists = await this.toDayAttendance({
-  //       project,
-  //       user,
-  //       year,
-  //       month,
-  //       date,
-  //     });
-
-  //     let payload: any = {
-  //       user,
-  //       project,
-  //       overtime,
-  //     };
-
-  //     if (breaks) {
-  //       payload = { ...payload, breaks };
-  //     }
-
-  //     // update
-  //     if (isExists) {
-  //       return this.update(isExists._id.toString(), payload);
-  //     }
-
-  //     // create
-  //     return this.create(payload);
-  //   } catch (error) {
-  //     this.logger.error(error?.message, error.stack);
-  //     throw new BadRequestException(error?.message);
-  //   }
-  // }
 
   async fetchWiffi(res: Response) {
     try {

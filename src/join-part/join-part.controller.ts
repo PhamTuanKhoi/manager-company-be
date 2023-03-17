@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Res,
 } from '@nestjs/common';
 import { JoinPartService } from './join-part.service';
 import { CreateJoinPartDto } from './dto/create-join-part.dto';
 import { UpdateJoinPartDto } from './dto/update-join-part.dto';
+import { Response } from 'express';
 
 @Controller('join-part')
 export class JoinPartController {
@@ -21,8 +23,18 @@ export class JoinPartController {
   }
 
   @Get()
-  findAll() {
-    return this.joinPartService.findAll();
+  findAll(@Res() res: Response) {
+    return this.joinPartService.findAll(res);
+  }
+
+  @Get('okay')
+  findthanks(@Res() res: Response) {
+    return this.joinPartService.findthanks(res);
+  }
+
+  @Post('test')
+  testSave(@Body() data) {
+    return this.joinPartService.testSave(data);
   }
 
   @Get(':id')

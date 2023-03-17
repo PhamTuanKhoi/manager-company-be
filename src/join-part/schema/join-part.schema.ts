@@ -15,8 +15,21 @@ export class JoinPart {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Part })
   part: Part;
 
-  @Prop({ default: Date.now() })
-  date: number;
+  // @Prop({ default: Date.now() })
+  // date: number;
+
+  // ===================== WARNING TESTSSSSSSS =======================
+  @Prop()
+  date: string;
+
+  @Prop({ type: { timein: Number, timeout: Number } })
+  hour: object;
+
+  @Prop()
+  id: number;
+
+  @Prop()
+  sort: number;
 }
 
 export const JoinPartSchema = SchemaFactory.createForClass(JoinPart);

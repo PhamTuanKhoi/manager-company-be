@@ -39,10 +39,16 @@ export class Attendance extends Time {
   // timeout?: number;
 
   @Prop({ default: 0 })
-  workday?: number;
+  workHour?: number;
 
   @Prop()
   breaks?: number;
+
+  @Prop({ default: 0 })
+  timeoutShifts?: number;
+
+  @Prop({ default: 0 })
+  timeinShifts?: number;
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);

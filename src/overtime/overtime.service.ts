@@ -67,6 +67,10 @@ export class OvertimeService {
     return this.model.find(queryOvertimeDto).sort({ timein: 1 });
   }
 
+  async findOneToDayOvertimeOfIndividual(queryOvertimeDto: QueryOvertimeDto) {
+    return this.model.findOne(queryOvertimeDto).lean();
+  }
+
   async updateFieldAttendance(id: string, payload: { attendanceId: string }) {
     try {
       await this.isModelExists(id);

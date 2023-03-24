@@ -30,5 +30,13 @@ export class CreateAttendanceDto {
 
   @IsOptional()
   @IsNumber()
+  timeout?: number;
+
+  @IsOptional()
+  @IsNumber()
+  workHour?: number;
+
+  @IsOptional()
+  @IsNumber()
   breaks?: number;
 }

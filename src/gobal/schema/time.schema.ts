@@ -1,7 +1,7 @@
 import { Prop } from '@nestjs/mongoose';
 
 export class Time {
-  @Prop()
+  @Prop({ default: Date.now() })
   datetime: number;
 
   @Prop({ default: new Date().getFullYear() })

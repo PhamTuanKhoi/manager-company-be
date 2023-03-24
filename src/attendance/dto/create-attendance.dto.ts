@@ -39,4 +39,6 @@ export class CreateAttendanceDto {
   @IsOptional()
   @IsNumber()
   breaks?: number;
+
+  timeinShifts?: number;
 }

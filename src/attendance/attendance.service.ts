@@ -174,7 +174,7 @@ export class AttendanceService {
           attendanceId: attendance?._id.toString(),
           todayOvertime,
           // FIXME:
-          timeout: 72800,
+          timeout: 63800,
           attendance,
           toDate,
         });
@@ -185,6 +185,7 @@ export class AttendanceService {
         user,
         project,
         timein: time,
+        timeinShifts: time,
       });
 
       return created;
@@ -496,7 +497,7 @@ export class AttendanceService {
     try {
       const rules = await this.rulesService.findOneRefProject(project);
       const workHour =
-        timein < rules.lunchIn && timeout > rules.lunchOut
+        timein < rules.lunchOut && timeout > rules.lunchIn
           ? timeout - timein - (rules.lunchIn - rules.lunchOut)
           : timeout - timein;
       this.logger.debug(`work hour ${workHour}`);
@@ -643,7 +644,7 @@ export class AttendanceService {
       const timeoutStandard =
         timeout >= overtimeQuery.timeout ? overtimeQuery.timeout : timeout;
 
-      if (timeinStandard < rules.lunchIn && timeoutStandard > rules.lunchOut) {
+      if (timeinStandard < rules.lunchOut && timeoutStandard > rules.lunchIn) {
         this.logger.debug(
           `shifts ${
             timeoutStandard - timeinStandard - (rules.lunchIn - rules.lunchOut)

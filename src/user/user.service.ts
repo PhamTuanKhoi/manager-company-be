@@ -26,7 +26,7 @@ import { UpdateWorkerDto } from './dto/update-dto/update-worker.dto';
 import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { ConfigService } from '@nestjs/config';
-import { QueryUserAttendaceDto } from './dto/query-dto/query-user-attendance.dto';
+import { QueryUserAttendanceDto } from './dto/query-dto/query-user-attendance.dto';
 import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
 import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 import { RulesService } from '../rules/rules.service';
@@ -832,7 +832,7 @@ export class UserService {
     return employees || leader;
   }
 
-  async userAttendance(query: QueryUserAttendaceDto) {
+  async userAttendance(query: QueryUserAttendanceDto) {
     const { page, limit, project, dateStringify } = query;
 
     const dateInMonth = JSON.parse(dateStringify).sort((a, b) => a - b);
@@ -889,8 +889,6 @@ export class UserService {
                   {
                     $project: {
                       _id: 0,
-                      // timein: '$timein',
-                      // timeout: '$timeout',
                       type: '$type',
                       workhour: {
                         $cond: {
@@ -1149,6 +1147,227 @@ export class UserService {
     };
   }
 
+  async sumWorkHourInMonth(queryUserAttendanceDto: QueryUserAttendanceDto) {
+    const rule = await this.rulesService.findOneRefProject(
+      queryUserAttendanceDto.project,
+    );
+
+    //  lunch break
+    const lunch: number =
+      rule?.lunchIn - rule.lunchOut > 0 ? rule?.lunchIn - rule?.lunchOut : 0;
+
+    const hourRules: number =
+      rule?.lunchIn - rule.lunchOut > 0
+        ? rule.timeOut - rule.timeIn - (rule.lunchIn - rule.lunchOut)
+        : rule.timeOut - rule.timeIn;
+
+    const query = await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [
+                    '$project',
+                    { $toObjectId: queryUserAttendanceDto.project },
+                  ],
+                },
+              },
+            },
+          ],
+          as: 'joinproject',
+        },
+      },
+      {
+        $unwind: '$joinproject',
+      },
+      // --------------------------- calculation ------------------------
+      {
+        $lookup: {
+          from: 'attendances',
+          localField: '_id',
+          foreignField: 'user',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$year', +queryUserAttendanceDto.year] },
+                    { $eq: ['$month', +queryUserAttendanceDto.month] },
+                  ],
+                },
+              },
+            },
+            {
+              $lookup: {
+                from: 'overtimes',
+                localField: '_id',
+                foreignField: 'attendance',
+                pipeline: [
+                  {
+                    $project: {
+                      _id: 0,
+                      type: '$type',
+                      workhourOvertime: {
+                        $cond: {
+                          if: {
+                            $and: [
+                              {
+                                $lt: ['$timein', rule.lunchOut],
+                              },
+                              {
+                                $gt: ['$timeout', rule.lunchIn],
+                              },
+                            ],
+                          },
+                          then: {
+                            $subtract: [
+                              { $subtract: ['$timeout', '$timein'] },
+                              lunch,
+                            ],
+                          },
+                          else: { $subtract: ['$timeout', '$timein'] },
+                        },
+                      },
+                    },
+                  },
+                ],
+                as: 'overtime',
+              },
+            },
+            {
+              $project: {
+                workhour: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        {
+                          $lt: ['$timeinShifts', rule.lunchOut],
+                        },
+                        {
+                          $gt: ['$timeoutShifts', rule.lunchIn],
+                        },
+                      ],
+                    },
+                    then: {
+                      $subtract: [
+                        {
+                          $subtract: ['$timeoutShifts', '$timeinShifts'],
+                        },
+                        lunch,
+                      ],
+                    },
+                    else: {
+                      $subtract: ['$timeoutShifts', '$timeinShifts'],
+                    },
+                  },
+                },
+                overtime: '$overtime',
+              },
+            },
+            {
+              $unwind: {
+                path: '$overtime',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $group: {
+                _id: 0,
+                workhour: {
+                  $sum: {
+                    $cond: {
+                      if: { $gt: ['$workhour', 0] },
+                      then: '$workhour',
+                      else: '$$REMOVE',
+                    },
+                  },
+                },
+                workhourOvertime: {
+                  $push: '$overtime',
+                },
+              },
+            },
+          ],
+          as: 'attendances',
+        },
+      },
+      // TODO: custom frontend -> can use path: '$attendances' to optimize performance
+      {
+        $unwind: {
+          path: '$attendances',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          workhourInMonth: '$attendances.workhour',
+          shifts: {
+            $filter: {
+              input: '$attendances.workhourOvertime',
+              as: 'item',
+              cond: { $eq: ['$$item.type', OvertimeTypeEnum.SHIFTS] },
+            },
+          },
+          overtimeMorning: {
+            $filter: {
+              input: '$attendances.workhourOvertime',
+              as: 'item',
+              cond: { $eq: ['$$item.type', OvertimeTypeEnum.MORNING] },
+            },
+          },
+          overtimeEverming: {
+            $filter: {
+              input: '$attendances.workhourOvertime',
+              as: 'item',
+              cond: { $eq: ['$$item.type', OvertimeTypeEnum.EVERNINGS] },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          workhourInMonth: '$workhourInMonth',
+          ratioWork: {
+            $round: [{ $divide: ['$workhourInMonth', hourRules] }, 1],
+          },
+          totalShifts: {
+            $reduce: {
+              input: '$shifts',
+              initialValue: 0,
+              in: { $add: ['$$value', '$$this.workhourOvertime'] },
+            },
+          },
+          totalOvertimeMorning: {
+            $reduce: {
+              input: '$overtimeMorning',
+              initialValue: 0,
+              in: { $add: ['$$value', '$$this.workhourOvertime'] },
+            },
+          },
+          totalOvertimeEverming: {
+            $reduce: {
+              input: '$overtimeEverming',
+              initialValue: 0,
+              in: { $add: ['$$value', '$$this.workhourOvertime'] },
+            },
+          },
+        },
+      },
+    ]);
+
+    return query;
+  }
+
   async userSalary(queryUserSalaryDto: QueryUserSalaryDto) {
     const query = await this.model.aggregate([
       {
@@ -1368,7 +1587,7 @@ export class UserService {
     return query;
   }
 
-  async toDayAttendance(queryUserAttendanceDto: QueryUserAttendaceDto) {
+  async toDayAttendance(queryUserAttendanceDto: QueryUserAttendanceDto) {
     const { year, month, date, project, status } = queryUserAttendanceDto;
 
     const query: any = [

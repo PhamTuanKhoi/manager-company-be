@@ -22,10 +22,10 @@ import { QueryWorkerProject } from './interfaces/worker-assign-query';
 import { QueryNotificationMessage } from './interfaces/notification-message-query copy';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { UserRoleEnum } from './interfaces/role-user.enum';
-import { QueryUserAttendaceDto } from './dto/query-dto/query-user-attendance.dto';
 import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
 import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
+import { QueryUserAttendanceDto } from './dto/query-dto/query-user-attendance.dto';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -115,8 +115,13 @@ export class UserController {
   }
 
   @Get('attendance')
-  userAttendance(@Query() queryUserAttendaceDto: QueryUserAttendaceDto) {
+  userAttendance(@Query() queryUserAttendaceDto: QueryUserAttendanceDto) {
     return this.userService.userAttendance(queryUserAttendaceDto);
+  }
+
+  @Get('sum-workhour-in-month')
+  sumWorkHourInMonth(@Query() queryUserAttendaceDto: QueryUserAttendanceDto) {
+    return this.userService.sumWorkHourInMonth(queryUserAttendaceDto);
   }
 
   @Get('salary')
@@ -130,7 +135,7 @@ export class UserController {
   }
 
   @Get('today-attendance')
-  toDayAttendance(@Query() queryUserAttendaceDto: QueryUserAttendaceDto) {
+  toDayAttendance(@Query() queryUserAttendaceDto: QueryUserAttendanceDto) {
     return this.userService.toDayAttendance(queryUserAttendaceDto);
   }
 

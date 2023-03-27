@@ -201,6 +201,7 @@ export class ProjectService {
               $lookup: {
                 from: 'users',
                 localField: 'joinor',
+                foreignField: '_id',
                 pipeline: [
                   {
                     $match: {
@@ -243,8 +244,12 @@ export class ProjectService {
                       },
                     },
                   },
+                  {
+                    $group: {
+                      _id: '$attendance.user',
+                    },
+                  },
                 ],
-                foreignField: '_id',
                 as: 'userEX',
               },
             },
@@ -383,6 +388,7 @@ export class ProjectService {
               $lookup: {
                 from: 'users',
                 localField: 'joinor',
+                foreignField: '_id',
                 pipeline: [
                   {
                     $match: {
@@ -417,8 +423,12 @@ export class ProjectService {
                       },
                     },
                   },
+                  {
+                    $group: {
+                      _id: '$overtime.user',
+                    },
+                  },
                 ],
-                foreignField: '_id',
                 as: 'userEX',
               },
             },

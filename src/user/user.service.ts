@@ -311,23 +311,19 @@ export class UserService {
   }
 
   async findAllClientByEmployees(id: string) {
-    console.log(id);
-
-    const employees = await this.model.aggregate([
+    return await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$_id', { $toObjectId: id }],
+          },
+        },
+      },
       {
         $lookup: {
           from: 'joinprojects',
           localField: '_id',
           foreignField: 'joinor',
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$joinor', { $toObjectId: id }],
-                },
-              },
-            },
-          ],
           as: 'joinproject',
         },
       },
@@ -381,52 +377,23 @@ export class UserService {
           as: 'joinprojected',
         },
       },
-    ]);
-
-    const leader = await this.model.aggregate([
       {
-        $match: {
-          role: UserRoleEnum.CLIENT,
+        $unwind: {
+          path: '$joinprojected',
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
-        $lookup: {
-          from: 'projects',
-          localField: '_id',
-          foreignField: 'client',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'leader',
-                foreignField: '_id',
-                as: 'leaderEX',
-              },
-            },
-            {
-              $unwind: '$leaderEX',
-            },
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$leaderEX._id', { $toObjectId: id }],
-                },
-              },
-            },
-          ],
-          as: 'projectEX',
+        $project: {
+          _id: '$joinprojected._id',
+          email: '$joinprojected.email',
+          name: '$joinprojected.name',
+          mobile: '$joinprojected.mobile',
+          company: '$joinprojected.company',
+          field: '$joinprojected.field',
         },
       },
-      {
-        $unwind: '$projectEX',
-      },
     ]);
-
-    if (employees && leader) {
-      return employees.concat(leader);
-    }
-
-    return leader || employees;
   }
 
   findAllClient() {

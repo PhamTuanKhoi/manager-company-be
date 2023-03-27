@@ -14,6 +14,13 @@ export class AttendanceController {
     return this.attendanceService.getAttendancePersonal(queryAttendanceDto);
   }
 
+  @Get('detail-to-user')
+  toDayAttendanceDetailByIdUser(
+    @Query() queryAttendanceDto: QueryAttendanceDto,
+  ) {
+    return this.attendanceService.toDayAttendanceByIdUser(queryAttendanceDto);
+  }
+
   @Get('today')
   toDayAttendance(@Query() queryAttendanceDto: QueryAttendanceDto) {
     return this.attendanceService.toDayAttendance(queryAttendanceDto);

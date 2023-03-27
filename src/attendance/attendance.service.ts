@@ -66,6 +66,145 @@ export class AttendanceService {
     ]);
   }
 
+  async toDayAttendanceByIdUser(queryAttendanceDto: QueryAttendanceDto) {
+    const query = await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: ['$year', +queryAttendanceDto.year] },
+              { $eq: ['$month', +queryAttendanceDto.month] },
+              { $eq: ['$date', +queryAttendanceDto.date] },
+              {
+                $eq: ['$project', { $toObjectId: queryAttendanceDto.project }],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'users',
+        },
+      },
+      {
+        $unwind: '$users',
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: ['$users._id', { $toObjectId: queryAttendanceDto.user }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'overtimes',
+          localField: '_id',
+          foreignField: 'attendance',
+          as: 'overtime',
+        },
+      },
+      {
+        $unwind: {
+          path: '$overtime',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: '$year',
+            month: '$month',
+            date: '$date',
+          },
+          totalWorkHour: {
+            $sum: '$workHour',
+          },
+          overtimeMorning: {
+            $sum: {
+              $cond: {
+                if: { $eq: ['$overtime.type', OvertimeTypeEnum.MORNING] },
+                then: '$workHour',
+                else: 0,
+              },
+            },
+          },
+          overtimeEvernings: {
+            $sum: {
+              $cond: {
+                if: { $eq: ['$overtime.type', OvertimeTypeEnum.EVERNINGS] },
+                then: '$workHour',
+                else: 0,
+              },
+            },
+          },
+          timein: {
+            $push: '$timein',
+          },
+          timeout: {
+            $push: '$timeout',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          year: '$_id.year',
+          month: '$_id.month',
+          date: '$_id.date',
+          totalWorkHour: '$totalWorkHour',
+          overtimeMorning: '$overtimeMorning',
+          overtimeEvernings: '$overtimeEvernings',
+          time: { $concatArrays: ['$timein', '$timeout'] },
+        },
+      },
+      {
+        $unwind: {
+          path: '$time',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $sort: {
+          time: 1,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: '$year',
+            month: '$month',
+            date: '$date',
+            totalWorkHour: '$totalWorkHour',
+            overtimeMorning: '$overtimeMorning',
+            overtimeEvernings: '$overtimeEvernings',
+          },
+          times: {
+            $push: '$time',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          year: '$_id.year',
+          month: '$_id.month',
+          date: '$_id.date',
+          totalWorkHour: '$_id.totalWorkHour',
+          overtimeMorning: '$_id.overtimeMorning',
+          overtimeEvernings: '$_id.overtimeEvernings',
+          times: '$times',
+        },
+      },
+    ]);
+
+    return query[0] || {};
+  }
+
   async toDayAllAttendance(queryAttendanceDto: QueryAttendanceDto) {
     const { user, project, date, month, year } = queryAttendanceDto;
     return await this.model
@@ -174,7 +313,7 @@ export class AttendanceService {
           attendanceId: attendance?._id.toString(),
           todayOvertime,
           // FIXME:
-          timeout: 63800,
+          timeout: 72300,
           attendance,
           toDate,
         });

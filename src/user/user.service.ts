@@ -1631,14 +1631,6 @@ export class UserService {
                 },
               },
             },
-            {
-              $project: {
-                datetime: '$datetime',
-                timein: '$timein',
-                timeout: '$timeout',
-                userEX: '$userEX',
-              },
-            },
           ],
           as: 'attendance',
         },
@@ -1651,11 +1643,21 @@ export class UserService {
       },
       // push
       {
+        $group: {
+          _id: {
+            _id: '$_id',
+            name: '$name',
+            field: '$field',
+            mobile: '$mobile',
+          },
+        },
+      },
+      {
         $project: {
-          name: '$name',
-          field: '$field',
-          mobile: '$mobile',
-          attendance: '$attendance',
+          _id: '$_id._id',
+          name: '$_id.name',
+          field: '$_id.field',
+          mobile: '$_id.mobile',
         },
       },
     ];

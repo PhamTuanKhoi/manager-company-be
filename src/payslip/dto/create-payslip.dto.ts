@@ -45,6 +45,12 @@ export class CreatePayslipDto {
   @IsNumber()
   @IsOptional()
   @Type(() => Number)
+  salary_paid_social: number;
+
+  //Insurance
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
   medican: number;
 
   @IsNumber()

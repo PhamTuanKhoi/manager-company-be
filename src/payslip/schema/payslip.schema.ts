@@ -30,6 +30,9 @@ export class Payslip {
   @Prop({ default: 0 })
   service: number;
 
+  // salary paid for social
+  @Prop({ default: 0 })
+  salary_paid_social: number;
   //Insurance
   @Prop({ default: 0 })
   medican: number;

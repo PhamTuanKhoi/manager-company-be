@@ -57,15 +57,15 @@ export class UserController {
     return this.userService.notAssignPart(id);
   }
 
-  @Get('employees-role-client/:id')
-  findAllEloyeesByClient(@Param('id') id: string) {
-    return this.userService.findAllEloyeesByClient(id);
+  @Get('employees-by-user/:id')
+  findAllEloyeesByUserId(@Param('id') id: string) {
+    return this.userService.findAllEloyeesByUserId(id);
   }
 
-  @Get('employees-role-worker/:id')
-  findAllEloyeesByWorker(@Param('id') id: string) {
-    return this.userService.findAllEloyeesByWorker(id);
-  }
+  // @Get('employees-role-worker/:id')
+  // findAllEloyeesByWorker(@Param('id') id: string) {
+  //   return this.userService.findAllEloyeesByWorker(id);
+  // }
 
   @Get('client-role-employees/:id')
   findAllClientByEmployees(@Param('id') id: string) {

@@ -227,88 +227,130 @@ export class UserService {
     return data;
   }
 
-  async findAllEloyeesByClient(id: string) {
-    const data = await this.model.aggregate([
+  async findAllEloyeesByUserId(id: string) {
+    return await this.model.aggregate([
       {
         $match: {
-          role: UserRoleEnum.EMPLOYEE,
+          $expr: {
+            $eq: ['$_id', { $toObjectId: id }],
+          },
         },
       },
       {
         $lookup: {
-          from: 'projects',
+          from: 'joinprojects',
           localField: '_id',
-          foreignField: 'team',
+          foreignField: 'joinor',
+          as: 'joinproject',
+        },
+      },
+      {
+        $unwind: '$joinproject',
+      },
+      {
+        $lookup: {
+          from: 'projects',
+          localField: 'joinproject.project',
+          foreignField: '_id',
+          as: 'project',
+        },
+      },
+      {
+        $unwind: '$project',
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: 'project._id',
+          foreignField: 'project',
           pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    { $eq: ['$role', UserRoleEnum.EMPLOYEE] },
+                    { $eq: ['$role', UserRoleEnum.LEADER] },
+                  ],
+                },
+              },
+            },
             {
               $lookup: {
                 from: 'users',
-                localField: 'client',
+                localField: 'joinor',
                 foreignField: '_id',
-                as: 'clientEX',
+                as: 'employees',
               },
             },
             {
-              $unwind: '$clientEX',
-            },
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$clientEX._id', { $toObjectId: id }],
-                },
-              },
+              $unwind: '$employees',
             },
           ],
-          as: 'projectTeam',
+          as: 'joinprojected',
+        },
+      },
+      {
+        $unwind: {
+          path: '$joinprojected',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: '$joinprojected.employees._id',
+          email: '$joinprojected.employees.email',
+          name: '$joinprojected.employees.name',
+          mobile: '$joinprojected.employees.mobile',
+          department: '$joinprojected.employees.department',
+          date: '$joinprojected.employees.date',
+          cccd: '$joinprojected.employees.cccd',
         },
       },
     ]);
-
-    return data.filter((item) => item.projectTeam.length > 0);
   }
 
-  async findAllEloyeesByWorker(id) {
-    const data = await this.model.aggregate([
-      {
-        $match: {
-          role: UserRoleEnum.EMPLOYEE,
-        },
-      },
-      {
-        $lookup: {
-          from: 'projects',
-          localField: '_id',
-          foreignField: 'team',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'workerprojects',
-                localField: '_id',
-                foreignField: 'project',
-                as: 'workerprojectEX',
-              },
-            },
-            {
-              $unwind: '$workerprojectEX',
-            },
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$workerprojectEX.worker', { $toObjectId: id }],
-                },
-              },
-            },
-          ],
-          as: 'projectEX',
-        },
-      },
-      {
-        $unwind: '$projectEX',
-      },
-    ]);
+  // async findAllEloyeesByWorker(id) {
+  //   const data = await this.model.aggregate([
+  //     {
+  //       $match: {
+  //         role: UserRoleEnum.EMPLOYEE,
+  //       },
+  //     },
+  //     {
+  //       $lookup: {
+  //         from: 'projects',
+  //         localField: '_id',
+  //         foreignField: 'team',
+  //         pipeline: [
+  //           {
+  //             $lookup: {
+  //               from: 'workerprojects',
+  //               localField: '_id',
+  //               foreignField: 'project',
+  //               as: 'workerprojectEX',
+  //             },
+  //           },
+  //           {
+  //             $unwind: '$workerprojectEX',
+  //           },
+  //           {
+  //             $match: {
+  //               $expr: {
+  //                 $eq: ['$workerprojectEX.worker', { $toObjectId: id }],
+  //               },
+  //             },
+  //           },
+  //         ],
+  //         as: 'projectEX',
+  //       },
+  //     },
+  //     {
+  //       $unwind: '$projectEX',
+  //     },
+  //   ]);
 
-    return data;
-  }
+  //   return data;
+  // }
 
   async findAllClientByEmployees(id: string) {
     return await this.model.aggregate([

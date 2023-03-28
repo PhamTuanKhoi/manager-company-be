@@ -32,20 +32,20 @@ export class PayslipController {
     return this.payslipService.findOne(id);
   }
 
-  @Get('employees/:id')
-  findByEmployees(@Param('id') id: string) {
-    return this.payslipService.findByEmployees(id);
-  }
+  // @Get('employees/:id')
+  // findByEmployees(@Param('id') id: string) {
+  //   return this.payslipService.findByEmployees(id);
+  // }
 
-  @Get('client/:id')
+  @Get('by-user/:id')
   findByClient(@Param('id') id: string) {
-    return this.payslipService.findByClient(id);
+    return this.payslipService.findByUserId(id);
   }
 
-  @Get('worker/:id')
-  findByWorker(@Param('id') id: string) {
-    return this.payslipService.findByWorker(id);
-  }
+  // @Get('worker/:id')
+  // findByWorker(@Param('id') id: string) {
+  //   return this.payslipService.findByWorker(id);
+  // }
 
   @Get('project/:id')
   findByProject(@Param('id') id: string) {

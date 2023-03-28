@@ -144,105 +144,131 @@ export class PayslipService {
     return this.model.findById(id).lean();
   }
 
-  async findByEmployees(id: string) {
-    try {
-      const employees = await this.model.aggregate([
-        {
-          $lookup: {
-            from: 'projects',
-            localField: '_id',
-            foreignField: 'payslip',
-            pipeline: [
-              {
-                $lookup: {
-                  from: 'users',
-                  localField: 'team',
-                  foreignField: '_id',
-                  as: 'employeesEX',
-                },
-              },
-              {
-                $unwind: '$employeesEX',
-              },
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$employeesEX._id', { $toObjectId: id }],
-                  },
-                },
-              },
-            ],
-            as: 'projects',
-          },
-        },
-        {
-          $unwind: '$projects',
-        },
-      ]);
+  // async findByEmployees(id: string) {
+  //   try {
+  //     const employees = await this.model.aggregate([
+  //       {
+  //         $lookup: {
+  //           from: 'projects',
+  //           localField: '_id',
+  //           foreignField: 'payslip',
+  //           pipeline: [
+  //             {
+  //               $lookup: {
+  //                 from: 'users',
+  //                 localField: 'team',
+  //                 foreignField: '_id',
+  //                 as: 'employeesEX',
+  //               },
+  //             },
+  //             {
+  //               $unwind: '$employeesEX',
+  //             },
+  //             {
+  //               $match: {
+  //                 $expr: {
+  //                   $eq: ['$employeesEX._id', { $toObjectId: id }],
+  //                 },
+  //               },
+  //             },
+  //           ],
+  //           as: 'projects',
+  //         },
+  //       },
+  //       {
+  //         $unwind: '$projects',
+  //       },
+  //     ]);
 
-      const leader = await this.model.aggregate([
-        {
-          $lookup: {
-            from: 'projects',
-            localField: '_id',
-            foreignField: 'payslip',
-            pipeline: [
-              {
-                $lookup: {
-                  from: 'users',
-                  localField: 'leader',
-                  foreignField: '_id',
-                  as: 'leaderEX',
-                },
-              },
-              {
-                $unwind: '$leaderEX',
-              },
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$leaderEX._id', { $toObjectId: id }],
-                  },
-                },
-              },
-            ],
-            as: 'projects',
-          },
-        },
-        {
-          $unwind: '$projects',
-        },
-      ]);
+  //     const leader = await this.model.aggregate([
+  //       {
+  //         $lookup: {
+  //           from: 'projects',
+  //           localField: '_id',
+  //           foreignField: 'payslip',
+  //           pipeline: [
+  //             {
+  //               $lookup: {
+  //                 from: 'users',
+  //                 localField: 'leader',
+  //                 foreignField: '_id',
+  //                 as: 'leaderEX',
+  //               },
+  //             },
+  //             {
+  //               $unwind: '$leaderEX',
+  //             },
+  //             {
+  //               $match: {
+  //                 $expr: {
+  //                   $eq: ['$leaderEX._id', { $toObjectId: id }],
+  //                 },
+  //               },
+  //             },
+  //           ],
+  //           as: 'projects',
+  //         },
+  //       },
+  //       {
+  //         $unwind: '$projects',
+  //       },
+  //     ]);
 
-      if (employees && leader) {
-        return employees.concat(leader);
-      }
+  //     if (employees && leader) {
+  //       return employees.concat(leader);
+  //     }
 
-      return employees || leader;
-    } catch (error) {
-      this.logger.error(error?.message, error.stack);
-      throw new BadRequestException(error?.message);
-    }
-  }
+  //     return employees || leader;
+  //   } catch (error) {
+  //     this.logger.error(error?.message, error.stack);
+  //     throw new BadRequestException(error?.message);
+  //   }
+  // }
 
-  async findByClient(id: string) {
+  async findByUserId(id: string) {
     try {
       const data = await this.model.aggregate([
         {
           $lookup: {
-            from: 'users',
-            localField: 'creator',
-            foreignField: '_id',
-            as: 'clientEX',
+            from: 'projects',
+            localField: '_id',
+            foreignField: 'payslip',
+            pipeline: [
+              {
+                $project: {
+                  _id: '$_id',
+                },
+              },
+            ],
+            as: 'projects',
           },
         },
         {
-          $unwind: '$clientEX',
+          $unwind: '$projects',
+        },
+        {
+          $lookup: {
+            from: 'joinprojects',
+            localField: 'projects._id',
+            foreignField: 'project',
+            pipeline: [
+              {
+                $project: {
+                  _id: 0,
+                  joinor: '$joinor',
+                },
+              },
+            ],
+            as: 'joinprojects',
+          },
+        },
+        {
+          $unwind: '$joinprojects',
         },
         {
           $match: {
             $expr: {
-              $eq: ['$clientEX._id', { $toObjectId: id }],
+              $eq: ['$joinprojects.joinor', { $toObjectId: id }],
             },
           },
         },
@@ -254,43 +280,43 @@ export class PayslipService {
     }
   }
 
-  async findByWorker(id) {
-    const data = await this.model.aggregate([
-      {
-        $lookup: {
-          from: 'projects',
-          localField: '_id',
-          foreignField: 'payslip',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'workerprojects',
-                localField: '_id',
-                foreignField: 'project',
-                as: 'workerprojectEX',
-              },
-            },
-            {
-              $unwind: '$workerprojectEX',
-            },
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$workerprojectEX.worker', { $toObjectId: id }],
-                },
-              },
-            },
-          ],
-          as: 'projectEX',
-        },
-      },
-      {
-        $unwind: '$projectEX',
-      },
-    ]);
+  // async findByWorker(id) {
+  //   const data = await this.model.aggregate([
+  //     {
+  //       $lookup: {
+  //         from: 'projects',
+  //         localField: '_id',
+  //         foreignField: 'payslip',
+  //         pipeline: [
+  //           {
+  //             $lookup: {
+  //               from: 'workerprojects',
+  //               localField: '_id',
+  //               foreignField: 'project',
+  //               as: 'workerprojectEX',
+  //             },
+  //           },
+  //           {
+  //             $unwind: '$workerprojectEX',
+  //           },
+  //           {
+  //             $match: {
+  //               $expr: {
+  //                 $eq: ['$workerprojectEX.worker', { $toObjectId: id }],
+  //               },
+  //             },
+  //           },
+  //         ],
+  //         as: 'projectEX',
+  //       },
+  //     },
+  //     {
+  //       $unwind: '$projectEX',
+  //     },
+  //   ]);
 
-    return data;
-  }
+  //   return data;
+  // }
 
   findByProject(id: string) {
     return this.model.find();

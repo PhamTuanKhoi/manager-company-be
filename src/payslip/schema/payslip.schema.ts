@@ -46,12 +46,6 @@ export class Payslip {
   @Prop({ default: 0 })
   union: number;
 
-  @Prop({ default: 0 })
-  accident: number;
-
-  @Prop({ default: 0 })
-  health: number;
-
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   creator: User;
 }

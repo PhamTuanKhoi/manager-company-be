@@ -68,16 +68,6 @@ export class CreatePayslipDto {
   @Type(() => Number)
   union: number;
 
-  @IsNumber()
-  @IsOptional()
-  @Type(() => Number)
-  accident: number;
-
-  @IsNumber()
-  @IsOptional()
-  @Type(() => Number)
-  health: number;
-
   @IsString()
   @IsOptional()
   creator: string;

@@ -1639,6 +1639,7 @@ export class UserService {
           email: '$email',
           field: '$field',
           salary: '$salary',
+          salary_paid_social: '$payslip.salary_paid_social',
           workOvertime: {
             // calculation work day
             $divide: [
@@ -1713,19 +1714,43 @@ export class UserService {
           workOvertime: '$workOvertime',
           workMain: '$workMain',
           allowance: '$allowance',
+          salary: '$salary.salary',
           precent_insurance: '$precent_insurance',
+          salary_paid_social: '$salary_paid_social',
           insurance: '$insurance',
+          deduct: {
+            $add: ['$insurance'],
+          },
           moneyOvertime: {
             $multiply: ['$workOvertime', '$salary.salary'],
           },
           moneyMain: {
             $multiply: ['$workMain', '$salary.salary'],
           },
+          income: {
+            $add: [
+              { $multiply: ['$workOvertime', '$salary.salary'] },
+              { $multiply: ['$workMain', '$salary.salary'] },
+              '$allowance',
+            ],
+          },
+          receive_real: {
+            $subtract: [
+              {
+                $add: [
+                  { $multiply: ['$workOvertime', '$salary.salary'] },
+                  { $multiply: ['$workMain', '$salary.salary'] },
+                  '$allowance',
+                ],
+              },
+              { $add: ['$insurance'] },
+            ],
+          },
         },
       },
     ]);
 
-    return query;
+    return query.length > 0 ? query[0] : {};
   }
 
   async toDayAttendance(queryUserAttendanceDto: QueryUserAttendanceDto) {

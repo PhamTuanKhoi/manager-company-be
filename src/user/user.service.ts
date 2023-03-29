@@ -1542,7 +1542,10 @@ export class UserService {
               },
             },
             {
-              $unwind: '$overtime',
+              $unwind: {
+                path: '$overtime',
+                preserveNullAndEmptyArrays: true,
+              },
             },
             {
               $group: {

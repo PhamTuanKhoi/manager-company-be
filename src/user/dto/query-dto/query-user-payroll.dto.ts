@@ -16,4 +16,8 @@ export class QueryUserPayrollDto {
   @IsOptional()
   @IsString()
   payslip: string;
+
+  @IsOptional()
+  @IsString()
+  contract: string;
 }

@@ -825,8 +825,6 @@ export class ProjectService {
     client: string[],
     leader: string,
   ) {
-    console.log(team, leader);
-
     try {
       // remove join project by id project and role client, employess and leader
       await Promise.all([

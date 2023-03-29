@@ -1494,6 +1494,7 @@ export class UserService {
           salarys: '$salarys',
           salary: '$salary',
           payslip: '$payslipEX',
+          contract: '$contract._id',
         },
       },
     ]);
@@ -1502,7 +1503,14 @@ export class UserService {
   }
 
   async userPayroll(queryUserPayrollDto: QueryUserPayrollDto) {
-    const { user, project, payslip, salary } = queryUserPayrollDto;
+    const { user, project, payslip, salary, contract } = queryUserPayrollDto;
+
+    const rules = await this.rulesService.findOneRefProject(project);
+
+    const hour =
+      rules.lunchIn - rules.lunchOut > 0
+        ? rules.timeOut - rules.timeIn - (rules.lunchIn - rules.lunchOut)
+        : rules.lunchOut - rules.lunchIn;
 
     const query = await this.model.aggregate([
       {
@@ -1525,40 +1533,77 @@ export class UserService {
                 },
               },
             },
+            {
+              $lookup: {
+                from: 'overtimes',
+                localField: '_id',
+                foreignField: 'attendance',
+                as: 'overtime',
+              },
+            },
+            {
+              $unwind: '$overtime',
+            },
+            {
+              $group: {
+                _id: 0,
+                totalHourOvertime: {
+                  $sum: {
+                    $cond: {
+                      if: {
+                        $or: [
+                          {
+                            $eq: ['$overtime.type', OvertimeTypeEnum.EVERNINGS],
+                          },
+                          {
+                            $eq: ['$overtime.type', OvertimeTypeEnum.MORNING],
+                          },
+                        ],
+                      },
+                      then: '$workHour',
+                      else: 0,
+                    },
+                  },
+                },
+                totalHourMain: {
+                  $sum: {
+                    $cond: {
+                      if: {
+                        $or: [
+                          {
+                            $ne: ['$overtime.type', OvertimeTypeEnum.EVERNINGS],
+                          },
+                          {
+                            $ne: ['$overtime.type', OvertimeTypeEnum.MORNING],
+                          },
+                        ],
+                      },
+                      then: '$workHour',
+                      else: 0,
+                    },
+                  },
+                },
+              },
+            },
           ],
           as: 'attendance',
         },
       },
       {
-        $lookup: {
-          from: 'contracts',
-          localField: '_id',
-          foreignField: 'user',
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$salary', { $toObjectId: salary }],
-                },
-              },
-            },
-          ],
-          as: 'contract',
+        $unwind: {
+          path: '$attendance',
+          preserveNullAndEmptyArrays: true,
         },
-      },
-      {
-        $unwind: '$contract',
       },
       {
         $lookup: {
           from: 'salaries',
-          localField: 'contract.salary',
-          foreignField: '_id',
+          let: { salaryId: salary },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $eq: ['$_id', { $toObjectId: salary }],
+                  $eq: ['$_id', { $toObjectId: '$$salaryId' }],
                 },
               },
             },
@@ -1571,34 +1616,13 @@ export class UserService {
       },
       {
         $lookup: {
-          from: 'projects',
-          localField: 'salary.project',
-          foreignField: '_id',
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ['$_id', { $toObjectId: project }],
-                },
-              },
-            },
-          ],
-          as: 'project',
-        },
-      },
-      {
-        $unwind: '$project',
-      },
-      {
-        $lookup: {
           from: 'payslips',
-          localField: 'project.payslip',
-          foreignField: '_id',
+          let: { payslipId: payslip },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $eq: ['$_id', { $toObjectId: payslip }],
+                  $eq: ['$_id', { $toObjectId: '$$payslipId' }],
                 },
               },
             },
@@ -1608,6 +1632,96 @@ export class UserService {
       },
       {
         $unwind: '$payslip',
+      },
+      {
+        $project: {
+          name: '$name',
+          email: '$email',
+          field: '$field',
+          salary: '$salary',
+          workOvertime: {
+            // calculation work day
+            $divide: [
+              {
+                $multiply: [
+                  '$attendance.totalHourOvertime',
+                  { $divide: ['$payslip.overtime', 100] },
+                ],
+              },
+              hour,
+            ],
+          },
+          workMain: {
+            $divide: ['$attendance.totalHourMain', hour],
+          },
+          allowance: {
+            $cond: {
+              if: { $gte: ['$attendance.totalHourMain', 30 * hour] },
+              then: {
+                $add: [
+                  '$salary.go',
+                  '$salary.home',
+                  '$salary.toxic',
+                  '$salary.eat',
+                  '$salary.diligence',
+                ],
+              },
+              else: {
+                $add: [
+                  '$salary.go',
+                  '$salary.home',
+                  '$salary.toxic',
+                  '$salary.eat',
+                ],
+              },
+            },
+          },
+          precent_insurance: {
+            $add: [
+              '$payslip.society',
+              '$payslip.medican',
+              '$payslip.unemployment',
+              '$payslip.union',
+            ],
+          },
+          insurance: {
+            // society * insurance %
+            $multiply: [
+              '$payslip.salary_paid_social',
+              {
+                $divide: [
+                  {
+                    $add: [
+                      '$payslip.society',
+                      '$payslip.medican',
+                      '$payslip.unemployment',
+                      '$payslip.union',
+                    ],
+                  },
+                  100,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          name: '$name',
+          email: '$email',
+          field: '$field',
+          workOvertime: '$workOvertime',
+          workMain: '$workMain',
+          allowance: '$allowance',
+          precent_insurance: '$precent_insurance',
+          insurance: '$insurance',
+          moneyOvertime: {
+            $multiply: ['$workOvertime', '$salary.salary'],
+          },
+          moneyMain: {
+            $multiply: ['$workMain', '$salary.salary'],
+          },
+        },
       },
     ]);
 

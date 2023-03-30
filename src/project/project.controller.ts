@@ -56,7 +56,7 @@ export class ProjectController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projectService.remove(id);
+  basket(@Param('id') id: string) {
+    return this.projectService.basket(id);
   }
 }

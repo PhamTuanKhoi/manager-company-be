@@ -65,6 +65,9 @@ export class Project {
   // payslip
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Payslip.name })
   payslip: Payslip;
+
+  @Prop({ default: false })
+  deleted: boolean;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

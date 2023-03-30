@@ -484,6 +484,11 @@ export class ProjectService {
     ];
 
     let query: any = [
+      {
+        $match: {
+          deleted: false,
+        },
+      },
       // ---------------------------- lookup worker ----------------------------
       ...lookupWorker,
       // ---------------------------- lookup worker ----------------------------
@@ -833,13 +838,17 @@ export class ProjectService {
     }
   }
 
-  async remove(id: string) {
+  async basket(id: string) {
     try {
       await this.isModelExist(id);
 
-      const removed = await this.model.findByIdAndDelete(id);
+      const removed = await this.model.findByIdAndUpdate(
+        id,
+        { deleted: true },
+        { new: true },
+      );
 
-      this.logger.log(`Delete project by id #${removed?._id}`);
+      this.logger.log(`Move project by id #${removed?._id} at basket`);
 
       return removed;
     } catch (error) {

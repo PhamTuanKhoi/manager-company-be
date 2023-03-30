@@ -1,4 +1,5 @@
-import { IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class QueryUserPayrollDto {
   @IsOptional()
@@ -20,4 +21,14 @@ export class QueryUserPayrollDto {
   @IsOptional()
   @IsString()
   contract: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  year: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  month: number;
 }

@@ -144,6 +144,11 @@ export class UserController {
     return this.userService.toDayOvertime(queryUserOvertimeDto);
   }
 
+  @Get('link-payroll/:id')
+  getIdLinkPayroll(@Param('id') id: string) {
+    return this.userService.getIdLinkPayroll(id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);

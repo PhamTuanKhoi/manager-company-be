@@ -1503,7 +1503,7 @@ export class UserService {
   }
 
   async userPayroll(queryUserPayrollDto: QueryUserPayrollDto) {
-    const { user, project, payslip, salary, contract } = queryUserPayrollDto;
+    const { user, project, payslip, salary, month } = queryUserPayrollDto;
 
     const rules = await this.rulesService.findOneRefProject(project);
 
@@ -1529,6 +1529,13 @@ export class UserService {
             {
               $match: {
                 $expr: {
+                  $eq: ['$month', +month],
+                },
+              },
+            },
+            {
+              $match: {
+                $expr: {
                   $eq: ['$project', { $toObjectId: project }],
                 },
               },
@@ -1538,6 +1545,15 @@ export class UserService {
                 from: 'overtimes',
                 localField: '_id',
                 foreignField: 'attendance',
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$month', +month],
+                      },
+                    },
+                  },
+                ],
                 as: 'overtime',
               },
             },
@@ -1901,6 +1917,113 @@ export class UserService {
     ]);
 
     return query;
+  }
+
+  async getIdLinkPayroll(id: string) {
+    const query = await this.model.aggregate([
+      {
+        $match: {
+          $expr: {
+            $eq: ['$_id', { $toObjectId: id }],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'contracts',
+          localField: '_id',
+          foreignField: 'user',
+          pipeline: [
+            {
+              $match: {
+                status: true,
+              },
+            },
+          ],
+          as: 'contract',
+        },
+      },
+      {
+        $unwind: {
+          path: '$contract',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'salaries',
+          localField: 'contract.salary',
+          foreignField: '_id',
+          as: 'salary',
+        },
+      },
+      {
+        $unwind: {
+          path: '$salary',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          pipeline: [
+            {
+              $match: {
+                status: true,
+              },
+            },
+          ],
+          as: 'joinproject',
+        },
+      },
+      {
+        $unwind: {
+          path: '$joinproject',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'projects',
+          localField: 'joinproject.project',
+          foreignField: '_id',
+          as: 'project',
+        },
+      },
+      {
+        $unwind: {
+          path: '$project',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'payslips',
+          localField: 'project.payslip',
+          foreignField: '_id',
+          as: 'payslip',
+        },
+      },
+      {
+        $unwind: {
+          path: '$payslip',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: '$_id',
+          contractId: '$contract._id',
+          salaryId: '$salary._id',
+          projectId: '$project._id',
+          payslipId: '$payslip._id',
+        },
+      },
+    ]);
+
+    return query.length > 0 ? query[0] : {};
   }
 
   findOne(id: string) {

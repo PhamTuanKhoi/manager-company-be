@@ -610,16 +610,14 @@ export class ProjectService {
             foreignField: 'project',
             pipeline: [
               {
+                $match: {
+                  role: UserRoleEnum.CLIENT,
+                },
+              },
+              {
                 $lookup: {
                   from: 'users',
                   localField: 'joinor',
-                  pipeline: [
-                    {
-                      $match: {
-                        role: UserRoleEnum.CLIENT,
-                      },
-                    },
-                  ],
                   foreignField: '_id',
                   as: 'userEX',
                 },
@@ -638,16 +636,14 @@ export class ProjectService {
             foreignField: 'project',
             pipeline: [
               {
+                $match: {
+                  role: UserRoleEnum.EMPLOYEE,
+                },
+              },
+              {
                 $lookup: {
                   from: 'users',
                   localField: 'joinor',
-                  pipeline: [
-                    {
-                      $match: {
-                        role: UserRoleEnum.EMPLOYEE,
-                      },
-                    },
-                  ],
                   foreignField: '_id',
                   as: 'userEX',
                 },
@@ -657,6 +653,38 @@ export class ProjectService {
               },
             ],
             as: 'joinprojectEmployee',
+          },
+        },
+        {
+          $lookup: {
+            from: 'joinprojects',
+            localField: '_id',
+            foreignField: 'project',
+            pipeline: [
+              {
+                $match: {
+                  role: UserRoleEnum.LEADER,
+                },
+              },
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'joinor',
+                  foreignField: '_id',
+                  as: 'userEX',
+                },
+              },
+              {
+                $unwind: '$userEX',
+              },
+            ],
+            as: 'joinprojectleader',
+          },
+        },
+        {
+          $unwind: {
+            path: '$joinprojectleader',
+            preserveNullAndEmptyArrays: true,
           },
         },
         {
@@ -681,6 +709,7 @@ export class ProjectService {
             workers: '$joinprojectWorker.userEX',
             clients: '$joinprojectClient.userEX',
             employees: '$joinprojectEmployee.userEX',
+            leader: '$joinprojectleader.userEX',
           },
         },
       ]);

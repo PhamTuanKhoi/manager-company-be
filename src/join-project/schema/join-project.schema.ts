@@ -21,6 +21,9 @@ export class JoinProject {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Project })
   project: Project;
+
+  @Prop({ default: true })
+  status: Boolean;
 }
 
 export const JoinProjectSchema = SchemaFactory.createForClass(JoinProject);

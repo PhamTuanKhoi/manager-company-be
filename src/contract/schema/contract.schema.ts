@@ -19,6 +19,9 @@ export class Contract {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   creator: User;
+
+  @Prop({ default: true })
+  status: Boolean;
 }
 
 export const ContractSchema = SchemaFactory.createForClass(Contract);

@@ -27,11 +27,6 @@ export class ProjectController {
     return this.projectService.findByAllLevel(queryProjectDto);
   }
 
-  // @Get('user/:id')
-  // findByIdUser(@Param('id') id: string) {
-  //   return this.projectService.findByIdUser(id);
-  // }
-
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.projectService.findById(id);

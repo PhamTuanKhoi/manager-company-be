@@ -237,19 +237,20 @@ export class PayslipService {
               {
                 $project: {
                   _id: '$_id',
+                  name: '$name',
                 },
               },
             ],
-            as: 'projects',
+            as: 'projectEX',
           },
         },
         {
-          $unwind: '$projects',
+          $unwind: '$projectEX',
         },
         {
           $lookup: {
             from: 'joinprojects',
-            localField: 'projects._id',
+            localField: 'projectEX._id',
             foreignField: 'project',
             pipeline: [
               {

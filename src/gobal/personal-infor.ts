@@ -24,11 +24,11 @@ export class PersonalInfor {
   avartar: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   cccd: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   date: number;
 
   @IsString()

@@ -2083,7 +2083,7 @@ export class UserService {
       SendEmail(
         createClientDto.email,
         createClientDto.name,
-        `Mat khau cua ban la : ${password}`,
+        `Mật khẩu của bạn là : ${password}`,
       );
 
       password = await bcrypt.hash(password, 10);

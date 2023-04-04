@@ -17,7 +17,7 @@ export async function SendEmail(
   var mailOptions = {
     from: '"FCE" <huynhanhpham734@gmail.com>',
     to: emailClient,
-    subject: 'CONG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
+    subject: 'CÔNG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
     text: 'That was easy!',
     html: '<p><i>Hi!  ' + clientName + `</i></p><b>${content}</b>`,
   };

@@ -186,7 +186,10 @@ export class ProjectService {
               },
             },
             {
-              $unwind: '$userEX',
+              $unwind: {
+                path: '$userEX',
+                preserveNullAndEmptyArrays: true,
+              },
             },
           ],
           as: 'joinprojectEmployee',
@@ -224,7 +227,10 @@ export class ProjectService {
               },
             },
             {
-              $unwind: '$userEX',
+              $unwind: {
+                path: '$userEX',
+                preserveNullAndEmptyArrays: true,
+              },
             },
           ],
           as: 'joinprojectClient',
@@ -263,7 +269,10 @@ export class ProjectService {
               },
             },
             {
-              $unwind: '$userEX',
+              $unwind: {
+                path: '$userEX',
+                preserveNullAndEmptyArrays: true,
+              },
             },
           ],
           as: 'joinprojectWorker',
@@ -298,7 +307,10 @@ export class ProjectService {
                     },
                   },
                   {
-                    $unwind: '$overtime',
+                    $unwind: {
+                      path: '$overtime',
+                      preserveNullAndEmptyArrays: true,
+                    },
                   },
                   {
                     $match: {
@@ -327,7 +339,10 @@ export class ProjectService {
               },
             },
             {
-              $unwind: '$userEX',
+              $unwind: {
+                path: '$userEX',
+                preserveNullAndEmptyArrays: true,
+              },
             },
           ],
           as: 'joinprojectOvertime',
@@ -366,7 +381,10 @@ export class ProjectService {
               },
             },
             {
-              $unwind: '$userEX',
+              $unwind: {
+                path: '$userEX',
+                preserveNullAndEmptyArrays: true,
+              },
             },
           ],
           as: 'joinprojectLeader',

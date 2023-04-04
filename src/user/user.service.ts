@@ -1508,9 +1508,9 @@ export class UserService {
     const rules = await this.rulesService.findOneRefProject(project);
 
     const hour =
-      rules.lunchIn - rules.lunchOut > 0
-        ? rules.timeOut - rules.timeIn - (rules.lunchIn - rules.lunchOut)
-        : rules.lunchOut - rules.lunchIn;
+      rules?.lunchIn - rules?.lunchOut > 0
+        ? rules?.timeOut - rules?.timeIn - (rules?.lunchIn - rules?.lunchOut)
+        : rules?.lunchOut - rules?.lunchIn;
 
     const query = await this.model.aggregate([
       {

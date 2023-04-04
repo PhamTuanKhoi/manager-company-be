@@ -339,10 +339,7 @@ export class ProjectService {
               },
             },
             {
-              $unwind: {
-                path: '$userEX',
-                preserveNullAndEmptyArrays: true,
-              },
+              $unwind: '$userEX',
             },
           ],
           as: 'joinprojectOvertime',

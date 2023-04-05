@@ -505,6 +505,28 @@ export class ProjectService {
       ];
     }
 
+    if (queryProjectDto.priority) {
+      query = [
+        ...query,
+        {
+          $match: {
+            priority: +queryProjectDto.priority,
+          },
+        },
+      ];
+    }
+
+    if (queryProjectDto.text) {
+      query = [
+        ...query,
+        {
+          $match: {
+            name: { $regex: '.*' + queryProjectDto.text + '.*', $options: 'i' },
+          },
+        },
+      ];
+    }
+
     return await this.model.aggregate(query);
   }
 

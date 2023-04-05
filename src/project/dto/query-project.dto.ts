@@ -24,4 +24,12 @@ export class QueryProjectDto {
   @Type(() => Number)
   @IsNumber()
   date: number;
+
+  @IsOptional()
+  @IsString()
+  text: string;
+
+  @IsOptional()
+  @IsString()
+  priority: string;
 }

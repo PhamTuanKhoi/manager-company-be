@@ -15,11 +15,11 @@ export class CreateProjectDto {
   @IsNumber()
   price: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   start: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   end: number;
 

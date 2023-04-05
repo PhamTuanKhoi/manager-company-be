@@ -21,8 +21,8 @@ export class Project {
   @Prop()
   priority: ProjectPriorityEnum;
 
-  @Prop()
-  price: number;
+  // @Prop()
+  // price: number;
 
   @Prop()
   start: number;

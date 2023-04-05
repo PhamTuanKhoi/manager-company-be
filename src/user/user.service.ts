@@ -32,6 +32,7 @@ import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 import { RulesService } from '../rules/rules.service';
 import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
+import { UpdatePasswordDto } from './dto/update-dto/update-password.dto';
 
 @Injectable()
 export class UserService {
@@ -2093,6 +2094,42 @@ export class UserService {
     }
   }
 
+  async changePassword(id: string, updatePassword: UpdatePasswordDto) {
+    const { oldPassword, password, confirmPassword } = updatePassword;
+    try {
+      const user = await this.isSelectPassword(id);
+
+      const match = await bcrypt.compare(oldPassword, user.password);
+
+      if (!match)
+        throw new HttpException(
+          `Mật khẩu cũ không chính xác!`,
+          HttpStatus.BAD_GATEWAY,
+        );
+
+      if (password !== confirmPassword)
+        throw new HttpException(
+          `Mật khẩu mới không hợp lệ!`,
+          HttpStatus.BAD_GATEWAY,
+        );
+
+      const passBcrypt = await bcrypt.hash(password, 10);
+
+      const updated = await this.model.findByIdAndUpdate(
+        id,
+        { password: passBcrypt },
+        { new: true },
+      );
+
+      this.logger.log(`updated password success by id#${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
   async remove(id: string) {
     try {
       await this.isModelExist(id);
@@ -2112,6 +2149,14 @@ export class UserService {
     return this.model.find({
       _id: ids,
     });
+  }
+
+  async isSelectPassword(id: string) {
+    const user = await this.model.findById(id).select('+password');
+    if (!user)
+      throw new HttpException(`id -> user not found`, HttpStatus.BAD_GATEWAY);
+
+    return user;
   }
 
   async isModelExist(id, isOptional = false, msg = '') {

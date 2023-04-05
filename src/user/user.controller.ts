@@ -26,6 +26,7 @@ import { QueryUserSalaryDto } from './dto/query-dto/query-user-salary.dto';
 import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
 import { QueryUserAttendanceDto } from './dto/query-dto/query-user-attendance.dto';
+import { UpdatePasswordDto } from './dto/update-dto/update-password.dto';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -193,6 +194,14 @@ export class UserController {
   @Patch('worker/:id')
   updateWorker(@Param('id') id: string, @Body() updateWorker: UpdateWorkerDto) {
     return this.userService.updateWorker(id, updateWorker);
+  }
+
+  @Patch('change-password/:id')
+  changePassword(
+    @Param('id') id: string,
+    @Body() updatePassword: UpdatePasswordDto,
+  ) {
+    return this.userService.changePassword(id, updatePassword);
   }
 
   @Delete(':id')

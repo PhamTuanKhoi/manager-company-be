@@ -433,7 +433,7 @@ export class ProjectService {
           end: '$end',
           status: '$status',
           content: '$content',
-          paylip: '$paylip',
+          payslip: '$payslip',
           payslipEX: '$payslipEX',
           workers: '$joinprojectWorker.userEX',
           clients: '$joinprojectClient.userEX',
@@ -463,12 +463,41 @@ export class ProjectService {
           $unwind: '$joinprojectEX',
         },
         {
+          $group: {
+            _id: {
+              _id: '$_id',
+              name: '$name',
+              priority: '$priority',
+              price: '$price',
+              start: '$start',
+              end: '$end',
+              status: '$status',
+              content: '$content',
+              payslip: '$payslip',
+              deleted: '$deleted',
+              joinor: '$joinprojectEX.joinor',
+            },
+          },
+        },
+        {
+          $project: {
+            _id: '$_id._id',
+            name: '$_id.name',
+            priority: '$_id.priority',
+            price: '$_id.price',
+            start: '$_id.start',
+            end: '$_id.end',
+            status: '$_id.status',
+            content: '$_id.content',
+            payslip: '$_id.payslip',
+            deleted: '$_id.deleted',
+            joinor: '$_id.joinor',
+          },
+        },
+        {
           $match: {
             $expr: {
-              $eq: [
-                '$joinprojectEX.joinor',
-                { $toObjectId: queryProjectDto.userId },
-              ],
+              $eq: ['$joinor', { $toObjectId: queryProjectDto.userId }],
             },
           },
         },

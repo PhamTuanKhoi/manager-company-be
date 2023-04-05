@@ -620,9 +620,23 @@ export class UserService {
         $unwind: '$joinproject',
       },
       {
+        $group: {
+          _id: {
+            _id: '$_id',
+            project: '$joinproject.project',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: '$_id._id',
+          project: '$_id.project',
+        },
+      },
+      {
         $lookup: {
           from: 'projects',
-          localField: 'joinproject.project',
+          localField: 'project',
           foreignField: '_id',
           as: 'project',
         },

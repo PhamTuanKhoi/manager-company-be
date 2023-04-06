@@ -297,61 +297,31 @@ export class UserService {
         },
       },
       {
+        $group: {
+          _id: {
+            _id: '$joinprojected.employees._id',
+            email: '$joinprojected.employees.email',
+            name: '$joinprojected.employees.name',
+            mobile: '$joinprojected.employees.mobile',
+            department: '$joinprojected.employees.department',
+            date: '$joinprojected.employees.date',
+            cccd: '$joinprojected.employees.cccd',
+          },
+        },
+      },
+      {
         $project: {
-          _id: '$joinprojected.employees._id',
-          email: '$joinprojected.employees.email',
-          name: '$joinprojected.employees.name',
-          mobile: '$joinprojected.employees.mobile',
-          department: '$joinprojected.employees.department',
-          date: '$joinprojected.employees.date',
-          cccd: '$joinprojected.employees.cccd',
+          _id: '$_id._id',
+          email: '$_id.email',
+          name: '$_id.name',
+          mobile: '$_id.mobile',
+          department: '$_id.department',
+          date: '$_id.date',
+          cccd: '$_id.cccd',
         },
       },
     ]);
   }
-
-  // async findAllEloyeesByWorker(id) {
-  //   const data = await this.model.aggregate([
-  //     {
-  //       $match: {
-  //         role: UserRoleEnum.EMPLOYEE,
-  //       },
-  //     },
-  //     {
-  //       $lookup: {
-  //         from: 'projects',
-  //         localField: '_id',
-  //         foreignField: 'team',
-  //         pipeline: [
-  //           {
-  //             $lookup: {
-  //               from: 'workerprojects',
-  //               localField: '_id',
-  //               foreignField: 'project',
-  //               as: 'workerprojectEX',
-  //             },
-  //           },
-  //           {
-  //             $unwind: '$workerprojectEX',
-  //           },
-  //           {
-  //             $match: {
-  //               $expr: {
-  //                 $eq: ['$workerprojectEX.worker', { $toObjectId: id }],
-  //               },
-  //             },
-  //           },
-  //         ],
-  //         as: 'projectEX',
-  //       },
-  //     },
-  //     {
-  //       $unwind: '$projectEX',
-  //     },
-  //   ]);
-
-  //   return data;
-  // }
 
   async findAllClientByEmployees(id: string) {
     return await this.model.aggregate([
@@ -1338,15 +1308,29 @@ export class UserService {
         },
       },
       {
+        $group: {
+          _id: {
+            name: '$name',
+            field: '$field',
+            projectId: '$projectEX._id',
+            projectName: '$projectEX.name',
+            salarys: '$salarys',
+            salary: '$salary',
+            payslip: '$payslipEX',
+            contract: '$contract._id',
+          },
+        },
+      },
+      {
         $project: {
-          name: '$name',
-          field: '$field',
-          projectId: '$projectEX._id',
-          projectName: '$projectEX.name',
-          salarys: '$salarys',
-          salary: '$salary',
-          payslip: '$payslipEX',
-          contract: '$contract._id',
+          name: '$_id.name',
+          field: '$_id.field',
+          projectId: '$_id.projectEX._id',
+          projectName: '$_id.projectEX.name',
+          salarys: '$_id.salarys',
+          salary: '$_id.salary',
+          payslip: '$_id.payslipEX',
+          contract: '$_id.contract._id',
         },
       },
     ];

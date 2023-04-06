@@ -1310,6 +1310,7 @@ export class UserService {
       {
         $group: {
           _id: {
+            _id: '$_id',
             name: '$name',
             field: '$field',
             projectId: '$projectEX._id',
@@ -1323,14 +1324,15 @@ export class UserService {
       },
       {
         $project: {
+          _id: '$_id._id',
           name: '$_id.name',
           field: '$_id.field',
-          projectId: '$_id.projectEX._id',
-          projectName: '$_id.projectEX.name',
+          projectId: '$_id.projectId',
+          projectName: '$_id.projectName',
           salarys: '$_id.salarys',
           salary: '$_id.salary',
           payslip: '$_id.payslipEX',
-          contract: '$_id.contract._id',
+          contract: '$_id.contract',
         },
       },
     ];

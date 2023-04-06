@@ -10,6 +10,7 @@ import { Model } from 'mongoose';
 import { ProjectService } from 'src/project/project.service';
 import { UserService } from 'src/user/user.service';
 import { CreateSalaryDto } from './dto/create-salary.dto';
+import { QuerySalaryDto } from './dto/query-salary.dto';
 import { UpdateSalaryDto } from './dto/update-salary.dto';
 import { Salary, SalaryDocument } from './schema/salary.schema';
 
@@ -25,8 +26,8 @@ export class SalaryService {
     private readonly projectService: ProjectService,
   ) {}
 
-  list() {
-    return this.model.aggregate([
+  async list(querySalaryDto: QuerySalaryDto) {
+    let query: any = [
       {
         $lookup: {
           from: 'projects',
@@ -45,7 +46,23 @@ export class SalaryService {
       {
         $unwind: '$projectEX',
       },
-    ]);
+    ];
+
+    if (querySalaryDto.name) {
+      query = [
+        ...query,
+        {
+          $match: {
+            beneficiary: {
+              $regex: '.*' + querySalaryDto.name + '.*',
+              $options: 'i',
+            },
+          },
+        },
+      ];
+    }
+
+    return this.model.aggregate(query);
   }
 
   findOne(id: string) {

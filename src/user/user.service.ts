@@ -1234,7 +1234,7 @@ export class UserService {
   }
 
   async userSalary(queryUserSalaryDto: QueryUserSalaryDto) {
-    const query = await this.model.aggregate([
+    let query: any = [
       {
         $match: {
           role: UserRoleEnum.WORKER,
@@ -1324,6 +1324,20 @@ export class UserService {
         },
       },
       {
+        $lookup: {
+          from: 'joinprojects',
+          localField: 'projectEX._id',
+          foreignField: 'project',
+          as: 'joinproject',
+        },
+      },
+      {
+        $unwind: {
+          path: '$joinproject',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           name: '$name',
           field: '$field',
@@ -1335,9 +1349,36 @@ export class UserService {
           contract: '$contract._id',
         },
       },
-    ]);
+    ];
 
-    return query;
+    if (queryUserSalaryDto.name) {
+      query = [
+        ...query,
+        {
+          $match: {
+            name: {
+              $regex: '.*' + queryUserSalaryDto.name + '.*',
+              $options: 'i',
+            },
+          },
+        },
+      ];
+    }
+
+    if (queryUserSalaryDto.userId) {
+      query.splice(14, 0, {
+        $match: {
+          $expr: {
+            $eq: [
+              '$joinproject.joinor',
+              { $toObjectId: queryUserSalaryDto.userId },
+            ],
+          },
+        },
+      });
+    }
+
+    return await this.model.aggregate(query);
   }
 
   async userPayroll(queryUserPayrollDto: QueryUserPayrollDto) {

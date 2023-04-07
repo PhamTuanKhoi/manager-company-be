@@ -1331,7 +1331,7 @@ export class UserService {
           projectName: '$_id.projectName',
           salarys: '$_id.salarys',
           salary: '$_id.salary',
-          payslip: '$_id.payslipEX',
+          payslip: '$_id.payslip',
           contract: '$_id.contract',
         },
       },

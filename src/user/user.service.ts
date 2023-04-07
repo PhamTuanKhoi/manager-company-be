@@ -471,6 +471,10 @@ export class UserService {
     return this.model.findOne({ email }).select('+password').lean();
   }
 
+  findByPhone(mobile: string) {
+    return this.model.findOne({ mobile }).select('+password').lean();
+  }
+
   async workerNoAssign() {
     return await this.model.aggregate([
       {

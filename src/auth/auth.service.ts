@@ -9,6 +9,7 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './interfaces/jwtPayload.interface';
+import { emailrgx, phonergx } from 'src/gobal/regex';
 
 @Injectable()
 export class AuthService {
@@ -17,15 +18,55 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
   ) {}
-  async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.userService.findByEmail(email);
+  async validateUser(username: string, pass: string): Promise<any> {
+    // login email
+    if (emailrgx.test(username)) {
+      const user_by_email = await this.userService.findByEmail(username);
 
-    const match = await bcrypt.compare(pass, user.password);
+      if (!user_by_email)
+        throw new HttpException(
+          `Không tìm thấy email !`,
+          HttpStatus.BAD_GATEWAY,
+        );
 
-    if (user && match) {
-      const { password, ...result } = user;
-      return result;
+      const match_email = await bcrypt.compare(pass, user_by_email?.password);
+
+      if (!match_email)
+        throw new HttpException(
+          `Mật khẩu không chính xác !`,
+          HttpStatus.BAD_GATEWAY,
+        );
+
+      if (user_by_email && match_email) {
+        const { password, ...result } = user_by_email;
+        return result;
+      }
     }
+
+    // login phone number
+    if (phonergx.test(username)) {
+      const user_by_phone = await this.userService.findByPhone(username);
+
+      if (!user_by_phone)
+        throw new HttpException(
+          `Không tìm thấy số điện thoại !`,
+          HttpStatus.BAD_GATEWAY,
+        );
+
+      const match_phone = await bcrypt.compare(pass, user_by_phone?.password);
+
+      if (!match_phone)
+        throw new HttpException(
+          `Mật khẩu không chính xác !`,
+          HttpStatus.BAD_GATEWAY,
+        );
+
+      if (user_by_phone && match_phone) {
+        const { password, ...result } = user_by_phone;
+        return result;
+      }
+    }
+
     return null;
   }
 

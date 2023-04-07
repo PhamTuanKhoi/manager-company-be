@@ -11,9 +11,9 @@ export class PersonalInfor {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
+  @IsOptional()
+  @IsString()
+  email?: string;
 
   @IsNotEmpty()
   @IsString()

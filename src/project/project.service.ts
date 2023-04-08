@@ -693,6 +693,7 @@ export class ProjectService {
     const errorMessage = msg || `id-> ${Project.name} not found`;
     const isExist = await this.findOne(id);
     if (!isExist) throw new Error(errorMessage);
+    return isExist;
   }
 
   async create(createProjectDto: CreateProjectDto) {
@@ -756,15 +757,29 @@ export class ProjectService {
   }
 
   async updatePayslip(id: string, updateProjectDto: UpdateProjectDto) {
+    const { payslip } = updateProjectDto;
     try {
+      // exit model project
+      const project = await this.isModelExist(id);
+
       // exit model payslip
-      if (updateProjectDto.payslip) {
-        await this.payslipService.isModelExist(updateProjectDto.payslip);
+      await this.payslipService.isModelExist(updateProjectDto.payslip);
+
+      if (project?.payslip?.toString() === payslip.toString()) {
+        const unsetPayslip = await this.model.findByIdAndUpdate(
+          id,
+          { $unset: { payslip } },
+          { new: true },
+        );
+
+        this.logger.log(`unset a payslip by project id #${unsetPayslip?._id}`);
+
+        return unsetPayslip;
       }
 
       const updatedPayslip = await this.model.findByIdAndUpdate(
         id,
-        updateProjectDto,
+        { payslip },
         { new: true },
       );
 

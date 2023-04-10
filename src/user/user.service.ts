@@ -33,6 +33,7 @@ import { RulesService } from '../rules/rules.service';
 import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
 import { UpdatePasswordDto } from './dto/update-dto/update-password.dto';
+import { QueryUserDto } from './dto/query-dto/query-user.dto';
 
 @Injectable()
 export class UserService {
@@ -45,17 +46,86 @@ export class UserService {
     private configService: ConfigService,
   ) {}
 
-  async findAllEloyees() {
-    return this.model.find({
-      $or: [
+  async findAllEloyees(queryUserDto: QueryUserDto) {
+    const { project, role } = queryUserDto;
+
+    let query: any = [
+      {
+        $match: {
+          $expr: {
+            $or: [
+              {
+                $eq: ['$role', UserRoleEnum.EMPLOYEE],
+              },
+              {
+                $eq: ['$role', UserRoleEnum.LEADER],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          as: 'joinproject',
+        },
+      },
+      {
+        $unwind: {
+          path: '$joinproject',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            _id: '$_id',
+            email: '$email',
+            name: '$name',
+            mobile: '$mobile',
+            department: '$department',
+            date: '$date',
+            cccd: '$cccd',
+            role: '$role',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: '$_id._id',
+          email: '$_id.email',
+          name: '$_id.name',
+          mobile: '$_id.mobile',
+          department: '$_id.department',
+          date: '$_id.date',
+          cccd: '$_id.cccd',
+          role: '$_id.role',
+        },
+      },
+    ];
+
+    if (project && role) {
+      query.splice(
+        3,
+        0,
         {
-          role: UserRoleEnum.EMPLOYEE,
+          $match: {
+            $expr: {
+              $eq: ['$joinproject.project', { $toObjectId: project }],
+            },
+          },
         },
         {
-          role: UserRoleEnum.LEADER,
+          $match: {
+            'joinproject.role': role,
+          },
         },
-      ],
-    });
+      );
+    }
+
+    return this.model.aggregate(query);
   }
 
   async findAllWorkerExcellent() {

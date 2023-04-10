@@ -27,6 +27,7 @@ import { QueryUserPayrollDto } from './dto/query-dto/query-user-payroll.dto';
 import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
 import { QueryUserAttendanceDto } from './dto/query-dto/query-user-attendance.dto';
 import { UpdatePasswordDto } from './dto/update-dto/update-password.dto';
+import { QueryUserDto } from './dto/query-dto/query-user.dto';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -44,8 +45,8 @@ export class UserController {
   }
 
   @Get('employees')
-  findAllEloyees() {
-    return this.userService.findAllEloyees();
+  findAllEloyees(@Query() queryUserDto: QueryUserDto) {
+    return this.userService.findAllEloyees(queryUserDto);
   }
 
   @Get('worker/excellent')

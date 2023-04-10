@@ -22,6 +22,7 @@ import { OvertimeService } from 'src/overtime/overtime.service';
 import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 import { QueryCheckUpdateOvertimeDto } from './dto/query-checkUpdateOvertime.dto';
 import * as scanner from 'node-wifi-scanner';
+const wifi = require('node-wifi');
 // const scanner = require('node-wifi-scanner');
 
 @Injectable()
@@ -891,31 +892,33 @@ export class AttendanceService {
   async fetchWiffi(res: Response) {
     try {
       //  Initialize wifi-control package with verbose output
-      // scanner.scan((err, networks) => {
-      //   if (err) {
-      //     console.error(err);
-      //     return;
-      //   }
-      //   console.log(networks);
-      //   res.status(200).json(networks);
-      // });
-      var settings = {
-        debug: true || false,
-        iface: 'wlan0',
-        connectionTimeout: 10000, // in ms
-      };
+      wifi.init({
+        iface: null, // network interface, choose a random wifi interface if set to null
+      });
 
-      WiFiControl.configure(settings);
-      // and/or WiFiControl.init( settings );
-
-      WiFiControl.scanForWiFi(function (err, response) {
-        if (err) console.log(err);
-        if (response.networks) {
-          console.log(response.networks);
-
-          res.status(200).json(response.networks);
+      // Scan networks
+      wifi.scan((error, networks) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log(networks);
+          res.status(200).json(networks);
         }
       });
+      // var settings = {
+      //   debug: true || false,
+      //   iface: 'wlan0',
+      //   connectionTimeout: 10000, // in ms
+      // };
+      // WiFiControl.configure(settings);
+      // // and/or WiFiControl.init( settings );
+      // WiFiControl.scanForWiFi(function (err, response) {
+      //   if (err) console.log(err);
+      //   if (response.networks) {
+      //     console.log(response.networks);
+      //     res.status(200).json(response.networks);
+      //   }
+      // });
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

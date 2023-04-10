@@ -23,6 +23,7 @@ import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 import { QueryCheckUpdateOvertimeDto } from './dto/query-checkUpdateOvertime.dto';
 import * as scanner from 'node-wifi-scanner';
 const wifi = require('node-wifi');
+const si = require('systeminformation');
 // const scanner = require('node-wifi-scanner');
 
 @Injectable()
@@ -891,20 +892,23 @@ export class AttendanceService {
 
   async fetchWiffi(res: Response) {
     try {
-      //  Initialize wifi-control package with verbose output
-      wifi.init({
-        iface: null, // network interface, choose a random wifi interface if set to null
-      });
+      const data = await si.wifiNetworks();
+      res.status(200).json(data);
 
-      // Scan networks
-      wifi.scan((error, networks) => {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log(networks);
-          res.status(200).json(networks);
-        }
-      });
+      //  Initialize wifi-control package with verbose output
+      // wifi.init({
+      //   iface: null, // network interface, choose a random wifi interface if set to null
+      // });
+
+      // // Scan networks
+      // wifi.scan((error, networks) => {
+      //   if (error) {
+      //     console.log(error);
+      //   } else {
+      //     console.log(networks);
+      //     res.status(200).json(networks);
+      //   }
+      // });
       // var settings = {
       //   debug: true || false,
       //   iface: 'wlan0',

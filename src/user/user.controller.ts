@@ -59,9 +59,9 @@ export class UserController {
     return this.userService.notAssignPart(id);
   }
 
-  @Get('employees-by-user/:id')
-  findAllEloyeesByUserId(@Param('id') id: string) {
-    return this.userService.findAllEloyeesByUserId(id);
+  @Get('employees-by-user')
+  findAllEloyeesByUserId(@Query() queryUserDto: QueryUserDto) {
+    return this.userService.findAllEloyeesByUserId(queryUserDto);
   }
 
   // @Get('employees-role-worker/:id')

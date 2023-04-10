@@ -298,12 +298,14 @@ export class UserService {
     return data;
   }
 
-  async findAllEloyeesByUserId(id: string) {
-    return await this.model.aggregate([
+  async findAllEloyeesByUserId(queryUserDto: QueryUserDto) {
+    const { userId, project, role } = queryUserDto;
+
+    let query: any = [
       {
         $match: {
           $expr: {
-            $eq: ['$_id', { $toObjectId: id }],
+            $eq: ['$_id', { $toObjectId: userId }],
           },
         },
       },
@@ -376,6 +378,7 @@ export class UserService {
             department: '$joinprojected.employees.department',
             date: '$joinprojected.employees.date',
             cccd: '$joinprojected.employees.cccd',
+            role: '$joinprojected.employees.role',
           },
         },
       },
@@ -388,9 +391,31 @@ export class UserService {
           department: '$_id.department',
           date: '$_id.date',
           cccd: '$_id.cccd',
+          role: '$_id.role',
         },
       },
-    ]);
+    ];
+
+    if (project && role) {
+      query.splice(
+        7,
+        0,
+        {
+          $match: {
+            $expr: {
+              $eq: ['$joinprojected.project', { $toObjectId: project }],
+            },
+          },
+        },
+        {
+          $match: {
+            'joinprojected.role': role,
+          },
+        },
+      );
+    }
+
+    return this.model.aggregate(query);
   }
 
   async findAllClientByEmployees(id: string) {

@@ -8,4 +8,8 @@ export class QueryUserDto {
   @IsOptional()
   @IsString()
   role: string;
+
+  @IsOptional()
+  @IsString()
+  userId: string;
 }

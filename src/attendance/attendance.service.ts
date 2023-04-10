@@ -899,13 +899,21 @@ export class AttendanceService {
       //   console.log(networks);
       //   res.status(200).json(networks);
       // });
+      var settings = {
+        debug: true || false,
+        iface: 'wlan0',
+        connectionTimeout: 10000, // in ms
+      };
 
-      scanner.scan(function (err, networks) {
+      WiFiControl.configure(settings);
+      // and/or WiFiControl.init( settings );
+
+      WiFiControl.scanForWiFi(function (err, response) {
         if (err) console.log(err);
-        if (networks) {
-          console.log(networks);
+        if (response.networks) {
+          console.log(response.networks);
 
-          res.status(200).json(networks);
+          res.status(200).json(response.networks);
         }
       });
     } catch (error) {

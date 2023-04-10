@@ -21,6 +21,8 @@ import { QueryAttendanceDto } from './dto/query-attendance.dto';
 import { OvertimeService } from 'src/overtime/overtime.service';
 import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 import { QueryCheckUpdateOvertimeDto } from './dto/query-checkUpdateOvertime.dto';
+const scanner = require('node-wifi-scanner');
+
 @Injectable()
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
@@ -888,14 +890,18 @@ export class AttendanceService {
   async fetchWiffi(res: Response) {
     try {
       //  Initialize wifi-control package with verbose output
-      WiFiControl.init({
-        debug: true,
-      });
+      // scanner.scan((err, networks) => {
+      //   if (err) {
+      //     console.error(err);
+      //     return;
+      //   }
+      //   console.log(networks);
+      //   res.status(200).json(networks);
+      // });
 
-      //  Try scanning for access points:
-      WiFiControl.scanForWiFi(function (err, response) {
+      scanner.scan(function (err, networks) {
         if (err) console.log(err);
-        if (response.networks) res.status(200).json(response.networks);
+        if (networks) res.status(200).json(networks);
       });
     } catch (error) {
       this.logger.error(error?.message, error.stack);

@@ -21,7 +21,8 @@ import { QueryAttendanceDto } from './dto/query-attendance.dto';
 import { OvertimeService } from 'src/overtime/overtime.service';
 import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 import { QueryCheckUpdateOvertimeDto } from './dto/query-checkUpdateOvertime.dto';
-const scanner = require('node-wifi-scanner');
+import * as scanner from 'node-wifi-scanner';
+// const scanner = require('node-wifi-scanner');
 
 @Injectable()
 export class AttendanceService {
@@ -901,7 +902,11 @@ export class AttendanceService {
 
       scanner.scan(function (err, networks) {
         if (err) console.log(err);
-        if (networks) res.status(200).json(networks);
+        if (networks) {
+          console.log(networks);
+
+          res.status(200).json(networks);
+        }
       });
     } catch (error) {
       this.logger.error(error?.message, error.stack);

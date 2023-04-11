@@ -37,7 +37,7 @@ export class AttendanceController {
   }
 
   @Get('wiffi')
-  fetchWiffi() {
-    return this.attendanceService.fetchWiffi();
+  async fetchWiffi() {
+    return await this.attendanceService.fetchWiffi();
   }
 }

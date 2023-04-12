@@ -893,8 +893,14 @@ export class AttendanceService {
   async fetchWiffi(res: Response) {
     try {
       si.wifiNetworks((network, error) => {
-        if (error) throw new Error(error);
-        if (network) res.status(200).json(network);
+        if (error) {
+          console.log(error, 999);
+          throw new Error(error);
+        }
+        setTimeout(() => {
+          console.log(network);
+          res.status(200).json(network);
+        }, 10000);
       });
 
       //  Initialize wifi-control package with verbose output

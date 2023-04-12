@@ -89,6 +89,7 @@ export class UserService {
             date: '$date',
             cccd: '$cccd',
             role: '$role',
+            address: '$address',
           },
         },
       },
@@ -102,6 +103,7 @@ export class UserService {
           date: '$_id.date',
           cccd: '$_id.cccd',
           role: '$_id.role',
+          address: '$_id.address',
         },
       },
     ];
@@ -378,6 +380,7 @@ export class UserService {
             department: '$joinprojected.employees.department',
             date: '$joinprojected.employees.date',
             cccd: '$joinprojected.employees.cccd',
+            address: '$joinprojected.employees.address',
             role: '$joinprojected.employees.role',
           },
         },
@@ -391,6 +394,7 @@ export class UserService {
           department: '$_id.department',
           date: '$_id.date',
           cccd: '$_id.cccd',
+          address: '$_id.address',
           role: '$_id.role',
         },
       },
@@ -2012,7 +2016,7 @@ export class UserService {
       SendEmail(
         createEmployeeDto.email,
         createEmployeeDto.name,
-        `Mat khau cua ban la : ${password}`,
+        `Tên đăng nhập: ${createEmployeeDto?.email} hoặc ${createEmployeeDto?.mobile}. Mật khẩu: ${password}`,
       );
 
       password = await bcrypt.hash(password, 10);
@@ -2047,7 +2051,7 @@ export class UserService {
       SendEmail(
         createClientDto.email,
         createClientDto.name,
-        `Mật khẩu của bạn là : ${password}`,
+        `Tên đăng nhập: ${createClientDto?.email} hoặc ${createClientDto?.mobile}. Mật khẩu: ${password}`,
       );
 
       password = await bcrypt.hash(password, 10);

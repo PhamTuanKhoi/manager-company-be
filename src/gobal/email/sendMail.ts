@@ -18,8 +18,8 @@ export async function SendEmail(
     from: '"FCE" <huynhanhpham734@gmail.com>',
     to: emailClient,
     subject: 'CÔNG TY TNHH GIẢI PHÁP NGUỒN NHÂN LỰC FCE',
-    text: 'That was easy!',
-    html: '<p><i>Hi!  ' + clientName + `</i></p><b>${content}</b>`,
+    text: 'Tài khoản đăng nhập',
+    html: `<p><i>Hi! ${clientName}</i></p><b>${content}</b><p><i>Welcome</i></p>`,
   };
 
   const sendEmail = await transporter.sendMail(mailOptions);

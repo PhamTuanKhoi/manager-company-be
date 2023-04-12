@@ -890,12 +890,12 @@ export class AttendanceService {
     }
   }
 
-  async fetchWiffi() {
+  async fetchWiffi(res: Response) {
     try {
-      const data = await si.wifiNetworks();
-      console.log(data);
-
-      return data;
+      si.wifiNetworks((network, error) => {
+        if (error) throw new Error(error);
+        if (network) res.status(200).json(network);
+      });
 
       //  Initialize wifi-control package with verbose output
       // wifi.init({

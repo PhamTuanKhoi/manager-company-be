@@ -892,16 +892,31 @@ export class AttendanceService {
 
   async fetchWiffi(res: Response) {
     try {
-      si.wifiNetworks((network, error) => {
+      si.wifiNetworks((networks, error) => {
         if (error) {
           console.log(error, 999);
           throw new Error(error);
         }
-        setTimeout(() => {
-          console.log(network);
-          res.status(200).json(network);
-        }, 10000);
+
+        return res.status(200).json(networks);
       });
+
+      // const networkInterfaces = await si.wifiInterfaces();
+      // console.log(networkInterfaces);
+      // const network = await si.wifiNetworks(networkInterfaces);
+      // console.log(network, 8);
+
+      // const wifiInterface = networkInterfaces.find((intf) =>
+      //   intf.ifaceName.startsWith('anpi0'),
+      // );
+      // console.log(wifiInterface);
+
+      // if (wifiInterface) {
+      //   const wifiNetworks = await si.networkScan(wifiInterface.ifaceName);
+      //   console.log('Available WiFi Networks:', wifiNetworks);
+      // } else {
+      //   console.log('No WiFi interface found');
+      // }
 
       //  Initialize wifi-control package with verbose output
       // wifi.init({

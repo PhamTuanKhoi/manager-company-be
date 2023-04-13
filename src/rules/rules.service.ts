@@ -34,10 +34,10 @@ export class RulesService {
     const { project, wiffi, password, timeIn, timeOut, lunchIn, lunchOut } =
       createRuleDto;
     try {
-      var ip =
-        req.headers['x-forwarded-for'] || req.socket.remoteAddress || null;
+      const ipAddress = req.connection.remoteAddress;
+      const ipv4Address = ipAddress.replace(/^.*:/, '');
 
-      console.log(req.socket.remoteAddress);
+      console.log(ipv4Address, req.ip, req.socket.remoteAddress);
 
       // const isExists = await this.findOneRefProject(project);
       // if (isExists)

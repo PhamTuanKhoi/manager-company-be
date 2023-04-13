@@ -20,6 +20,7 @@ const network = require('network');
 const dns = require('dns');
 const ip = require('ip');
 const { exec } = require('child_process');
+const https = require('https');
 @Injectable()
 export class RulesService {
   private readonly logger = new Logger(RulesService.name);
@@ -40,19 +41,54 @@ export class RulesService {
     try {
       // const ipAddress = req.connection.remoteAddress;
       // const ipv4Address = ipAddress.replace(/^.*:/, '');
-
       // console.log(ipv4Address, req.ip, req.socket.remoteAddress);
+      // exec(
+      //   "ifconfig $(iwconfig 2>/dev/null | awk '/ESSID/ {print $1}' | tr -d ' ' | sed 's/Qual.*$//') | awk '/inet / {print $2}'",
+      //   (error, stdout, stderr) => {
+      //     if (stdout.trim() !== '') {
+      //       console.log(`${stdout.trim()}`);
+      //     } else {
+      //       console.log('You are not currently connected to a wifi network.');
+      //     }
+      //   },
+      // );
+      // var settings = {
+      //   debug: true || false,
+      //   iface: 'wlan0',
+      //   connectionTimeout: 10000, // in ms
+      // };
+      // WiFiControl.configure(settings);
+      // and/or WiFiControl.init( settings );
+      // WiFiControl.scanForWiFi(function (err, response) {
+      //   if (err) console.log(err);
+      //   if (response.networks) {
+      //     console.log(response.networks);
+      //   }
+      // });
+      // const ifaces = os.networkInterfaces();
+      // let wifiIpAddress;
 
-      exec(
-        "ifconfig $(iwconfig 2>/dev/null | awk '/ESSID/ {print $1}' | tr -d ' ' | sed 's/Qual.*$//') | awk '/inet / {print $2}'",
-        (error, stdout, stderr) => {
-          if (stdout.trim() !== '') {
-            console.log(`${stdout.trim()}`);
-          } else {
-            console.log('You are not currently connected to a wifi network.');
-          }
-        },
-      );
+      // Object.keys(ifaces).forEach((ifname) => {
+      //   ifaces[ifname].forEach((iface) => {
+      //     if (iface.family !== 'IPv4' || iface.internal !== false) {
+      //       return;
+      //     }
+
+      //     if (ifname.startsWith('Wi-Fi') || ifname.startsWith('wlan')) {
+      //       wifiIpAddress = iface.address;
+      //     }
+      //   });
+      // });
+
+      https
+        .get('https://api.ipify.org', (res) => {
+          res.on('data', (data) => {
+            console.log('Your public IP address is:', data.toString());
+          });
+        })
+        .on('error', (error) => {
+          console.error(error);
+        });
 
       // const isExists = await this.findOneRefProject(project);
       // if (isExists)

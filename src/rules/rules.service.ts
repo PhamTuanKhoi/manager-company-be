@@ -16,6 +16,8 @@ import { Rule, RuleDocument } from './schema/rule.schema';
 import * as WiFiControl from 'wifi-control';
 import { Request } from 'express';
 const os = require('os');
+const network = require('network');
+const dns = require('dns');
 @Injectable()
 export class RulesService {
   private readonly logger = new Logger(RulesService.name);
@@ -34,10 +36,19 @@ export class RulesService {
     const { project, wiffi, password, timeIn, timeOut, lunchIn, lunchOut } =
       createRuleDto;
     try {
-      const ipAddress = req.connection.remoteAddress;
-      const ipv4Address = ipAddress.replace(/^.*:/, '');
+      // const ipAddress = req.connection.remoteAddress;
+      // const ipv4Address = ipAddress.replace(/^.*:/, '');
 
-      console.log(ipv4Address, req.ip, req.socket.remoteAddress);
+      // console.log(ipv4Address, req.ip, req.socket.remoteAddress);
+
+      dns.lookup(require('os').hostname(), (err, address, family) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+
+        console.log(`Your wifi IP address is ${address}`);
+      });
 
       // const isExists = await this.findOneRefProject(project);
       // if (isExists)

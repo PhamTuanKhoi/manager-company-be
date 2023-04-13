@@ -18,6 +18,8 @@ import { Request } from 'express';
 const os = require('os');
 const network = require('network');
 const dns = require('dns');
+const ip = require('ip');
+const { exec } = require('child_process');
 @Injectable()
 export class RulesService {
   private readonly logger = new Logger(RulesService.name);
@@ -41,14 +43,16 @@ export class RulesService {
 
       // console.log(ipv4Address, req.ip, req.socket.remoteAddress);
 
-      dns.lookup(require('os').hostname(), (err, address, family) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-
-        console.log(`Your wifi IP address is ${address}`);
-      });
+      exec(
+        "ifconfig $(iwconfig 2>/dev/null | awk '/ESSID/ {print $1}' | tr -d ' ' | sed 's/Qual.*$//') | awk '/inet / {print $2}'",
+        (error, stdout, stderr) => {
+          if (stdout.trim() !== '') {
+            console.log(`${stdout.trim()}`);
+          } else {
+            console.log('You are not currently connected to a wifi network.');
+          }
+        },
+      );
 
       // const isExists = await this.findOneRefProject(project);
       // if (isExists)

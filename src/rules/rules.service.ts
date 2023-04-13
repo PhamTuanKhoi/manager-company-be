@@ -14,7 +14,8 @@ import { CreateRuleDto } from './dto/create-rule.dto';
 import { UpdateRuleDto } from './dto/update-rule.dto';
 import { Rule, RuleDocument } from './schema/rule.schema';
 import * as WiFiControl from 'wifi-control';
-
+import { Request } from 'express';
+const os = require('os');
 @Injectable()
 export class RulesService {
   private readonly logger = new Logger(RulesService.name);
@@ -29,33 +30,33 @@ export class RulesService {
     return this.model.findOne({ project: id }).lean();
   }
 
-  async create(createRuleDto: CreateRuleDto) {
+  async create(createRuleDto: CreateRuleDto, req: Request) {
     const { project, wiffi, password, timeIn, timeOut, lunchIn, lunchOut } =
       createRuleDto;
     try {
-      const isExists = await this.findOneRefProject(project);
-      if (isExists)
-        throw new HttpException(
-          'wiffi đã được cài đặt trướt đó!',
-          HttpStatus.FORBIDDEN,
-        );
+      var ip =
+        req.headers['x-forwarded-for'] || req.socket.remoteAddress || null;
 
-      await this.projectService.isModelExist(project);
+      console.log(req.socket.remoteAddress);
 
-      // check loggin wiffi
-      await this.logginWiffi(wiffi, password);
-
-      const created = await this.model.create({
-        ...createRuleDto,
-        workHour:
-          lunchIn && lunchOut
-            ? timeOut - timeIn - (lunchIn - lunchOut)
-            : timeOut - timeIn,
-      });
-
-      this.logger.log(`created a new rules by id#${created?._id}`);
-
-      return created;
+      // const isExists = await this.findOneRefProject(project);
+      // if (isExists)
+      //   throw new HttpException(
+      //     'wiffi đã được cài đặt trướt đó!',
+      //     HttpStatus.FORBIDDEN,
+      //   );
+      // await this.projectService.isModelExist(project);
+      // // check loggin wiffi
+      // await this.logginWiffi(wiffi, password);
+      // const created = await this.model.create({
+      //   ...createRuleDto,
+      //   workHour:
+      //     lunchIn && lunchOut
+      //       ? timeOut - timeIn - (lunchIn - lunchOut)
+      //       : timeOut - timeIn,
+      // });
+      // this.logger.log(`created a new rules by id#${created?._id}`);
+      // return created;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

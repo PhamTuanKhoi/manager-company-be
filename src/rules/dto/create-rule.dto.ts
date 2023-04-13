@@ -5,11 +5,13 @@ export class CreateRuleDto {
   @IsString()
   project: string;
 
-  @IsNotEmpty()
+  // @IsNotEmpty()
+  @IsOptional()
   @IsString()
   wiffi: string;
 
-  @IsNotEmpty()
+  // @IsNotEmpty()
+  @IsOptional()
   @IsString()
   password: string;
 

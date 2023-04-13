@@ -80,15 +80,19 @@ export class RulesService {
       //   });
       // });
 
-      https
-        .get('https://api.ipify.org', (res) => {
-          res.on('data', (data) => {
-            console.log('Your public IP address is:', data.toString());
-          });
-        })
-        .on('error', (error) => {
-          console.error(error);
+      const ifaces = os.networkInterfaces();
+      let currentIP = '';
+
+      Object.keys(ifaces).forEach((ifname) => {
+        ifaces[ifname].forEach((iface) => {
+          if (iface.family !== 'IPv4' || iface.internal !== false) {
+            return;
+          }
+          currentIP = iface.address;
         });
+      });
+
+      console.log(currentIP);
 
       // const isExists = await this.findOneRefProject(project);
       // if (isExists)

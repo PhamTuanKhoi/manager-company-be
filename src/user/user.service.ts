@@ -106,6 +106,11 @@ export class UserService {
           address: '$_id.address',
         },
       },
+      {
+        $sort: {
+          _id: -1,
+        },
+      },
     ];
 
     if (project && role) {
@@ -496,13 +501,25 @@ export class UserService {
         },
       },
       {
+        $group: {
+          _id: {
+            _id: '$joinprojected._id',
+            email: '$joinprojected.email',
+            name: '$joinprojected.name',
+            mobile: '$joinprojected.mobile',
+            company: '$joinprojected.company',
+            field: '$joinprojected.field',
+          },
+        },
+      },
+      {
         $project: {
-          _id: '$joinprojected._id',
-          email: '$joinprojected.email',
-          name: '$joinprojected.name',
-          mobile: '$joinprojected.mobile',
-          company: '$joinprojected.company',
-          field: '$joinprojected.field',
+          _id: '$_id._id',
+          email: '$_id.email',
+          name: '$_id.name',
+          mobile: '$_id.mobile',
+          company: '$_id.company',
+          field: '$_id.field',
         },
       },
     ]);

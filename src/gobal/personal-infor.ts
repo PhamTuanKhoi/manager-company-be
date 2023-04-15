@@ -42,4 +42,8 @@ export class PersonalInfor {
   @IsOptional()
   @IsString()
   gender: string;
+
+  @IsOptional()
+  @IsString()
+  avatar: string;
 }

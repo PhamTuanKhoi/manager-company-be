@@ -545,27 +545,6 @@ export class UserService {
           createdAt: -1,
         },
       },
-      {
-        $lookup: {
-          from: 'workerprojects',
-          localField: '_id',
-          foreignField: 'worker',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'projects',
-                localField: 'project',
-                foreignField: '_id',
-                as: 'projectEX',
-              },
-            },
-            {
-              $unwind: '$projectEX',
-            },
-          ],
-          as: 'workerprojectEX',
-        },
-      },
     ]);
   }
 
@@ -2095,6 +2074,11 @@ export class UserService {
 
       if (emailsake)
         throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+
+      const phonesake = await this.findByPhone(createWorkerDto.mobile);
+
+      if (phonesake)
+        throw new HttpException('phone already exists', HttpStatus.BAD_REQUEST);
 
       if (createWorkerDto.password !== createWorkerDto.confirmPasword)
         throw new HttpException(

@@ -41,7 +41,7 @@ export class User {
   address: string;
 
   @Prop()
-  avartar: string;
+  avatar: string;
 
   // client
 

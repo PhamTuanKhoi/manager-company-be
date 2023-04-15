@@ -90,6 +90,7 @@ export class UserService {
             cccd: '$cccd',
             role: '$role',
             address: '$address',
+            avatar: '$avatar',
           },
         },
       },
@@ -104,6 +105,7 @@ export class UserService {
           cccd: '$_id.cccd',
           role: '$_id.role',
           address: '$_id.address',
+          avatar: '$_id.avatar',
         },
       },
       {
@@ -1412,6 +1414,7 @@ export class UserService {
             _id: '$_id',
             name: '$name',
             field: '$field',
+            avatar: '$avatar',
             projectId: '$projectEX._id',
             projectName: '$projectEX.name',
             salarys: '$salarys',
@@ -1426,12 +1429,18 @@ export class UserService {
           _id: '$_id._id',
           name: '$_id.name',
           field: '$_id.field',
+          avatar: '$_id.avatar',
           projectId: '$_id.projectId',
           projectName: '$_id.projectName',
           salarys: '$_id.salarys',
           salary: '$_id.salary',
           payslip: '$_id.payslip',
           contract: '$_id.contract',
+        },
+      },
+      {
+        $sort: {
+          _id: -1,
         },
       },
     ];

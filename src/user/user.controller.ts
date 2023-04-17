@@ -176,6 +176,11 @@ export class UserController {
     return this.userService.newWorker(createWorkerDto);
   }
 
+  @Post('forgot-password')
+  forgotPassword(@Body() payload: { email: string }) {
+    return this.userService.forgotPassword(payload);
+  }
+
   @Patch('employees/:id')
   updateEmployees(
     @Param('id') id: string,

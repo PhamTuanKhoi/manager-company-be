@@ -11,7 +11,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-dto/create-user.dto';
 import { RegisterUserDto } from './dto/create-dto/register-user.dto';
-import { UpdateUserDto } from './dto/update-dto/update-user.dto';
 import { UserRoleEnum } from './interfaces/role-user.enum';
 import { User, UserDocument } from './schema/user.schema';
 import * as bcrypt from 'bcrypt';
@@ -2113,6 +2112,51 @@ export class UserService {
       this.logger.log(`created new worker by id#${created?._id}`);
 
       return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async forgotPassword(payload: { email: string }) {
+    const { email } = payload;
+
+    try {
+      const user = await this.findByEmail(email);
+
+      if (!user)
+        throw new HttpException(
+          `Email chưa được đăng ký tài khoản!`,
+          HttpStatus.BAD_GATEWAY,
+        );
+
+      // let password: string = Math.floor(
+      //   (1 + Math.random()) * 10000001,
+      // ).toString();
+
+      const link_page = this.configService.get<string>(
+        'LINK_PAGE_RESET_PASSWORD',
+      );
+
+      SendEmail(
+        email,
+        user?.name,
+        `Đặt lại mật khẩu. Nhấn vào liên kết: <a href=${
+          link_page + `resetpassword?email=` + email
+        }>Reset Password</a>`,
+      );
+
+      // password = await bcrypt.hash(password, 10);
+
+      // const updated_password = await this.model.findByIdAndUpdate(
+      //   user?._id,
+      //   { password },
+      //   { new: true },
+      // );
+
+      // this.logger.log(`updated a new password by id#${updated_password?._id}`);
+
+      // return updated_password;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

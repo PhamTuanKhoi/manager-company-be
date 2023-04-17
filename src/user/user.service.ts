@@ -389,6 +389,7 @@ export class UserService {
             cccd: '$joinprojected.employees.cccd',
             address: '$joinprojected.employees.address',
             role: '$joinprojected.employees.role',
+            avatar: '$joinprojected.employees.avatar',
           },
         },
       },
@@ -403,6 +404,7 @@ export class UserService {
           cccd: '$_id.cccd',
           address: '$_id.address',
           role: '$_id.role',
+          avatar: '$_id.avatar',
         },
       },
     ];
@@ -511,6 +513,7 @@ export class UserService {
             mobile: '$joinprojected.mobile',
             company: '$joinprojected.company',
             field: '$joinprojected.field',
+            avatar: '$joinprojected.avatar',
           },
         },
       },
@@ -522,6 +525,7 @@ export class UserService {
           mobile: '$_id.mobile',
           company: '$_id.company',
           field: '$_id.field',
+          avatar: '$_id.avatar',
         },
       },
     ]);
@@ -756,6 +760,7 @@ export class UserService {
           cccd: '$joinprojected.workers.cccd',
           date: '$joinprojected.workers.date',
           field: '$joinprojected.workers.field',
+          avatar: '$joinprojected.workers.avatar',
         },
       },
     ]);

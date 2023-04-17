@@ -28,6 +28,7 @@ import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
 import { QueryUserAttendanceDto } from './dto/query-dto/query-user-attendance.dto';
 import { UpdatePasswordDto } from './dto/update-dto/update-password.dto';
 import { QueryUserDto } from './dto/query-dto/query-user.dto';
+import { ResetPasswordDto } from './dto/update-dto/reset-password.dto';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -179,6 +180,11 @@ export class UserController {
   @Post('forgot-password')
   forgotPassword(@Body() payload: { email: string }) {
     return this.userService.forgotPassword(payload);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.userService.resetPassword(resetPasswordDto);
   }
 
   @Patch('employees/:id')

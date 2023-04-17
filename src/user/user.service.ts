@@ -33,6 +33,9 @@ import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 import { QueryUserOvertimeDto } from './dto/query-dto/query-user-overtime';
 import { UpdatePasswordDto } from './dto/update-dto/update-password.dto';
 import { QueryUserDto } from './dto/query-dto/query-user.dto';
+import * as jwt from 'jsonwebtoken';
+import { ResetPasswordDto } from './dto/update-dto/reset-password.dto';
+import { jwtConstant } from './constants/constants';
 
 @Injectable()
 export class UserService {
@@ -2130,33 +2133,58 @@ export class UserService {
           HttpStatus.BAD_GATEWAY,
         );
 
-      // let password: string = Math.floor(
-      //   (1 + Math.random()) * 10000001,
-      // ).toString();
+      const token = jwt.sign(
+        {
+          data: email,
+        },
+        jwtConstant.secret,
+        { expiresIn: '24h' },
+      );
 
       const link_page = this.configService.get<string>(
         'LINK_PAGE_RESET_PASSWORD',
       );
 
-      SendEmail(
+      return SendEmail(
         email,
         user?.name,
         `Đặt lại mật khẩu. Nhấn vào liên kết: <a href=${
-          link_page + `resetpassword?email=` + email
+          link_page + `resetpassword?e=` + token
         }>Reset Password</a>`,
       );
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
 
-      // password = await bcrypt.hash(password, 10);
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { token, password, confirmPassword } = resetPasswordDto;
+    try {
+      const { data }: any = jwt.verify(token, jwtConstant.secret);
 
-      // const updated_password = await this.model.findByIdAndUpdate(
-      //   user?._id,
-      //   { password },
-      //   { new: true },
-      // );
+      const user = await this.findByEmail(data);
 
-      // this.logger.log(`updated a new password by id#${updated_password?._id}`);
+      if (!user)
+        throw new HttpException(
+          `Email chưa được đăng ký tài khoản!`,
+          HttpStatus.BAD_GATEWAY,
+        );
 
-      // return updated_password;
+      if (password !== confirmPassword)
+        throw new HttpException(`password incorrect!`, HttpStatus.BAD_GATEWAY);
+
+      const pass = await bcrypt.hash(password, 10);
+
+      const updated_password = await this.model.findByIdAndUpdate(
+        user?._id,
+        { password: pass },
+        { new: true },
+      );
+
+      this.logger.log(`reset a new password by id#${updated_password?._id}`);
+
+      return updated_password;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

@@ -21,6 +21,7 @@ import { RulesModule } from './rules/rules.module';
 import { SalaryModule } from './salary/salary.module';
 import { ContractModule } from './contract/contract.module';
 import { OvertimeModule } from './overtime/overtime.module';
+import { DepartmentModule } from './department/department.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { OvertimeModule } from './overtime/overtime.module';
     SalaryModule,
     ContractModule,
     OvertimeModule,
+    DepartmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

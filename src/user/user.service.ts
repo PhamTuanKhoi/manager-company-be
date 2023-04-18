@@ -377,6 +377,22 @@ export class UserService {
                 from: 'users',
                 localField: 'joinor',
                 foreignField: '_id',
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: 'departments',
+                      localField: 'department',
+                      foreignField: '_id',
+                      as: 'department',
+                    },
+                  },
+                  {
+                    $unwind: {
+                      path: '$department',
+                      preserveNullAndEmptyArrays: true,
+                    },
+                  },
+                ],
                 as: 'employees',
               },
             },
@@ -400,7 +416,7 @@ export class UserService {
             email: '$joinprojected.employees.email',
             name: '$joinprojected.employees.name',
             mobile: '$joinprojected.employees.mobile',
-            department: '$joinprojected.employees.department',
+            department: '$joinprojected.employees.department.name',
             date: '$joinprojected.employees.date',
             cccd: '$joinprojected.employees.cccd',
             address: '$joinprojected.employees.address',
@@ -415,7 +431,7 @@ export class UserService {
           email: '$_id.email',
           name: '$_id.name',
           mobile: '$_id.mobile',
-          department: '$_id.department',
+          departmentName: '$_id.department',
           date: '$_id.date',
           cccd: '$_id.cccd',
           address: '$_id.address',

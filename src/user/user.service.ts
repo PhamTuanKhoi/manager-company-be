@@ -2145,13 +2145,15 @@ export class UserService {
         'LINK_PAGE_RESET_PASSWORD',
       );
 
-      return SendEmail(
+      SendEmail(
         email,
         user?.name,
         `Đặt lại mật khẩu. Nhấn vào liên kết: <a href=${
           link_page + `resetpassword?e=` + token
         }>Reset Password</a>`,
       );
+
+      return true;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

@@ -7,14 +7,8 @@ export type DepartmentDocument = HydratedDocument<Department>;
   timestamps: true,
 })
 export class Department {
-  @Prop()
+  @Prop({ required: true })
   name: string;
-
-  @Prop()
-  age: number;
-
-  @Prop()
-  breed: string;
 }
 
 export const DepartmentSchema = SchemaFactory.createForClass(Department);

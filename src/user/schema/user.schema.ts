@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
+import { Department } from 'src/department/schema/department.schema';
 import { EmployeeDepartmentEnum } from '../interfaces/department-employess.enum';
 import { UserGenderEnum } from '../interfaces/gender-enum';
 import { UserRoleEnum } from '../interfaces/role-user.enum';
@@ -28,8 +29,8 @@ export class User {
   @Prop()
   cccd: string;
 
-  @Prop()
-  department: EmployeeDepartmentEnum;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Department.name })
+  department: Department;
 
   @Prop()
   mobile: string;

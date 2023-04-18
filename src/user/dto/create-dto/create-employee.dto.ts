@@ -4,5 +4,5 @@ import { EmployeeDepartmentEnum } from 'src/user/interfaces/department-employess
 
 export class CreateEmployeeDto extends PersonalInfor {
   @IsNotEmpty()
-  department: EmployeeDepartmentEnum;
+  department: string;
 }

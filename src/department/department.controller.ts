@@ -25,11 +25,6 @@ export class DepartmentController {
     return this.departmentService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.departmentService.findOne(id);
-  }
-
   @Patch(':id')
   update(
     @Param('id') id: string,

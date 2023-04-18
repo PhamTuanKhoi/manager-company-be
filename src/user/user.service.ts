@@ -81,13 +81,27 @@ export class UserService {
         },
       },
       {
+        $lookup: {
+          from: 'departments',
+          localField: 'department',
+          foreignField: '_id',
+          as: 'department',
+        },
+      },
+      {
+        $unwind: {
+          path: '$department',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $group: {
           _id: {
             _id: '$_id',
             email: '$email',
             name: '$name',
             mobile: '$mobile',
-            department: '$department',
+            department: '$department.name',
             date: '$date',
             cccd: '$cccd',
             role: '$role',
@@ -102,7 +116,7 @@ export class UserService {
           email: '$_id.email',
           name: '$_id.name',
           mobile: '$_id.mobile',
-          department: '$_id.department',
+          departmentName: '$_id.department',
           date: '$_id.date',
           cccd: '$_id.cccd',
           role: '$_id.role',
@@ -119,7 +133,7 @@ export class UserService {
 
     if (project && role) {
       query.splice(
-        3,
+        5,
         0,
         {
           $match: {

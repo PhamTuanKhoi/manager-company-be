@@ -65,11 +65,6 @@ export class UserController {
     return this.userService.findAllEloyeesByUserId(queryUserDto);
   }
 
-  // @Get('employees-role-worker/:id')
-  // findAllEloyeesByWorker(@Param('id') id: string) {
-  //   return this.userService.findAllEloyeesByWorker(id);
-  // }
-
   @Get('client-role-employees/:id')
   findAllClientByEmployees(@Param('id') id: string) {
     return this.userService.findAllClientByEmployees(id);
@@ -102,20 +97,10 @@ export class UserController {
     return this.userService.workerProjectByClient(QueryWorkerProject);
   }
 
-  // @Get('worker-project-by-employees')
-  // workerProjectByEmployees(@Query() QueryWorkerProject: QueryWorkerProject) {
-  //   return this.userService.workerProjectByEmployees(QueryWorkerProject);
-  // }
-
   @Get('worker-by-role/:id')
   findAllWorkerByClient(@Param('id') id: string) {
     return this.userService.findAllWorkerByClient(id);
   }
-
-  // @Get('worker-role-employees/:id')
-  // findAllWorkerByEmployees(@Param('id') id: string) {
-  //   return this.userService.findAllWorkerByEmployees(id);
-  // }
 
   @Get('attendance')
   userAttendance(@Query() queryUserAttendaceDto: QueryUserAttendanceDto) {

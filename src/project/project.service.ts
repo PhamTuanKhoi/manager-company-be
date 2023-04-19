@@ -610,6 +610,29 @@ export class ProjectService {
                   from: 'users',
                   localField: 'joinor',
                   foreignField: '_id',
+                  pipeline: [
+                    {
+                      $lookup: {
+                        from: 'departments',
+                        localField: 'department',
+                        foreignField: '_id',
+                        as: 'department',
+                      },
+                    },
+                    {
+                      $unwind: {
+                        path: '$department',
+                        preserveNullAndEmptyArrays: true,
+                      },
+                    },
+                    {
+                      $project: {
+                        _id: '$_id',
+                        name: '$name',
+                        departmentName: '$department.name',
+                      },
+                    },
+                  ],
                   as: 'userEX',
                 },
               },
@@ -636,6 +659,29 @@ export class ProjectService {
                   from: 'users',
                   localField: 'joinor',
                   foreignField: '_id',
+                  pipeline: [
+                    {
+                      $lookup: {
+                        from: 'departments',
+                        localField: 'department',
+                        foreignField: '_id',
+                        as: 'department',
+                      },
+                    },
+                    {
+                      $unwind: {
+                        path: '$department',
+                        preserveNullAndEmptyArrays: true,
+                      },
+                    },
+                    {
+                      $project: {
+                        _id: '$_id',
+                        name: '$name',
+                        departmentName: '$department.name',
+                      },
+                    },
+                  ],
                   as: 'userEX',
                 },
               },

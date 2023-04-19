@@ -49,7 +49,7 @@ export class UserService {
   ) {}
 
   async findAllEloyees(queryUserDto: QueryUserDto) {
-    const { project, role } = queryUserDto;
+    const { project, role, departmentId } = queryUserDto;
 
     let query: any = [
       {
@@ -102,6 +102,7 @@ export class UserService {
             name: '$name',
             mobile: '$mobile',
             department: '$department.name',
+            departmentId: '$department._id',
             date: '$date',
             cccd: '$cccd',
             role: '$role',
@@ -117,6 +118,7 @@ export class UserService {
           name: '$_id.name',
           mobile: '$_id.mobile',
           departmentName: '$_id.department',
+          departmentId: '$_id.departmentId',
           date: '$_id.date',
           cccd: '$_id.cccd',
           role: '$_id.role',
@@ -148,6 +150,19 @@ export class UserService {
           },
         },
       );
+    }
+
+    if (departmentId) {
+      query = [
+        ...query,
+        {
+          $match: {
+            $expr: {
+              $eq: ['$departmentId', { $toObjectId: departmentId }],
+            },
+          },
+        },
+      ];
     }
 
     return this.model.aggregate(query);

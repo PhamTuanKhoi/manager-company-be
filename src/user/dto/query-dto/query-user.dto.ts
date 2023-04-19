@@ -12,4 +12,8 @@ export class QueryUserDto {
   @IsOptional()
   @IsString()
   userId: string;
+
+  @IsOptional()
+  @IsString()
+  departmentId: string;
 }

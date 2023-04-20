@@ -49,7 +49,7 @@ export class UserService {
   ) {}
 
   async findAllEloyees(queryUserDto: QueryUserDto) {
-    const { project, role, departmentId } = queryUserDto;
+    const { project, role, departmentId, userId } = queryUserDto;
 
     let query: any = [
       {
@@ -124,6 +124,13 @@ export class UserService {
           role: '$_id.role',
           address: '$_id.address',
           avatar: '$_id.avatar',
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $ne: ['$_id', { $toObjectId: userId }],
+          },
         },
       },
       {

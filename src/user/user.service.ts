@@ -645,6 +645,10 @@ export class UserService {
     return this.model.findOne({ mobile }).select('+password').lean();
   }
 
+  findByCccd(cccd: string) {
+    return this.model.findOne({ cccd }).lean();
+  }
+
   async workerNoAssign() {
     return await this.model.aggregate([
       {
@@ -2156,12 +2160,26 @@ export class UserService {
       const emailsake = await this.findByEmail(createWorkerDto.email);
 
       if (emailsake)
-        throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'email đã đăng ký trướt đó!',
+          HttpStatus.BAD_REQUEST,
+        );
+
+      const cccdsake = await this.findByCccd(createWorkerDto.cccd);
+
+      if (cccdsake)
+        throw new HttpException(
+          'căn cước công dân đã đăng ký trướt đó!',
+          HttpStatus.BAD_REQUEST,
+        );
 
       const phonesake = await this.findByPhone(createWorkerDto.mobile);
 
       if (phonesake)
-        throw new HttpException('phone already exists', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'số điện thoại đã đăng ký trướt đó!',
+          HttpStatus.BAD_REQUEST,
+        );
 
       if (createWorkerDto.password !== createWorkerDto.confirmPasword)
         throw new HttpException(

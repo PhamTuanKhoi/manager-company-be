@@ -4,6 +4,7 @@ import { Department } from 'src/department/schema/department.schema';
 import { EmployeeDepartmentEnum } from '../interfaces/department-employess.enum';
 import { UserGenderEnum } from '../interfaces/gender-enum';
 import { UserRoleEnum } from '../interfaces/role-user.enum';
+import { UserStatusEnum } from '../interfaces/status-enum';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -61,6 +62,9 @@ export class User {
   //worker
   @Prop()
   gender: UserGenderEnum;
+
+  @Prop()
+  status: UserStatusEnum;
 
   @Prop()
   token: string;

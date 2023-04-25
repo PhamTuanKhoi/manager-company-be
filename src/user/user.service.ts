@@ -36,6 +36,7 @@ import { QueryUserDto } from './dto/query-dto/query-user.dto';
 import * as jwt from 'jsonwebtoken';
 import { ResetPasswordDto } from './dto/update-dto/reset-password.dto';
 import { jwtConstant } from './constants/constants';
+import { UpdateStatusDto } from './dto/update-dto/update-status.dto';
 
 @Injectable()
 export class UserService {
@@ -2404,6 +2405,23 @@ export class UserService {
       });
 
       this.logger.log(`updated worker success by id #${updated?._id}`);
+
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async updateStatus(id: string, updateStatusDto: UpdateStatusDto) {
+    try {
+      await this.isModelExist(id);
+
+      const updated = await this.model.findByIdAndUpdate(id, updateStatusDto, {
+        new: true,
+      });
+
+      this.logger.log(`updated status worker by id#${updated?._id}`);
 
       return updated;
     } catch (error) {

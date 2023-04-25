@@ -29,6 +29,7 @@ import { QueryUserAttendanceDto } from './dto/query-dto/query-user-attendance.dt
 import { UpdatePasswordDto } from './dto/update-dto/update-password.dto';
 import { QueryUserDto } from './dto/query-dto/query-user.dto';
 import { ResetPasswordDto } from './dto/update-dto/reset-password.dto';
+import { UpdateStatusDto } from './dto/update-dto/update-status.dto';
 
 export const ROLES_KEY = 'role';
 export const Roles = (...roles: UserRoleEnum[]) =>
@@ -191,6 +192,14 @@ export class UserController {
   @Patch('worker/:id')
   updateWorker(@Param('id') id: string, @Body() updateWorker: UpdateWorkerDto) {
     return this.userService.updateWorker(id, updateWorker);
+  }
+
+  @Patch('worker/status/:id')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateStatusDto: UpdateStatusDto,
+  ) {
+    return this.userService.updateStatus(id, updateStatusDto);
   }
 
   @Patch('change-password/:id')

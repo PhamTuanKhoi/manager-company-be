@@ -835,6 +835,7 @@ export class UserService {
           date: '$joinprojected.workers.date',
           field: '$joinprojected.workers.field',
           avatar: '$joinprojected.workers.avatar',
+          status: '$joinprojected.workers.status',
         },
       },
     ]);

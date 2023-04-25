@@ -709,6 +709,7 @@ export class ProjectService {
         {
           $project: {
             name: '$name',
+            creator: '$creator',
             priority: '$priority',
             price: '$price',
             start: '$start',

@@ -63,6 +63,19 @@ export class OvertimeService {
     }
   }
 
+  async createManually(createOvertimeDto: CreateOvertimeDto) {
+    try {
+      const created = await this.model.create(createOvertimeDto);
+
+      this.logger.log(`created a new overtime by id#${created?._id}`);
+
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
   async toDayOvertimeOfIndividual(queryOvertimeDto: QueryOvertimeDto) {
     return this.model.find(queryOvertimeDto).sort({ timein: 1 });
   }

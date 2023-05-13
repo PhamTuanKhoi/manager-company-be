@@ -12,7 +12,7 @@ import { OvertimeTypeEnum } from '../enum/type-overtime.enum';
 export class CreateOvertimeDto {
   @IsOptional()
   @IsArray()
-  userIds: string[];
+  userIds?: string[];
 
   @IsOptional()
   @IsString()
@@ -38,6 +38,6 @@ export class CreateOvertimeDto {
   timeout: number;
 
   @IsNotEmpty()
-  @IsEnum(OvertimeTypeEnum)
-  type: OvertimeTypeEnum;
+  // @IsEnum(OvertimeTypeEnum)
+  type: string;
 }

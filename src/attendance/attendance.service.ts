@@ -22,6 +22,9 @@ import { OvertimeService } from 'src/overtime/overtime.service';
 import { OvertimeTypeEnum } from 'src/overtime/enum/type-overtime.enum';
 import { QueryCheckUpdateOvertimeDto } from './dto/query-checkUpdateOvertime.dto';
 import * as scanner from 'node-wifi-scanner';
+import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
+import { BULLL_NAME } from './contants/bull.name';
 const wifi = require('node-wifi');
 const si = require('systeminformation');
 // const scanner = require('node-wifi-scanner');
@@ -40,6 +43,7 @@ export class AttendanceService {
     private readonly rulesService: RulesService,
     @Inject(forwardRef(() => OvertimeService))
     private readonly overtimeService: OvertimeService,
+    @InjectQueue(BULLL_NAME) private attendanceQueue: Queue,
   ) {}
 
   async getAttendancePersonal(queryAttendanceDto: QueryAttendanceDto) {
@@ -914,13 +918,7 @@ export class AttendanceService {
 
   async manually(createAttendanceDto: CreateAttendanceDto) {
     try {
-      if (createAttendanceDto.overtime) {
-        //update over
-      }
-
-      // create
-      console.log(createAttendanceDto);
-      return true;
+      return await this.attendanceQueue.add(createAttendanceDto);
     } catch (error) {
       this.logger.error(error?.message, error?.stack);
       throw new BadRequestException(error);

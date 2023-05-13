@@ -21,6 +21,9 @@ export class Overtime extends Time {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Attendance' })
   attendance: Attendance;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  creator: User;
+
   @Prop({ required: true })
   type: OvertimeTypeEnum;
 }

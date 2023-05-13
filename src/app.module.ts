@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { ProjectModule } from './project/project.module';
 import { WorkerProjectModule } from './worker-project/worker-project.module';
@@ -22,11 +22,23 @@ import { SalaryModule } from './salary/salary.module';
 import { ContractModule } from './contract/contract.module';
 import { OvertimeModule } from './overtime/overtime.module';
 import { DepartmentModule } from './department/department.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGGO_URL),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get<string>('REDIS_HOST'),
+          port: +configService.get<string>('REDIS_PORT'),
+          password: configService.get<string>('REDIS_PASSWORD'),
+        },
+      }),
+      inject: [ConfigService],
+    }),
     UserModule,
     AuthModule,
     ProjectModule,

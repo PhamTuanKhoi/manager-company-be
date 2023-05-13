@@ -739,6 +739,7 @@ export class ProjectService {
     if (isOptional && !id) return;
     const errorMessage = msg || `id-> ${Project.name} not found`;
     const isExist = await this.findOne(id);
+
     if (!isExist) throw new Error(errorMessage);
     return isExist;
   }

@@ -18,7 +18,7 @@ export class Attendance extends Time {
   project: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Overtime })
-  overtime: Overtime;
+  overtime?: Overtime;
 
   @Prop({ default: 0 })
   workHour?: number;

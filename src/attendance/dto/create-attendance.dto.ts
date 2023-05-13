@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsNumber,
@@ -40,5 +41,30 @@ export class CreateAttendanceDto {
   @IsNumber()
   breaks?: number;
 
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  datetime?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  year?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  month?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  date?: number;
+
+  @IsOptional()
+  @IsString()
+  creator?: string;
+
   timeinShifts?: number;
+  timeoutShifts?: number;
 }

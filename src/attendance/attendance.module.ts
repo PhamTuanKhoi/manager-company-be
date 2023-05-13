@@ -7,6 +7,9 @@ import { UserModule } from 'src/user/user.module';
 import { ProjectModule } from 'src/project/project.module';
 import { RulesModule } from 'src/rules/rules.module';
 import { OvertimeModule } from 'src/overtime/overtime.module';
+import { BullModule } from '@nestjs/bull';
+import { BULLL_NAME } from './contants/bull.name';
+import { AttendanceConsumer } from './attendance.consumer';
 
 @Module({
   imports: [
@@ -17,9 +20,12 @@ import { OvertimeModule } from 'src/overtime/overtime.module';
     MongooseModule.forFeature([
       { name: Attendance.name, schema: AttendanceSchema },
     ]),
+    BullModule.registerQueue({
+      name: BULLL_NAME,
+    }),
   ],
   controllers: [AttendanceController],
-  providers: [AttendanceService],
+  providers: [AttendanceService, AttendanceConsumer],
   exports: [AttendanceService],
 })
 export class AttendanceModule {}

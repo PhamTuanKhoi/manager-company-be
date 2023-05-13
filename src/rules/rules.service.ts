@@ -39,79 +39,29 @@ export class RulesService {
     const { project, wiffi, password, timeIn, timeOut, lunchIn, lunchOut } =
       createRuleDto;
     try {
-      // const ipAddress = req.connection.remoteAddress;
-      // const ipv4Address = ipAddress.replace(/^.*:/, '');
-      // console.log(ipv4Address, req.ip, req.socket.remoteAddress);
-      // exec(
-      //   "ifconfig $(iwconfig 2>/dev/null | awk '/ESSID/ {print $1}' | tr -d ' ' | sed 's/Qual.*$//') | awk '/inet / {print $2}'",
-      //   (error, stdout, stderr) => {
-      //     if (stdout.trim() !== '') {
-      //       console.log(`${stdout.trim()}`);
-      //     } else {
-      //       console.log('You are not currently connected to a wifi network.');
-      //     }
-      //   },
-      // );
-      // var settings = {
-      //   debug: true || false,
-      //   iface: 'wlan0',
-      //   connectionTimeout: 10000, // in ms
-      // };
-      // WiFiControl.configure(settings);
-      // and/or WiFiControl.init( settings );
-      // WiFiControl.scanForWiFi(function (err, response) {
-      //   if (err) console.log(err);
-      //   if (response.networks) {
-      //     console.log(response.networks);
-      //   }
-      // });
-      // const ifaces = os.networkInterfaces();
-      // let wifiIpAddress;
+      const isExists = await this.findOneRefProject(project);
 
-      // Object.keys(ifaces).forEach((ifname) => {
-      //   ifaces[ifname].forEach((iface) => {
-      //     if (iface.family !== 'IPv4' || iface.internal !== false) {
-      //       return;
-      //     }
+      if (isExists)
+        throw new HttpException(
+          'wiffi đã được cài đặt trướt đó!',
+          HttpStatus.FORBIDDEN,
+        );
 
-      //     if (ifname.startsWith('Wi-Fi') || ifname.startsWith('wlan')) {
-      //       wifiIpAddress = iface.address;
-      //     }
-      //   });
-      // });
+      await this.projectService.isModelExist(project);
+      // check loggin wiffi
+      await this.logginWiffi(wiffi, password);
 
-      const ifaces = os.networkInterfaces();
-      let currentIP = '';
-
-      Object.keys(ifaces).forEach((ifname) => {
-        ifaces[ifname].forEach((iface) => {
-          if (iface.family !== 'IPv4' || iface.internal !== false) {
-            return;
-          }
-          currentIP = iface.address;
-        });
+      const created = await this.model.create({
+        ...createRuleDto,
+        workHour:
+          lunchIn && lunchOut
+            ? timeOut - timeIn - (lunchIn - lunchOut)
+            : timeOut - timeIn,
       });
 
-      console.log(currentIP);
+      this.logger.log(`created a new rules by id#${created?._id}`);
 
-      // const isExists = await this.findOneRefProject(project);
-      // if (isExists)
-      //   throw new HttpException(
-      //     'wiffi đã được cài đặt trướt đó!',
-      //     HttpStatus.FORBIDDEN,
-      //   );
-      // await this.projectService.isModelExist(project);
-      // // check loggin wiffi
-      // await this.logginWiffi(wiffi, password);
-      // const created = await this.model.create({
-      //   ...createRuleDto,
-      //   workHour:
-      //     lunchIn && lunchOut
-      //       ? timeOut - timeIn - (lunchIn - lunchOut)
-      //       : timeOut - timeIn,
-      // });
-      // this.logger.log(`created a new rules by id#${created?._id}`);
-      // return created;
+      return created;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

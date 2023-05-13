@@ -20,24 +20,6 @@ export class Attendance extends Time {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Overtime })
   overtime: Overtime;
 
-  // @Prop({ default: Date.now() })
-  // datetime: number;
-
-  // @Prop({ default: new Date().getFullYear() })
-  // year: number;
-
-  // @Prop({ default: new Date().getMonth() + 1 })
-  // month: number;
-
-  // @Prop({ default: new Date().getDate() })
-  // date: number;
-
-  // @Prop({ default: 0 })
-  // timein: number;
-
-  // @Prop({ default: 0 })
-  // timeout?: number;
-
   @Prop({ default: 0 })
   workHour?: number;
 

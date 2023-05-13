@@ -318,7 +318,7 @@ export class AttendanceService {
           attendanceId: attendance?._id.toString(),
           todayOvertime,
           // FIXME:
-          timeout: 72300,
+          timeout: 74100,
           attendance,
           toDate,
         });
@@ -328,8 +328,10 @@ export class AttendanceService {
       const created: any = await this.create({
         user,
         project,
-        timein: time,
-        timeinShifts: time,
+        // FIXME:
+        timein: 28500,
+        timeinShifts: 28500,
+        // timeinShifts: time,
       });
 
       return created;
@@ -900,52 +902,6 @@ export class AttendanceService {
 
         return res.status(200).json(networks);
       });
-
-      // const networkInterfaces = await si.wifiInterfaces();
-      // console.log(networkInterfaces);
-      // const network = await si.wifiNetworks(networkInterfaces);
-      // console.log(network, 8);
-
-      // const wifiInterface = networkInterfaces.find((intf) =>
-      //   intf.ifaceName.startsWith('anpi0'),
-      // );
-      // console.log(wifiInterface);
-
-      // if (wifiInterface) {
-      //   const wifiNetworks = await si.networkScan(wifiInterface.ifaceName);
-      //   console.log('Available WiFi Networks:', wifiNetworks);
-      // } else {
-      //   console.log('No WiFi interface found');
-      // }
-
-      //  Initialize wifi-control package with verbose output
-      // wifi.init({
-      //   iface: null, // network interface, choose a random wifi interface if set to null
-      // });
-
-      // // Scan networks
-      // wifi.scan((error, networks) => {
-      //   if (error) {
-      //     console.log(error);
-      //   } else {
-      //     console.log(networks);
-      //     res.status(200).json(networks);
-      //   }
-      // });
-      // var settings = {
-      //   debug: true || false,
-      //   iface: 'wlan0',
-      //   connectionTimeout: 10000, // in ms
-      // };
-      // WiFiControl.configure(settings);
-      // // and/or WiFiControl.init( settings );
-      // WiFiControl.scanForWiFi(function (err, response) {
-      //   if (err) console.log(err);
-      //   if (response.networks) {
-      //     console.log(response.networks);
-      //     res.status(200).json(response.networks);
-      //   }
-      // });
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);
@@ -954,6 +910,21 @@ export class AttendanceService {
 
   findOne(id: string) {
     return this.model.findById(id).lean();
+  }
+
+  async manually(createAttendanceDto: CreateAttendanceDto) {
+    try {
+      if (createAttendanceDto.overtime) {
+        //update over
+      }
+
+      // create
+      console.log(createAttendanceDto);
+      return true;
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException(error);
+    }
   }
 
   async isModelExists(id, isOptional = false, msg = '') {

@@ -31,6 +31,11 @@ export class AttendanceController {
     return this.attendanceService.createOrUpdate(updateAttendanceDto);
   }
 
+  @Post('manually')
+  manually(@Body() createAttendanceDto: CreateAttendanceDto) {
+    return this.attendanceService.manually(createAttendanceDto);
+  }
+
   @Post()
   create(@Body() createAttendanceDto: CreateAttendanceDto) {
     return this.attendanceService.create(createAttendanceDto);

@@ -967,6 +967,7 @@ export class UserService {
                           year: '$year',
                           timeinShifts: '$timeinShifts',
                           timeoutShifts: '$timeoutShifts',
+                          workHour: '$workHour',
                           workhourOvertime: '$overtime.workhour',
                           type: '$overtime.type',
                         },
@@ -991,43 +992,44 @@ export class UserService {
                   year: '$adjustedGrades.year',
                 },
                 workhour: {
-                  $sum: {
-                    $cond: {
-                      if: {
-                        $and: [
-                          {
-                            $lt: [
-                              '$adjustedGrades.timeinShifts',
-                              rule.lunchOut,
-                            ],
-                          },
-                          {
-                            $gt: [
-                              '$adjustedGrades.timeoutShifts',
-                              rule.lunchIn,
-                            ],
-                          },
-                        ],
-                      },
-                      then: {
-                        $subtract: [
-                          {
-                            $subtract: [
-                              '$adjustedGrades.timeoutShifts',
-                              '$adjustedGrades.timeinShifts',
-                            ],
-                          },
-                          lunch,
-                        ],
-                      },
-                      else: {
-                        $subtract: [
-                          '$adjustedGrades.timeoutShifts',
-                          '$adjustedGrades.timeinShifts',
-                        ],
-                      },
-                    },
-                  },
+                  // $sum: {
+                  //   $cond: {
+                  //     if: {
+                  //       $and: [
+                  //         {
+                  //           $lt: [
+                  //             '$adjustedGrades.timeinShifts',
+                  //             rule.lunchOut,
+                  //           ],
+                  //         },
+                  //         {
+                  //           $gt: [
+                  //             '$adjustedGrades.timeoutShifts',
+                  //             rule.lunchIn,
+                  //           ],
+                  //         },
+                  //       ],
+                  //     },
+                  //     then: {
+                  //       $subtract: [
+                  //         {
+                  //           $subtract: [
+                  //             '$adjustedGrades.timeoutShifts',
+                  //             '$adjustedGrades.timeinShifts',
+                  //           ],
+                  //         },
+                  //         lunch,
+                  //       ],
+                  //     },
+                  //     else: {
+                  //       $subtract: [
+                  //         '$adjustedGrades.timeoutShifts',
+                  //         '$adjustedGrades.timeinShifts',
+                  //       ],
+                  //     },
+                  //   },
+                  // },
+                  $sum: '$adjustedGrades.workHour',
                 },
                 workhourObligatory: {
                   $sum: '$adjustedGrades.workhourOvertime',
@@ -1102,6 +1104,29 @@ export class UserService {
                     else: false,
                   },
                 },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  date: '$date',
+                  month: '$month',
+                  year: '$year',
+                  workhour: '$workhour',
+                  workhourObligatory: '$workhourObligatory',
+                  status: '$status',
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                date: '$_id.date',
+                month: '$_id.month',
+                year: '$_id.year',
+                workhour: '$_id.workhour',
+                workhourObligatory: '$_id.workhourObligatory',
+                status: '$_id.status',
               },
             },
             {

@@ -1832,16 +1832,39 @@ export class UserService {
             ],
           },
           receive_real: {
-            $subtract: [
-              {
+            $cond: {
+              if: {
+                $gte: [
+                  {
+                    $add: [
+                      { $multiply: ['$workOvertime', '$salary.salary'] },
+                      { $multiply: ['$workMain', '$salary.salary'] },
+                      '$allowance',
+                    ],
+                  },
+                  { $add: ['$insurance'] },
+                ],
+              },
+              then: {
+                $subtract: [
+                  {
+                    $add: [
+                      { $multiply: ['$workOvertime', '$salary.salary'] },
+                      { $multiply: ['$workMain', '$salary.salary'] },
+                      '$allowance',
+                    ],
+                  },
+                  { $add: ['$insurance'] },
+                ],
+              },
+              else: {
                 $add: [
                   { $multiply: ['$workOvertime', '$salary.salary'] },
                   { $multiply: ['$workMain', '$salary.salary'] },
                   '$allowance',
                 ],
               },
-              { $add: ['$insurance'] },
-            ],
+            },
           },
         },
       },

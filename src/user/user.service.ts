@@ -1526,6 +1526,8 @@ export class UserService {
             salary: '$salary',
             payslip: '$payslipEX',
             contract: '$contract._id',
+            joinprojectId: '$joinprojects._id',
+            premiumsInsurance: '$joinprojects.premiumsInsurance',
           },
         },
       },
@@ -1541,6 +1543,8 @@ export class UserService {
           salary: '$_id.salary',
           payslip: '$_id.payslip',
           contract: '$_id.contract',
+          joinprojectId: '$_id.joinprojectId',
+          premiumsInsurance: '$_id.premiumsInsurance',
         },
       },
       {

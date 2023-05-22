@@ -24,6 +24,9 @@ export class JoinProject {
 
   @Prop({ default: true })
   status: Boolean;
+
+  @Prop({ default: true })
+  premiumsInsurance: Boolean;
 }
 
 export const JoinProjectSchema = SchemaFactory.createForClass(JoinProject);

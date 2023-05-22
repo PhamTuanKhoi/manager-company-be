@@ -19,4 +19,12 @@ export class JoinProjectController {
   create(@Body() createJoinProjectDto: CreateJoinProjectDto) {
     return this.joinProjectService.create(createJoinProjectDto);
   }
+
+  @Patch('premiums-insurance/:id')
+  premiumsInsurance(
+    @Param('id') id: string,
+    @Body() payload: { premiums: string },
+  ) {
+    return this.joinProjectService.premiumsInsurance(id, payload);
+  }
 }

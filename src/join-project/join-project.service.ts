@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   forwardRef,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Logger,
@@ -38,6 +40,33 @@ export class JoinProjectService {
       this.logger.log(`created a new join-project by id#${created?._id}`);
 
       return created;
+    } catch (error) {
+      this.logger.error(error?.message, error.stack);
+      throw new BadRequestException(error?.message);
+    }
+  }
+
+  async premiumsInsurance(id, payload: { premiums: string }) {
+    try {
+      const join = await this.model.findById(id).lean();
+
+      if (!join)
+        throw new HttpException(
+          `joinproject not found -> id`,
+          HttpStatus.NOT_FOUND,
+        );
+
+      const updated = await this.model.findByIdAndUpdate(
+        id,
+        { premiumsInsurance: payload.premiums },
+        { new: true },
+      );
+
+      this.logger.log(
+        `updated a premiumsInsurance to ${updated?.premiumsInsurance} by id#${updated?._id}`,
+      );
+
+      return updated;
     } catch (error) {
       this.logger.error(error?.message, error.stack);
       throw new BadRequestException(error?.message);

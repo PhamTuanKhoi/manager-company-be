@@ -33,9 +33,11 @@ export class MessageGateway
   async getUserId(socket: Socket) {
     const jwt = socket.handshake.query.token ?? null;
 
-    const { sub } = await this.authService.getUserFromHeader(jwt as string);
+    if (jwt && jwt !== null) {
+      const { sub } = await this.authService.getUserFromHeader(jwt as string);
 
-    return sub;
+      return sub;
+    }
   }
 
   async handleConnection(socket: Socket, ...args: any[]) {
@@ -56,46 +58,24 @@ export class MessageGateway
     }
   }
 
-  @SubscribeMessage('inforUser')
-  infor(
-    @MessageBody() payload: { userid: string; socketid: string },
-    @ConnectedSocket() client: Socket,
-  ) {
-    const infor = {
-      userid: payload.userid,
-      socketid: client.id,
-    };
-
-    // console.log({ infor });
-
-    return this.messageService.createInfor(infor);
-  }
-
   @SubscribeMessage('createMessage')
   async create(
     @MessageBody() createMessageDto: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const data = await this.messageService.create(createMessageDto);
+    const from = await this.redisCache.get(createMessageDto.from);
+    const to = await this.redisCache.get(createMessageDto.to);
 
-    this.server.to(data?.to).emit(`message`, createMessageDto);
-    this.server.to(client?.id).emit(`message`, createMessageDto);
+    this.server.to(from as string).emit(`message`, createMessageDto);
+    this.server.to(to as string).emit(`message`, createMessageDto);
 
-    return;
+    //  save
+    await this.messageService.create(createMessageDto);
   }
 
-  @SubscribeMessage('findOneMessage')
-  findOne(@MessageBody() id: number) {
-    return this.messageService.findOne(id);
-  }
-
-  @SubscribeMessage('updateMessage')
-  update(@MessageBody() updateMessageDto: UpdateMessageDto) {
-    return this.messageService.update(updateMessageDto.id, updateMessageDto);
-  }
-
-  @SubscribeMessage('removeMessage')
-  remove(@MessageBody() id: number) {
-    return this.messageService.remove(id);
+  @SubscribeMessage('del-key')
+  async deleteKey(@MessageBody() body: { userId: string }) {
+    await this.redisCache.del(body.userId);
+    this.logger.debug(`del user key#${body.userId}`);
   }
 }

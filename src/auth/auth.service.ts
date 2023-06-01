@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   HttpException,
   HttpStatus,
@@ -84,5 +85,15 @@ export class AuthService {
     const user = await this.userService.findOne(_id);
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     return user;
+  }
+
+  async getUserFromHeader(jwt: string) {
+    if (!jwt) return;
+
+    try {
+      return this.jwtService.decode(jwt);
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
 }

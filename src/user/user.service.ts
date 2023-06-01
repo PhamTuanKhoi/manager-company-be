@@ -1734,6 +1734,30 @@ export class UserService {
       {
         $unwind: '$payslip',
       },
+      // additional join project
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$project', { $toObjectId: project }],
+                },
+              },
+            },
+          ],
+          as: 'joinproject',
+        },
+      },
+      {
+        $unwind: {
+          path: '$joinproject',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $project: {
           name: '$name',
@@ -1741,6 +1765,8 @@ export class UserService {
           field: '$field',
           salary: '$salary',
           salary_paid_social: '$payslip.salary_paid_social',
+          joinprojectId: '$joinproject._id',
+          premiumsInsurance: '$joinproject.premiumsInsurance',
           workOvertime: {
             // calculation work day
             $divide: [
@@ -1813,6 +1839,8 @@ export class UserService {
           email: '$email',
           field: '$field',
           workOvertime: '$workOvertime',
+          joinprojectId: '$joinprojectId',
+          premiumsInsurance: '$premiumsInsurance',
           workMain: '$workMain',
           allowance: '$allowance',
           salary: '$salary.salary',
@@ -1838,16 +1866,7 @@ export class UserService {
           receive_real: {
             $cond: {
               if: {
-                $gte: [
-                  {
-                    $add: [
-                      { $multiply: ['$workOvertime', '$salary.salary'] },
-                      { $multiply: ['$workMain', '$salary.salary'] },
-                      '$allowance',
-                    ],
-                  },
-                  { $add: ['$insurance'] },
-                ],
+                $eq: ['$premiumsInsurance', true],
               },
               then: {
                 $subtract: [

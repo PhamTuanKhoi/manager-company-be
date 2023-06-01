@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  CacheModule,
+  CacheModuleAsyncOptions,
+  CACHE_MANAGER,
+  Module,
+} from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -23,6 +28,7 @@ import { ContractModule } from './contract/contract.module';
 import { OvertimeModule } from './overtime/overtime.module';
 import { DepartmentModule } from './department/department.module';
 import { BullModule } from '@nestjs/bull';
+import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [
@@ -36,6 +42,15 @@ import { BullModule } from '@nestjs/bull';
           port: +configService.get<string>('REDIS_PORT'),
           password: configService.get<string>('REDIS_PASSWORD'),
         },
+      }),
+      inject: [ConfigService],
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true, // use full system
+      useFactory: async (configService: ConfigService) => ({
+        store: await redisStore({
+          url: configService.get('REDIS_URI'),
+        }),
       }),
       inject: [ConfigService],
     }),

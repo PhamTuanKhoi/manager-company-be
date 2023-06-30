@@ -2226,10 +2226,8 @@ export class UserService {
     }
   }
 
-  async newWorker(createWorkerDto: CreateWorkerDto) {
-    try {
-      await this.isModelExist(createWorkerDto.creator);
-
+  async validateCreateWorker(createWorkerDto: CreateWorkerDto) {
+    if (createWorkerDto.email) {
       const emailsake = await this.findByEmail(createWorkerDto.email);
 
       if (emailsake)
@@ -2237,37 +2235,65 @@ export class UserService {
           'email đã đăng ký trướt đó!',
           HttpStatus.BAD_REQUEST,
         );
+    }
 
-      const cccdsake = await this.findByCccd(createWorkerDto.cccd);
+    const cccdsake = await this.findByCccd(createWorkerDto.cccd);
 
-      if (cccdsake)
-        throw new HttpException(
-          'căn cước công dân đã đăng ký trướt đó!',
-          HttpStatus.BAD_REQUEST,
-        );
+    if (cccdsake)
+      throw new HttpException(
+        'căn cước công dân đã đăng ký trướt đó!',
+        HttpStatus.BAD_REQUEST,
+      );
 
-      const phonesake = await this.findByPhone(createWorkerDto.mobile);
+    const phonesake = await this.findByPhone(createWorkerDto.mobile);
 
-      if (phonesake)
-        throw new HttpException(
-          'số điện thoại đã đăng ký trướt đó!',
-          HttpStatus.BAD_REQUEST,
-        );
+    if (phonesake)
+      throw new HttpException(
+        'số điện thoại đã đăng ký trướt đó!',
+        HttpStatus.BAD_REQUEST,
+      );
 
-      if (createWorkerDto.password !== createWorkerDto.confirmPasword)
-        throw new HttpException(
-          'password already exists',
-          HttpStatus.BAD_REQUEST,
-        );
+    if (createWorkerDto.password !== createWorkerDto.confirmPasword)
+      throw new HttpException(
+        'password already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+  }
+
+  async generateCode() {
+    const codeBiggest = await this.model
+      .find({ role: UserRoleEnum.WORKER })
+      .sort({ code: 1 });
+
+    let code = 1;
+    if (codeBiggest.length > 0 && codeBiggest) {
+      code = +codeBiggest[codeBiggest.length - 1].code + 1;
+    }
+
+    return code;
+  }
+
+  async newWorker(createWorkerDto: CreateWorkerDto) {
+    try {
+      // validation
+      await this.isModelExist(createWorkerDto.creator);
+      await this.validateCreateWorker(createWorkerDto);
+
+      const code = await this.generateCode();
 
       createWorkerDto.password = await bcrypt.hash(
         createWorkerDto.password,
         10,
       );
 
+      Object.keys(createWorkerDto).map(
+        (field) => !createWorkerDto[field] && delete createWorkerDto[field],
+      );
+
       const created = await this.model.create({
         ...createWorkerDto,
         role: UserRoleEnum.WORKER,
+        code,
       });
 
       this.logger.log(`created new worker by id#${created?._id}`);
@@ -2378,13 +2404,10 @@ export class UserService {
 
   async registerUser(registerUserDto: CreateWorkerDto) {
     try {
-      const emailsake = await this.findByEmail(registerUserDto.email);
+      // validate
+      await this.validateCreateWorker(registerUserDto);
 
-      if (emailsake)
-        throw new HttpException('email already exists', HttpStatus.BAD_REQUEST);
-
-      if (registerUserDto.password !== registerUserDto.confirmPasword)
-        throw new HttpException('Mật khẩu không đúng', HttpStatus.BAD_REQUEST);
+      const code = await this.generateCode();
 
       registerUserDto.password = await bcrypt.hash(
         registerUserDto.password,
@@ -2394,6 +2417,7 @@ export class UserService {
       const created = await this.model.create({
         ...registerUserDto,
         role: UserRoleEnum.WORKER,
+        code,
       });
 
       this.logger.log(`Register user success`, created?._id);

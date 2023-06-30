@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Department } from 'src/department/schema/department.schema';
-import { EmployeeDepartmentEnum } from '../interfaces/department-employess.enum';
 import { UserGenderEnum } from '../interfaces/gender-enum';
 import { UserRoleEnum } from '../interfaces/role-user.enum';
 import { UserStatusEnum } from '../interfaces/status-enum';
@@ -12,6 +11,9 @@ export type UserDocument = HydratedDocument<User>;
   timestamps: true,
 })
 export class User {
+  @Prop({ unique: true })
+  code: number;
+
   @Prop()
   username: string;
 

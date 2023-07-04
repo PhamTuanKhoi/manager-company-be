@@ -22,6 +22,11 @@ export class ProjectController {
     return this.projectService.findAll();
   }
 
+  @Get('list')
+  findAllByRole() {
+    return this.projectService.list();
+  }
+
   @Get('all')
   findByAllLevel(@Query() queryProjectDto: QueryProjectDto) {
     return this.projectService.findByAllLevel(queryProjectDto);

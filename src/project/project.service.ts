@@ -83,6 +83,10 @@ export class ProjectService {
     ]);
   }
 
+  async list() {
+    return this.model.find();
+  }
+
   async findByAllLevel(queryProjectDto: QueryProjectDto) {
     const attendanceToDay = [
       {

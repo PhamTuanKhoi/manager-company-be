@@ -56,6 +56,11 @@ export class UserController {
     return this.userService.findAllWorkerExcellent();
   }
 
+  @Get('by-project')
+  findWorkerByProjectId(@Query() query: { projectId: string }) {
+    return this.userService.findWorkerByProjectId(query);
+  }
+
   @Get('not-assign-part/:id')
   notAssignPart(@Param('id') id: string) {
     return this.userService.notAssignPart(id);

@@ -8,7 +8,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import { CreateUserDto } from './dto/create-dto/create-user.dto';
 import { RegisterUserDto } from './dto/create-dto/register-user.dto';
 import { UserRoleEnum } from './interfaces/role-user.enum';
@@ -189,6 +189,51 @@ export class UserService {
         },
       },
     ]);
+  }
+
+  async findWorkerByProjectId(query: { projectId: string }) {
+    let pipe: Exclude<
+      PipelineStage,
+      PipelineStage.Merge | PipelineStage.Out
+    >[] = [];
+
+    let pipeline: PipelineStage[] = [
+      {
+        $match: {
+          role: UserRoleEnum.WORKER,
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          pipeline: pipe,
+          as: 'joinprojects',
+        },
+      },
+    ];
+
+    if (query.projectId) {
+      pipeline = [
+        ...pipeline,
+        {
+          $match: {
+            $expr: {
+              $gt: [{ $size: '$joinprojects' }, 0],
+            },
+          },
+        },
+      ];
+      pipe.push({
+        $match: {
+          $expr: {
+            $eq: ['$project', { $toObjectId: query.projectId }],
+          },
+        },
+      });
+    }
+    return this.model.aggregate(pipeline);
   }
 
   async notAssignPart(id: string) {

@@ -84,7 +84,7 @@ export class ProjectService {
   }
 
   async list() {
-    return this.model.find();
+    return this.model.find({ deleted: false });
   }
 
   async findByAllLevel(queryProjectDto: QueryProjectDto) {

@@ -1,9 +1,10 @@
-import { Prop } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 import { Project } from 'src/project/schema/project.schema';
 
+export type ContractCategoryDocument = HydratedDocument<ContractCategory>;
 export class ContractCategory {
-  @Prop()
+  @Prop({ required: true })
   name: string;
 
   @Prop()
@@ -12,6 +13,13 @@ export class ContractCategory {
   @Prop()
   endDate: number;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Project.name })
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Project.name,
+    required: true,
+  })
   project: Project;
 }
+
+export const ContractCategorySchema =
+  SchemaFactory.createForClass(ContractCategory);

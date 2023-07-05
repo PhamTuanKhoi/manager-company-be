@@ -1,26 +1,105 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { ProjectService } from 'src/project/project.service';
 import { CreateContractCategoryDto } from './dto/create-contract-category.dto';
 import { UpdateContractCategoryDto } from './dto/update-contract-category.dto';
+import { ContractCategory } from './schema/contract-category.entity';
 
 @Injectable()
 export class ContractCategoryService {
-  create(createContractCategoryDto: CreateContractCategoryDto) {
-    return 'This action adds a new contractCategory';
+  private readonly logger = new Logger(ContractCategoryService.name);
+  constructor(
+    @InjectModel(ContractCategory.name)
+    private model: Model<ContractCategory>,
+    private readonly projectService: ProjectService,
+  ) {}
+
+  async create(createContractCategoryDto: CreateContractCategoryDto) {
+    try {
+      await this.projectService.isModelExist(createContractCategoryDto.project);
+      await this.validation(createContractCategoryDto);
+
+      const created = await this.model.create(createContractCategoryDto);
+      this.logger.log(`created a new contract-category by id#${created?._id}`);
+      return created;
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException();
+    }
+  }
+
+  async validation(updateContractCategoryDto: UpdateContractCategoryDto) {
+    const { startDate, endDate } = updateContractCategoryDto;
+
+    if (startDate && endDate)
+      if (startDate < endDate)
+        throw new HttpException(
+          `The closing date must be greater than the signing date`,
+          HttpStatus.BAD_REQUEST,
+        );
+
+    Object.keys(updateContractCategoryDto).map(
+      (key) =>
+        updateContractCategoryDto[key] === '' &&
+        delete updateContractCategoryDto[key],
+    );
   }
 
   findAll() {
-    return `This action returns all contractCategory`;
+    return this.model.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contractCategory`;
+  findOne(id: string) {
+    return this.model.findById(id).lean();
   }
 
-  update(id: number, updateContractCategoryDto: UpdateContractCategoryDto) {
-    return `This action updates a #${id} contractCategory`;
+  async update(
+    id: string,
+    updateContractCategoryDto: UpdateContractCategoryDto,
+  ) {
+    try {
+      await this.isModelExist(id);
+      await this.validation(updateContractCategoryDto);
+
+      const updated = await this.model.findByIdAndUpdate(
+        id,
+        updateContractCategoryDto,
+        { new: true },
+      );
+      this.logger.log(`updated a contract-category by id#${updated?._id}`);
+      return updated;
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException();
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} contractCategory`;
+  async remove(id: string) {
+    try {
+      await this.isModelExist(id);
+
+      const deleted = await this.model.findByIdAndDelete(id);
+      this.logger.log(`deleted a contract-category by id#${deleted?._id}`);
+      return deleted;
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException();
+    }
+  }
+
+  async isModelExist(id, isOptional = false, msg = '') {
+    if (isOptional && !id) return;
+    const errorMessage = msg || `id-> ${ContractCategory.name} not found`;
+    const isExist = await this.findOne(id);
+
+    if (!isExist) throw new Error(errorMessage);
+    return isExist;
   }
 }

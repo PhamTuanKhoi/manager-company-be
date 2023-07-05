@@ -1,9 +1,4 @@
-import {
-  CacheModule,
-  CacheModuleAsyncOptions,
-  CACHE_MANAGER,
-  Module,
-} from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -29,6 +24,7 @@ import { OvertimeModule } from './overtime/overtime.module';
 import { DepartmentModule } from './department/department.module';
 import { BullModule } from '@nestjs/bull';
 import { redisStore } from 'cache-manager-redis-yet';
+import { ContractCategoryModule } from './contract-category/contract-category.module';
 
 @Module({
   imports: [
@@ -73,6 +69,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     ContractModule,
     OvertimeModule,
     DepartmentModule,
+    ContractCategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

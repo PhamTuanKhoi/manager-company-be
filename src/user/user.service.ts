@@ -646,6 +646,52 @@ export class UserService {
     ]);
   }
 
+  async findClientByProjectId(id: string) {
+    const query = await this.model.aggregate([
+      {
+        $match: {
+          role: UserRoleEnum.CLIENT,
+        },
+      },
+      {
+        $lookup: {
+          from: 'joinprojects',
+          localField: '_id',
+          foreignField: 'joinor',
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$project', { $toObjectId: id }],
+                },
+              },
+            },
+          ],
+          as: 'joinprojects',
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $gt: [{ $size: '$joinprojects' }, 0],
+          },
+        },
+      },
+      {
+        $project: {
+          email: '$email',
+          name: '$name',
+          mobile: '$mobile',
+          company: '$company',
+          field: '$field',
+          tax: '$tax',
+        },
+      },
+    ]);
+
+    return query.length > 0 ? query[0] : [];
+  }
+
   findAllClient() {
     return this.model
       .find({ role: UserRoleEnum.CLIENT })

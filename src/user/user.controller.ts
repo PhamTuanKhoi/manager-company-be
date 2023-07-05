@@ -76,6 +76,11 @@ export class UserController {
     return this.userService.findAllClientByEmployees(id);
   }
 
+  @Get('client/project/:id')
+  findClientByProjectId(@Param('id') id: string) {
+    return this.userService.findClientByProjectId(id);
+  }
+
   @Get('client')
   findAllClient() {
     return this.userService.findAllClient();

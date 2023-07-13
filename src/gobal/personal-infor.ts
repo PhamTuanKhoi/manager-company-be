@@ -19,9 +19,9 @@ export class PersonalInfor {
   @IsString()
   mobile: string;
 
-  @IsOptional()
-  @IsString()
-  avartar: string;
+  // @IsOptional()
+  // @IsString()
+  // avartar: string;
 
   @IsString()
   @IsOptional()

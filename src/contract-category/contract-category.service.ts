@@ -10,7 +10,7 @@ import { Model } from 'mongoose';
 import { ProjectService } from 'src/project/project.service';
 import { CreateContractCategoryDto } from './dto/create-contract-category.dto';
 import { UpdateContractCategoryDto } from './dto/update-contract-category.dto';
-import { ContractCategory } from './schema/contract-category.entity';
+import { ContractCategory } from './schema/contract-category.schema';
 
 @Injectable()
 export class ContractCategoryService {
@@ -31,32 +31,48 @@ export class ContractCategoryService {
       return created;
     } catch (error) {
       this.logger.error(error?.message, error?.stack);
-      throw new BadRequestException();
+      throw new BadRequestException(error);
     }
   }
 
   async validation(updateContractCategoryDto: UpdateContractCategoryDto) {
     const { startDate, endDate } = updateContractCategoryDto;
 
-    if (startDate && endDate)
-      if (startDate < endDate)
+    if (startDate && endDate) {
+      if (startDate > endDate)
         throw new HttpException(
           `The closing date must be greater than the signing date`,
           HttpStatus.BAD_REQUEST,
         );
+    }
 
     Object.keys(updateContractCategoryDto).map(
       (key) =>
-        updateContractCategoryDto[key] === '' &&
+        !updateContractCategoryDto[key] &&
         delete updateContractCategoryDto[key],
     );
   }
 
   findAll() {
-    return this.model.find();
+    return this.model.aggregate([
+      {
+        $lookup: {
+          from: 'projects',
+          localField: 'project',
+          foreignField: '_id',
+          as: 'project',
+        },
+      },
+      {
+        $unwind: {
+          path: '$project',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ]);
   }
 
-  findOne(id: string) {
+  findById(id: string) {
     return this.model.findById(id).lean();
   }
 
@@ -97,7 +113,7 @@ export class ContractCategoryService {
   async isModelExist(id, isOptional = false, msg = '') {
     if (isOptional && !id) return;
     const errorMessage = msg || `id-> ${ContractCategory.name} not found`;
-    const isExist = await this.findOne(id);
+    const isExist = await this.findById(id);
 
     if (!isExist) throw new Error(errorMessage);
     return isExist;

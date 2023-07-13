@@ -28,8 +28,8 @@ export class ContractCategoryController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contractCategoryService.findOne(id);
+  findById(@Param('id') id: string) {
+    return this.contractCategoryService.findById(id);
   }
 
   @Patch(':id')

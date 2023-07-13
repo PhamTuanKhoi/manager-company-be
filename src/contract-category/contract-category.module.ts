@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   ContractCategory,
   ContractCategorySchema,
-} from './schema/contract-category.entity';
+} from './schema/contract-category.schema';
 import { ProjectModule } from 'src/project/project.module';
 
 @Module({

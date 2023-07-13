@@ -25,6 +25,7 @@ import { DepartmentModule } from './department/department.module';
 import { BullModule } from '@nestjs/bull';
 import { redisStore } from 'cache-manager-redis-yet';
 import { ContractCategoryModule } from './contract-category/contract-category.module';
+import { ContractDetailModule } from './contract-detail/contract-detail.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { ContractCategoryModule } from './contract-category/contract-category.mo
     OvertimeModule,
     DepartmentModule,
     ContractCategoryModule,
+    ContractDetailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

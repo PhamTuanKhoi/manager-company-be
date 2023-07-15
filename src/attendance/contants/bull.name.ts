@@ -1,1 +1,2 @@
 export const BULLL_NAME: string = 'ATTENDANCE';
+export const BULLL_NAME_CONTRACT_DETAIL: string = 'BULLL_NAME_CONTRACT_DETAIL';

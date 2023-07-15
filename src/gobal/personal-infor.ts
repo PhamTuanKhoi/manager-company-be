@@ -9,7 +9,7 @@ import {
 export class PersonalInfor {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  name?: string;
 
   @IsOptional()
   @IsString()
@@ -17,33 +17,33 @@ export class PersonalInfor {
 
   @IsNotEmpty()
   @IsString()
-  mobile: string;
+  mobile?: string;
+
+  @IsOptional()
+  @IsString()
+  cccd?: string;
+
+  @IsOptional()
+  @IsNumber()
+  date?: number;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  token?: string;
+
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @IsOptional()
+  @IsString()
+  avatar?: string;
 
   // @IsOptional()
   // @IsString()
   // avartar: string;
-
-  @IsString()
-  @IsOptional()
-  cccd: string;
-
-  @IsNumber()
-  @IsOptional()
-  date: number;
-
-  @IsString()
-  @IsOptional()
-  address: string;
-
-  @IsOptional()
-  @IsString()
-  token: string;
-
-  @IsOptional()
-  @IsString()
-  gender: string;
-
-  @IsOptional()
-  @IsString()
-  avatar: string;
 }

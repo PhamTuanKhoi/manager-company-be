@@ -4,5 +4,5 @@ import { CreateWorkerDto } from '../create-dto/create-worker.dto';
 
 export class UpdateWorkerDto extends PartialType(CreateWorkerDto) {
   @IsOptional()
-  oldEmail: string;
+  oldEmail?: string;
 }

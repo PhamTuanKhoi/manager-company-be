@@ -4,5 +4,5 @@ import { CreateClientDto } from '../create-dto/create-client.dto';
 
 export class UpdateClientDto extends PartialType(CreateClientDto) {
   @IsOptional()
-  oldEmail: string;
+  oldEmail?: string;
 }

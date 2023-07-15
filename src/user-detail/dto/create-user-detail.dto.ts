@@ -1,23 +1,25 @@
 import { Type } from 'class-transformer';
-import { IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateUserDetailDto {
+  @IsNotEmpty()
   @IsString()
-  nationnality: string;
+  nationality: string;
 
+  // @IsNotEmpty()
   @IsString()
-  bornAt: string;
+  bornAt?: string;
 
+  // @IsNotEmpty()
   @IsString()
-  resident: string;
+  resident?: string;
 
+  @IsNotEmpty()
   @Type(() => Number)
   @IsNumber()
-  dateCccd: number;
+  dateCccd?: number;
 
+  // @IsNotEmpty()
   @IsString()
-  cccdAt: string;
-
-  @IsString()
-  userId: string;
+  cccdAt?: string;
 }

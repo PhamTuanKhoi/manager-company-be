@@ -1,8 +1,9 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { CreateUserDetailDto } from 'src/user-detail/dto/create-user-detail.dto';
 
-export class CombinedWorkerAndUserDto extends CreateUserDetailDto {
+export class CombinedWorkerAndUserDto extends PartialType(CreateUserDetailDto) {
   @IsNotEmpty()
   @IsString()
   _id: string;
@@ -21,9 +22,8 @@ export class CombinedWorkerAndUserDto extends CreateUserDetailDto {
   address: string;
 
   @IsNotEmpty()
-  @Type(() => Number)
-  @IsNumber()
-  cccd: number;
+  @IsString()
+  cccd: string;
 
   @IsNotEmpty()
   @IsString()

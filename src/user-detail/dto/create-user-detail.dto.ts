@@ -22,4 +22,8 @@ export class CreateUserDetailDto {
   // @IsNotEmpty()
   @IsString()
   cccdAt?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  user: string;
 }

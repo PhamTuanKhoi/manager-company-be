@@ -10,10 +10,16 @@ export type ContractDetailDocument = HydratedDocument<ContractDetail>;
 })
 export class ContractDetail {
   @Prop()
+  code: number;
+
+  @Prop()
   base: string;
 
   @Prop()
   date: number;
+
+  @Prop()
+  at: string;
 
   @Prop()
   rules: string;
@@ -26,6 +32,9 @@ export class ContractDetail {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: ContractCategory.name })
   contractCategory: ContractCategory;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  creator: User;
 }
 export const ContractDetailSchema =
   SchemaFactory.createForClass(ContractDetail);

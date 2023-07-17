@@ -9,6 +9,7 @@ import {
 import { CreateUserDetailDto } from 'src/user-detail/dto/create-user-detail.dto';
 import { CreateClientDto } from 'src/user/dto/create-dto/create-client.dto';
 import { CreateWorkerDto } from 'src/user/dto/create-dto/create-worker.dto';
+import { CombinedClientAndUserDto } from './combine-client-userdetail.dto';
 import { CombinedWorkerAndUserDto } from './combine-worker-userdetail.dto';
 
 type CreateWorkerDtoCustom = Omit<
@@ -37,12 +38,12 @@ export class CreateContractDetailDto {
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => CreateClientDto)
-  client: { nationality: string } & CreateClientDto;
+  client: CombinedClientAndUserDto;
 
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => CombinedWorkerAndUserDto)
-  worker: CreateWorkerDtoCustom & CreateUserDetailDto;
+  worker: CombinedWorkerAndUserDto;
 
   @IsNotEmpty()
   @IsString()

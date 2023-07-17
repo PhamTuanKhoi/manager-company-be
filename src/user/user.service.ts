@@ -2548,15 +2548,16 @@ export class UserService {
 
   async updateClient(id: string, updateClientDto: UpdateClientDto) {
     try {
-      if (updateClientDto.email !== updateClientDto.oldEmail) {
-        const emailsake = await this.findByEmail(updateClientDto.email);
+      if (updateClientDto.email && updateClientDto.oldEmail)
+        if (updateClientDto.email !== updateClientDto.oldEmail) {
+          const emailsake = await this.findByEmail(updateClientDto.email);
 
-        if (emailsake)
-          throw new HttpException(
-            'email already exists',
-            HttpStatus.BAD_REQUEST,
-          );
-      }
+          if (emailsake)
+            throw new HttpException(
+              'email already exists',
+              HttpStatus.BAD_REQUEST,
+            );
+        }
 
       await this.isModelExist(id);
 
@@ -2575,15 +2576,16 @@ export class UserService {
 
   async updateWorker(id: string, updateWorkerDto: UpdateWorkerDto) {
     try {
-      if (updateWorkerDto.email !== updateWorkerDto.oldEmail) {
-        const emailsake = await this.findByEmail(updateWorkerDto.email);
+      if (updateWorkerDto.email && updateWorkerDto.oldEmail)
+        if (updateWorkerDto.email !== updateWorkerDto.oldEmail) {
+          const emailsake = await this.findByEmail(updateWorkerDto.email);
 
-        if (emailsake)
-          throw new HttpException(
-            'email already exists',
-            HttpStatus.BAD_REQUEST,
-          );
-      }
+          if (emailsake)
+            throw new HttpException(
+              'email already exists',
+              HttpStatus.BAD_REQUEST,
+            );
+        }
 
       await this.isModelExist(id);
 

@@ -1,43 +1,66 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDetailDto } from 'src/user-detail/dto/create-user-detail.dto';
-import { CreateClientDto } from 'src/user/dto/create-dto/create-client.dto';
-import { CreateWorkerDto } from 'src/user/dto/create-dto/create-worker.dto';
-import { UpdateClientDto } from 'src/user/dto/update-dto/update-client.dto';
-import { UpdateWorkerDto } from 'src/user/dto/update-dto/update-worker.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Queue } from 'bull';
+import { Model } from 'mongoose';
+import { BULLL_NAME_CONTRACT_DETAIL } from 'src/attendance/contants/bull.name';
+import { UserService } from 'src/user/user.service';
 import { CreateContractDetailDto } from './dto/create-contract-detail.dto';
 import { UpdateContractDetailDto } from './dto/update-contract-detail.dto';
+import { ContractDetail } from './schema/contract-detail.schema';
 
 @Injectable()
 export class ContractDetailService {
+  private readonly logger = new Logger(ContractDetailService.name);
+  constructor(
+    @InjectModel(ContractDetail.name)
+    private readonly model: Model<ContractDetail>,
+    private readonly userService: UserService,
+    @InjectQueue(BULLL_NAME_CONTRACT_DETAIL) private contractDetailQueue: Queue,
+  ) {}
+
+  async findAll() {
+    return this.model.find();
+  }
+
   async create(createContractDetailDto: CreateContractDetailDto) {
-    console.log(createContractDetailDto);
-    const client: UpdateClientDto = createContractDetailDto.client;
-    const clientDetail: CreateUserDetailDto = {
-      ...createContractDetailDto.client,
-    };
+    const { client, worker } = createContractDetailDto;
+    try {
+      // validation
+      await this.userService.isModelExist(client?._id);
+      await this.userService.isModelExist(worker?._id);
 
-    const worker: Omit<UpdateWorkerDto, 'password' | 'confirmPasword'> =
-      createContractDetailDto.worker;
-    const workerDetail: CreateUserDetailDto = {
-      ...createContractDetailDto.worker,
-    };
+      // queue
+      await this.contractDetailQueue.add('update-client', client);
+      await this.contractDetailQueue.add('update-worker', worker);
 
-    // return 'This action adds a new contractDetail';
+      // save contract detail
+      return this.handleCreate(createContractDetailDto);
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException(error);
+    }
   }
 
-  findAll() {
-    return `This action returns all contractDetail`;
-  }
+  async handleCreate(createContractDetailDto: CreateContractDetailDto) {
+    const { client, worker } = createContractDetailDto;
+    try {
+      let code = 1;
+      const ctDs = (await this.findAll()).sort((a, b) => a.code - b.code);
 
-  findOne(id: number) {
-    return `This action returns a #${id} contractDetail`;
-  }
+      if (ctDs.length > 0) code = ctDs[ctDs.length - 1]?.code + 1;
 
-  update(id: number, updateContractDetailDto: UpdateContractDetailDto) {
-    return `This action updates a #${id} contractDetail`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} contractDetail`;
+      const saved = await this.model.create({
+        ...createContractDetailDto,
+        client: client?._id,
+        worker: worker?._id,
+        code,
+      });
+      this.logger.log(`created a new contract-detail by id#${saved?._id}`);
+      return saved;
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException(error);
+    }
   }
 }

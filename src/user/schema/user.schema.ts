@@ -61,6 +61,9 @@ export class User {
   @Prop()
   tax: string;
 
+  @Prop()
+  position: string;
+
   //worker
   @Prop()
   gender: UserGenderEnum;

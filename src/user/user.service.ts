@@ -195,7 +195,15 @@ export class UserService {
     let pipe: Exclude<
       PipelineStage,
       PipelineStage.Merge | PipelineStage.Out
-    >[] = [];
+    >[] = [
+      {
+        $project: {
+          _id: '$_id',
+          project: '$project',
+          joinor: '$joinor',
+        },
+      },
+    ];
 
     let pipeline: PipelineStage[] = [
       {
@@ -210,6 +218,37 @@ export class UserService {
           foreignField: 'joinor',
           pipeline: pipe,
           as: 'joinprojects',
+        },
+      },
+      {
+        $lookup: {
+          from: 'userdetails',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'userDetails',
+        },
+      },
+      {
+        $unwind: {
+          path: '$userDetails',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          code: '$code',
+          name: '$name',
+          date: '$date',
+          address: '$address',
+          cccd: '$cccd',
+          field: '$field',
+          gender: '$gender',
+          nationality: '$userDetails.nationality',
+          bornAt: '$userDetails.bornAt',
+          resident: '$userDetails.resident',
+          dateCccd: '$userDetails.dateCccd',
+          cccdAt: '$userDetails.cccdAt',
+          joinprojects: '$joinprojects',
         },
       },
     ];
@@ -678,6 +717,20 @@ export class UserService {
         },
       },
       {
+        $lookup: {
+          from: 'userdetails',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'userDetails',
+        },
+      },
+      {
+        $unwind: {
+          path: '$userDetails',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           email: '$email',
           name: '$name',
@@ -685,6 +738,9 @@ export class UserService {
           company: '$company',
           field: '$field',
           tax: '$tax',
+          address: '$address',
+          position: '$position',
+          nationality: '$userDetails.nationality',
         },
       },
     ]);

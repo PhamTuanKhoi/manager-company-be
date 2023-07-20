@@ -1,7 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { CreateUserDetailDto } from 'src/user-detail/dto/create-user-detail.dto';
+import { UserGenderEnum } from 'src/user/interfaces/gender-enum';
 
 export class CombinedWorkerAndUserDto extends PartialType(CreateUserDetailDto) {
   @IsNotEmpty()
@@ -30,6 +31,7 @@ export class CombinedWorkerAndUserDto extends PartialType(CreateUserDetailDto) {
   field: string;
 
   @IsNotEmpty()
-  @IsString()
-  gender: string;
+  @Type(() => Number)
+  @IsEnum(UserGenderEnum)
+  gender: number;
 }

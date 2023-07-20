@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { ContractCategory } from 'src/contract-category/schema/contract-category.schema';
+import { Project } from 'src/project/schema/project.schema';
 import { User } from 'src/user/schema/user.schema';
 
 export type ContractDetailDocument = HydratedDocument<ContractDetail>;
@@ -32,6 +33,9 @@ export class ContractDetail {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: ContractCategory.name })
   contractCategory: ContractCategory;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Project.name })
+  project: Project;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   creator: User;

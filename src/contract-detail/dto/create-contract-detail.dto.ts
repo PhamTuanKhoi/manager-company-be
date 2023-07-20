@@ -51,5 +51,9 @@ export class CreateContractDetailDto {
 
   @IsNotEmpty()
   @IsString()
+  projectId: String;
+
+  @IsNotEmpty()
+  @IsString()
   creator: String;
 }

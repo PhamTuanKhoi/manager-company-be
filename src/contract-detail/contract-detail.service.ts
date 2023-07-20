@@ -2,10 +2,13 @@ import { InjectQueue } from '@nestjs/bull';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Queue } from 'bull';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import { BULLL_NAME_CONTRACT_DETAIL } from 'src/attendance/contants/bull.name';
 import { UserService } from 'src/user/user.service';
+import { CombinedClientAndUserDto } from './dto/combine-client-userdetail.dto';
+import { CombinedWorkerAndUserDto } from './dto/combine-worker-userdetail.dto';
 import { CreateContractDetailDto } from './dto/create-contract-detail.dto';
+import { QueryContractDetailDto } from './dto/QueryContractDetailDto';
 import { UpdateContractDetailDto } from './dto/update-contract-detail.dto';
 import { ContractDetail } from './schema/contract-detail.schema';
 
@@ -23,16 +26,87 @@ export class ContractDetailService {
     return this.model.find();
   }
 
+  async findAllQuery(queryContractDetailDto: QueryContractDetailDto) {
+    let query: PipelineStage[] = [
+      {
+        $lookup: {
+          from: 'contractcategories',
+          localField: 'contractCategory',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: {
+                name: '$name',
+                project: '$project',
+              },
+            },
+          ],
+          as: 'contractCategory',
+        },
+      },
+      {
+        $unwind: {
+          path: '$contractCategory',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'worker',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: {
+                code: '$code',
+                name: '$name',
+              },
+            },
+          ],
+          as: 'worker',
+        },
+      },
+      {
+        $unwind: {
+          path: '$worker',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'client',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $project: {
+                name: '$name',
+              },
+            },
+          ],
+          as: 'client',
+        },
+      },
+      {
+        $unwind: {
+          path: '$client',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ];
+
+    return this.model.aggregate(query);
+  }
+
+  async findById(id: string) {
+    return this.model.findById(id).lean();
+  }
+
   async create(createContractDetailDto: CreateContractDetailDto) {
     const { client, worker } = createContractDetailDto;
     try {
-      // validation
-      await this.userService.isModelExist(client?._id);
-      await this.userService.isModelExist(worker?._id);
-
       // queue
-      await this.contractDetailQueue.add('update-client', client);
-      await this.contractDetailQueue.add('update-worker', worker);
+      await this.handleCreateOrUpdateUserDetail(client, worker);
 
       // save contract detail
       return this.handleCreate(createContractDetailDto);
@@ -42,8 +116,27 @@ export class ContractDetailService {
     }
   }
 
+  async handleCreateOrUpdateUserDetail(
+    client: CombinedClientAndUserDto,
+    worker: CombinedWorkerAndUserDto,
+  ) {
+    try {
+      // validation
+      await this.userService.isModelExist(client?._id);
+      await this.userService.isModelExist(worker?._id);
+
+      // queue
+      await this.contractDetailQueue.add('update-client', client);
+      await this.contractDetailQueue.add('update-worker', worker);
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException(error);
+    }
+  }
+
   async handleCreate(createContractDetailDto: CreateContractDetailDto) {
-    const { client, worker } = createContractDetailDto;
+    const { client, worker, contractCategoryId, projectId } =
+      createContractDetailDto;
     try {
       let code = 1;
       const ctDs = (await this.findAll()).sort((a, b) => a.code - b.code);
@@ -54,10 +147,34 @@ export class ContractDetailService {
         ...createContractDetailDto,
         client: client?._id,
         worker: worker?._id,
+        contractCategory: contractCategoryId,
+        project: projectId,
         code,
       });
       this.logger.log(`created a new contract-detail by id#${saved?._id}`);
       return saved;
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async update(id: string, updateContractDetailDto: UpdateContractDetailDto) {
+    const { client, worker, contractCategoryId, projectId } =
+      updateContractDetailDto;
+    try {
+      // queue
+      await this.handleCreateOrUpdateUserDetail(client, worker);
+
+      const updated = await this.model.findByIdAndUpdate(id, {
+        ...updateContractDetailDto,
+        client: client?._id,
+        worker: worker?._id,
+        contractCategory: contractCategoryId,
+        project: projectId,
+      });
+      this.logger.log(`update a contract-detail by id#${updated?._id}`);
+      return updated;
     } catch (error) {
       this.logger.error(error?.message, error?.stack);
       throw new BadRequestException(error);

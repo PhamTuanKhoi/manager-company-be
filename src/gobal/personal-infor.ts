@@ -1,10 +1,13 @@
+import { Type } from 'class-transformer';
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { UserGenderEnum } from 'src/user/interfaces/gender-enum';
 
 export class PersonalInfor {
   @IsNotEmpty()
@@ -36,8 +39,9 @@ export class PersonalInfor {
   token?: string;
 
   @IsOptional()
-  @IsString()
-  gender?: string;
+  @Type(() => Number)
+  @IsEnum(UserGenderEnum)
+  gender?: number;
 
   @IsOptional()
   @IsString()

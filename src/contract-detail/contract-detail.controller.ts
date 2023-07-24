@@ -43,4 +43,9 @@ export class ContractDetailController {
   ) {
     return this.contractDetailService.update(id, updateContractDetailDto);
   }
+
+  @Delete('/:id')
+  delete(@Param('id') id: string) {
+    return this.contractDetailService.delete(id);
+  }
 }

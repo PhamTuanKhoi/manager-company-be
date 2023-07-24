@@ -180,4 +180,24 @@ export class ContractDetailService {
       throw new BadRequestException(error);
     }
   }
+
+  async delete(id: string) {
+    try {
+      await this.isModelExists(id);
+      const deleted = await this.model.findByIdAndDelete(id);
+      this.logger.log(`deleted a contract-detail by id#${deleted?._id}`);
+      return deleted;
+    } catch (error) {
+      this.logger.error(error?.message, error?.stack);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async isModelExists(id, isOption = false, msg = '') {
+    if (!id && isOption) return;
+    const message = msg || 'contract-detail not found';
+    const isExist = await this.findById(id);
+    if (!isExist) throw new Error(message);
+    return isExist;
+  }
 }
